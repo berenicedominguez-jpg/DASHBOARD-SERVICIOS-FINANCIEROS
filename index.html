@@ -538,7 +538,7 @@ function fmtVal(val, unit, suffix) {
   if (val===null||val===undefined) return '—';
   if (val==='PENDIENTE') return 'Pendiente';
   var n = val;
-  if (unit==='$') return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+  if (unit==='$') return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (unit==='%') return n+'%';
   if (unit==='días') return n+' días';
   return n+(suffix?' '+suffix:'');
