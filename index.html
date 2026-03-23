@@ -62,6 +62,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--off-white);col
 .grid{display:grid;gap:14px;margin-bottom:26px;}
 .grid-4{grid-template-columns:repeat(4,1fr);}
 .grid-3{grid-template-columns:repeat(3,1fr);}
+.grid > .kpi-card{height:100%;}
 .kpi-card{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:22px 22px 18px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;align-items:center;text-align:center;}
 .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
@@ -76,8 +77,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--off-white);col
 .kpi-acum-val{font-size:12px;color:var(--blue-main);font-weight:600;margin-bottom:2px;background:var(--blue-pale);border-radius:6px;padding:3px 10px;}
 .kpi-meta{font-size:12px;color:var(--gray-500);margin-bottom:4px;}
 .kpi-cumpl{font-size:12px;font-weight:700;margin-bottom:12px;}
-.kpi-divider{width:100%;height:1px;background:var(--gray-100);margin-bottom:10px;}
-.progress-wrap{width:100%;margin-bottom:12px;}
+.kpi-divider{width:100%;height:1px;background:var(--gray-100);margin-bottom:10px;margin-top:auto;}
+.progress-wrap{width:100%;margin-bottom:12px;align-self:stretch;}
 .progress-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);margin-bottom:4px;}
 .progress-pct{font-size:11px;font-weight:700;color:var(--blue-dark);}
 .progress-track{height:6px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
@@ -702,14 +703,16 @@ function renderCard(key) {
   else if (pct>=80)                           badgeHtml='<span class="kpi-badge badge-near">&#9889; Cerca</span>';
   else                                        badgeHtml='<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
 
-  var metaDisplay=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):'Del presupuesto');
+  var metaDisplay=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):(obj!==null?fmtVal(obj,cfg.unit,cfg.suffix):'Del presupuesto'));
   var metaLabel=cfg.cuatrimestral?'Meta cuatrimestral: ':'Meta: ';
+
+  var realColor = realNum===null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
 
   el.innerHTML=[
     '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
     '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
     '<div class="kpi-objective">'+cfg.objective+'</div>',
-    '<div class="kpi-real-val">'+realDisplay+'</div>',
+    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
     acumDisplay?'<div class="kpi-acum-val">📦 '+acumDisplay+'</div>':'',
     '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
     cumplHtml,
