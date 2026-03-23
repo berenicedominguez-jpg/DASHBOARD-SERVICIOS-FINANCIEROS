@@ -504,31 +504,28 @@ function parseVal(raw, kpi) {
   return v;
 }
 
-/* Carga todos los datos de la hoja SYyF en allData */
+/* Carga todos los datos de la hoja SFyF en allData */
 function loadAllFromSYyF(mesesFiltro) {
   return fetchSYyF().then(function(rows) {
     var keys = Object.keys(KPIS);
-    // Inicializar allData para los meses pedidos
     keys.forEach(function(key) {
       if (!allData[key]) allData[key] = {};
       mesesFiltro.forEach(function(m) {
-        if (!allData[key][m]) allData[key][m] = { real: null, objetivo: null };
+        allData[key][m] = { real: null, objetivo: null };
       });
     });
-    // Recorrer filas y poblar allData
     rows.forEach(function(row) {
-      var mes   = String(row['MES']  || row['mes']  || '').trim();
-      var kpi   = String(row['KPI']  || row['kpi']  || '').trim();
-      var rawReal = row['REAL'] !== undefined ? row['REAL'] : (row['real'] !== undefined ? row['real'] : row['Real']);
-      var rawObj  = row['OBJETIVO'] !== undefined ? row['OBJETIVO'] : (row['objetivo'] !== undefined ? row['objetivo'] : row['Objetivo']);
-      var real  = parseVal(rawReal, kpi);
-      var obj   = parseVal(rawObj,  kpi);
-      if (!mes || !kpi) return;
-      // Normalizar mes: ENERO → Enero, FEBRERO → Febrero, etc.
+      var mes = String(row['MES'] !== undefined ? row['MES'] : (row['mes'] || '')).trim();
+      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : (row['kpi'] || '')).trim();
+      if (!mes || !kpi || !KPIS[kpi]) return;
       mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
-      if (!KPIS[kpi]) return;                      // KPI desconocido, ignorar
-      if (mesesFiltro.indexOf(mes) === -1) return; // Mes fuera del filtro, ignorar
-      var cfg = KPIS[kpi];
+      if (mesesFiltro.indexOf(mes) === -1) return;
+      // Leer REAL y OBJETIVO usando hasOwnProperty para capturar el 0
+      var rawReal = row.hasOwnProperty('REAL') ? row['REAL'] : null;
+      var rawObj  = row.hasOwnProperty('OBJETIVO') ? row['OBJETIVO'] : null;
+      var real = parseVal(rawReal, kpi);
+      var obj  = parseVal(rawObj,  kpi);
+      var cfg  = KPIS[kpi];
       allData[kpi][mes] = {
         real:     real,
         objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
@@ -540,10 +537,11 @@ function loadAllFromSYyF(mesesFiltro) {
 function fmtVal(val, unit, suffix) {
   if (val===null||val===undefined) return '—';
   if (val==='PENDIENTE') return 'Pendiente';
-  if (unit==='$') return '$'+val.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
-  if (unit==='%') return val+'%';
-  if (unit==='días') return val+' días';
-  return val+(suffix?' '+suffix:'');
+  var n = val;
+  if (unit==='$') return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+  if (unit==='%') return n+'%';
+  if (unit==='días') return n+' días';
+  return n+(suffix?' '+suffix:'');
 }
 
 // Sum real values for a list of months (only valid numbers)
@@ -652,7 +650,7 @@ function renderCard(key) {
   var d=allData[key][selectedMes];
   var real=d.real, obj=d.objetivo;
   var isPendiente=real==='PENDIENTE';
-  var realNum=isPendiente?null:real;
+  var realNum=isPendiente?null:(real===null?null:real);  // 0 es válido
   var realDisplay=fmtVal(real,cfg.unit,cfg.suffix);
 
   // Monthly evaluation: use proportional target for badge/ok check
@@ -698,11 +696,11 @@ function renderCard(key) {
   var cumplHtml=noCumpl?'':(cumpl!==null?'<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>':'<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
 
   var badgeHtml;
-  if (isPendiente)                       badgeHtml='<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
-  else if (realNum===null||evalObj===null)badgeHtml='<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                           badgeHtml='<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
-  else if (pct>=80)                      badgeHtml='<span class="kpi-badge badge-near">&#9889; Cerca</span>';
-  else                                   badgeHtml='<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+  if (isPendiente)                            badgeHtml='<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum===null||evalObj===null)     badgeHtml='<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                                badgeHtml='<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
+  else if (pct>=80)                           badgeHtml='<span class="kpi-badge badge-near">&#9889; Cerca</span>';
+  else                                        badgeHtml='<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
 
   var metaDisplay=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):'Del presupuesto');
   var metaLabel=cfg.cuatrimestral?'Meta cuatrimestral: ':'Meta: ';
