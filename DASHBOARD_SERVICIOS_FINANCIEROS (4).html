@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numaris · KPIs</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --blue-dark:#0d2e5e; --blue-main:#1a5cb0; --blue-mid:#2e7fd6;
+  --blue-light:#6aabee; --blue-pale:#e8f2fb;
+  --white:#ffffff; --off-white:#f5f8fc;
+  --gray-50:#f1f5f9; --gray-100:#e4ecf4; --gray-200:#c8d8ea;
+  --gray-300:#b0c8e0; --gray-400:#8aaac8; --gray-500:#5a7a98; --gray-900:#0d1e30;
+  --green:#0f7a4a; --green-bg:#edfaf3; --green-bd:#a7dfc3;
+  --red:#b91c1c; --red-bg:#fef2f2; --red-bd:#fca5a5;
+  --amber:#b45309; --amber-bg:#fffbeb; --amber-bd:#fcd34d;
+  --shadow-sm:0 1px 4px rgba(13,46,94,0.07);
+  --shadow-md:0 4px 18px rgba(13,46,94,0.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--off-white);color:var(--gray-900);min-height:100vh;display:flex;}
+.sidebar{width:240px;min-height:100vh;background:var(--white);position:fixed;top:0;left:0;z-index:200;display:flex;flex-direction:column;border-right:1px solid var(--gray-100);box-shadow:2px 0 12px rgba(13,46,94,0.07);}
+.sidebar-logo{padding:22px 22px 18px;border-bottom:1px solid var(--gray-100);}
+.sidebar-logo img{height:30px;width:auto;display:block;}
+.sidebar-nav{flex:1;padding:14px 0;}
+.nav-group-label{font-size:9px;text-transform:uppercase;letter-spacing:2.5px;color:var(--gray-400);padding:16px 22px 6px;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 22px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-left:3px solid transparent;transition:all .18s;text-decoration:none;}
+.nav-item:hover{color:var(--blue-main);background:var(--blue-pale);}
+.nav-item.active{color:var(--blue-dark);background:var(--blue-pale);border-left:3px solid var(--blue-main);font-weight:700;}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--blue-dark);padding:0 36px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(13,46,94,0.2);}
+.page-title{font-size:17px;font-weight:700;color:var(--white);}
+.page-crumb{font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.topbar-date{font-size:12px;color:rgba(255,255,255,0.5);}
+.refresh-btn{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:var(--blue-main);color:var(--white);border:none;font-size:12px;font-weight:600;cursor:pointer;transition:background .18s;}
+.refresh-btn:hover{background:var(--blue-mid);}
+.page{display:none;flex:1;flex-direction:column;}
+.page.active{display:flex;}
+.content{padding:30px 36px;flex:1;}
+.state-box{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:52px;text-align:center;margin-bottom:26px;}
+.spinner{width:32px;height:32px;border:2.5px solid var(--gray-100);border-top-color:var(--blue-main);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.state-box p{color:var(--gray-400);font-size:13px;}
+.month-panel{background:var(--white);border:1px solid var(--gray-100);padding:12px 36px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);position:sticky;top:64px;z-index:90;gap:16px;}
+.month-panel-title{font-size:13px;font-weight:700;color:var(--blue-dark);}
+.month-panel-sub{font-size:11px;color:var(--gray-400);margin-top:2px;}
+.month-btns{display:flex;gap:5px;flex-wrap:nowrap;}
+.mbtn{padding:5px 8px;border-radius:7px;border:1.5px solid var(--gray-200);background:var(--white);color:var(--gray-500);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.mbtn:hover:not([disabled]){border-color:var(--blue-main);color:var(--blue-main);}
+.mbtn.active{background:var(--blue-dark);border-color:var(--blue-dark);color:var(--white);}
+.mbtn[disabled]{color:var(--gray-200);border-color:var(--gray-100);cursor:default;background:var(--gray-50);}
+.sum-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--gray-400);font-weight:700;margin-bottom:4px;}
+.sum-val{font-size:16px;font-weight:800;color:var(--blue-dark);line-height:1.1;}
+.sum-sub{font-size:10px;color:var(--gray-400);margin-top:2px;}
+.section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;margin-top:6px;}
+.section-hdr-line{flex:1;height:1px;background:var(--gray-100);}
+.section-hdr-txt{font-size:10px;text-transform:uppercase;letter-spacing:2.5px;color:var(--blue-main);font-weight:700;white-space:nowrap;}
+.grid{display:grid;gap:14px;margin-bottom:26px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.kpi-card{background:var(--white);border:1px solid var(--gray-100);border-radius:12px;padding:22px 22px 18px;position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;align-items:center;text-align:center;}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.c1::before{background:linear-gradient(90deg,var(--blue-dark),var(--blue-main));}
+.c2::before{background:linear-gradient(90deg,var(--blue-main),var(--blue-mid));}
+.c3::before{background:linear-gradient(90deg,var(--blue-mid),var(--blue-light));}
+.c4::before{background:linear-gradient(90deg,var(--blue-light),#a8d4f7);}
+.kpi-icon-wrap{width:40px;height:40px;border-radius:10px;background:var(--blue-pale);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.kpi-label{font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px;}
+.kpi-objective{font-size:11px;color:var(--gray-400);line-height:1.5;margin-bottom:16px;min-height:32px;}
+.kpi-real-val{font-size:20px;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;}
+.kpi-acum-val{font-size:12px;color:var(--blue-main);font-weight:600;margin-bottom:2px;background:var(--blue-pale);border-radius:6px;padding:3px 10px;}
+.kpi-meta{font-size:12px;color:var(--gray-500);margin-bottom:4px;}
+.kpi-cumpl{font-size:12px;font-weight:700;margin-bottom:12px;}
+.kpi-divider{width:100%;height:1px;background:var(--gray-100);margin-bottom:10px;}
+.progress-wrap{width:100%;margin-bottom:12px;}
+.progress-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--gray-400);margin-bottom:4px;}
+.progress-pct{font-size:11px;font-weight:700;color:var(--blue-dark);}
+.progress-track{height:6px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:4px;transition:width .9s ease;}
+.bar-ok{background:linear-gradient(90deg,var(--blue-dark),var(--blue-main));}
+.bar-near{background:linear-gradient(90deg,var(--amber),#f59e0b);}
+.bar-off{background:linear-gradient(90deg,var(--red),#ef4444);}
+.kpi-badge{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.4px;}
+.badge-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.badge-near{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.badge-off{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.badge-nd{background:var(--gray-50);color:var(--gray-400);border:1px solid var(--gray-200);}
+.tab-bar{display:flex;gap:6px;background:var(--white);border:1px solid var(--gray-100);padding:14px 36px;box-shadow:var(--shadow-sm);width:100%;position:sticky;top:64px;z-index:90;align-items:center;}
+.tab-bar-left{display:flex;gap:6px;align-items:center;flex:1;}
+.tab-btn{padding:7px 12px;border-radius:7px;border:1.5px solid var(--gray-200);background:var(--white);font-size:11px;font-weight:700;color:var(--gray-200);letter-spacing:.5px;cursor:default;transition:all .18s;}
+.tab-btn.enabled:hover{border-color:var(--blue-main);color:var(--blue-main);cursor:pointer;}
+.tab-btn.active{background:var(--blue-dark);border-color:var(--blue-dark);color:var(--white);cursor:pointer;}
+.tab-btn.anual{border-color:var(--blue-mid);color:var(--blue-mid);}
+.tab-btn.anual.enabled:hover{border-color:var(--blue-dark);color:var(--blue-dark);}
+.tab-btn.anual.active{background:var(--blue-dark);border-color:var(--blue-dark);color:var(--white);}
+.pdf-btn{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:11px;font-weight:700;letter-spacing:.4px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.pdf-btn:hover{background:#dc2626;color:#fff;}
+.pdf-btn svg{width:14px;height:14px;flex-shrink:0;}
+.pdf-btn.loading{opacity:.6;cursor:default;pointer-events:none;}
+.table-wrap{background:var(--white);border:1px solid var(--gray-100);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-md);}
+.table-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr.q-header th{background:var(--blue-dark);color:var(--white);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:12px 14px;text-align:center;border-right:1px solid rgba(255,255,255,0.1);}
+thead tr.q-header th:first-child{text-align:left;min-width:200px;}
+thead tr.m-header th{background:var(--blue-main);color:rgba(255,255,255,0.95);font-size:11px;font-weight:700;padding:10px 14px;text-align:center;border-right:1px solid rgba(255,255,255,0.12);}
+thead tr.m-header th:first-child{background:var(--blue-main);color:rgba(255,255,255,0.95);}
+tbody tr{border-bottom:1px solid var(--gray-100);transition:background .15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover td{background:#f0f6ff;}
+tbody tr:hover td:first-child,tbody tr:hover td.sticky-2,tbody tr:hover td.sticky-3{background:var(--gray-100);}
+td{padding:12px 10px;vertical-align:middle;border-right:1px solid var(--gray-100);}
+td:first-child{background:var(--gray-50);padding:12px 18px;border-right:2px solid var(--gray-200);min-width:200px;position:sticky;left:0;z-index:1;}
+td.sticky-2{position:sticky;left:200px;z-index:1;background:var(--white);border-right:1px solid var(--gray-100);}
+td.sticky-3{position:sticky;left:280px;z-index:1;background:var(--white);border-right:2px solid var(--gray-200);}
+thead tr.q-header th.sticky-2{position:sticky;left:200px;z-index:2;}
+thead tr.q-header th.sticky-3{position:sticky;left:280px;z-index:2;border-right:2px solid rgba(255,255,255,0.2);}
+thead tr.m-header th.sticky-2{position:sticky;left:200px;z-index:2;}
+thead tr.m-header th.sticky-3{position:sticky;left:280px;z-index:2;border-right:2px solid rgba(255,255,255,0.2);}
+.kpi-name{font-weight:700;color:var(--blue-dark);font-size:13px;}
+.kpi-sub{font-size:10px;color:var(--gray-400);margin-top:2px;}
+.t-icon{font-size:15px;margin-right:7px;vertical-align:middle;}
+.cell-val{font-weight:700;color:var(--blue-dark);font-size:13px;display:block;text-align:center;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.dot-ok{background:var(--green);}
+.dot-near{background:var(--amber);}
+.dot-off{background:var(--red);}
+.dot-nd{background:var(--gray-300);}
+.tbadge{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;margin-top:5px;letter-spacing:.3px;}
+.tbadge-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+.tbadge-near{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+.tbadge-off{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+.tbadge-nd{background:var(--gray-50);color:var(--gray-400);border:1px solid var(--gray-200);}
+.cell-inner{display:flex;flex-direction:column;align-items:center;min-width:90px;padding:4px 0;}
+.estatus-vals{font-size:12px;font-weight:800;color:var(--blue-dark);}
+.estatus-max{font-size:11px;color:var(--gray-400);font-weight:500;}
+.estatus-track{height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin:4px 0;}
+.estatus-bar{height:100%;border-radius:4px;}
+.estatus-sub{font-size:10px;color:var(--gray-500);}
+.meta-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:.3px;margin-top:4px;}
+.meta-mensual{background:#e8f2fb;color:var(--blue-main);border:1px solid var(--blue-light);}
+.meta-cuatrimestral{background:#fffbeb;color:var(--amber);border:1px solid var(--amber-bd);}
+.q-sep-col{background:rgba(13,46,94,0.04) !important;border-left:2px solid var(--gray-200) !important;}
+.q-sep-header{background:#0a2449 !important;border-left:2px solid rgba(255,255,255,0.2) !important;}
+footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px 36px;font-size:11px;color:var(--gray-400);margin-left:240px;display:flex;justify-content:space-between;}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:960px){.sidebar{width:60px;}.nav-item span:not(.nav-icon),.nav-group-label{display:none;}.main{margin-left:60px;}footer{margin-left:60px;}.content{padding:20px 16px;}.topbar{padding:0 16px;}}
+@media(max-width:620px){.grid-4,.grid-3{grid-template-columns:1fr;}.month-panel{flex-direction:column;gap:14px;align-items:flex-start;}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <img src="https://drive.google.com/thumbnail?id=1BWvzgPG54bJhM665m_QoQKT10tX6pVvC&sz=w300" alt="Numaris">
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group-label">KPIs</div>
+    <a class="nav-item active" id="nav-mensual" onclick="navigate('mensual')" href="#">
+      <span class="nav-icon">📊</span><span>KPIs Mensual: Servicios Financieros y Flotas</span>
+    </a>
+    <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
+      <span class="nav-icon">🎯</span><span>KPIs Mensual: Central Monitoreo CVA</span>
+    </a>
+    <a class="nav-item" id="nav-resumen" onclick="navigate('resumen')" href="#">
+      <span class="nav-icon">📋</span><span>KPIs Resumen</span>
+    </a>
+  </div>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="topbar-title">KPIs Mensual: Servicios Financieros y Flotas</div>
+      <div class="page-crumb" id="topbar-crumb">Reportes · KPIs Mensual: Servicios Financieros y Flotas</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbar-date"></div>
+      <button class="refresh-btn" onclick="refreshData()">&#8635; Actualizar</button>
+    </div>
+  </div>
+
+  <!-- PAGE: MENSUAL -->
+  <div class="page active" id="page-mensual">
+    <div class="month-panel">
+      <div>
+        <div class="month-panel-title">Período de análisis</div>
+        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
+      </div>
+      <div class="month-btns" id="monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
+        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
+          <div class="sum-lbl">Tendencia</div>
+          <div class="sum-val" id="sum-trend">—</div>
+          <div class="sum-sub">Resultado general</div>
+        </div>
+        <div style="padding:0 24px;">
+          <div class="sum-lbl">En objetivo</div>
+          <div class="sum-val" id="sum-ok">—</div>
+          <div class="sum-sub">de 7 KPIs ponderados</div>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
+      <div id="m-mainContent" style="display:none;">
+        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento Comercial</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-4">
+          <div class="kpi-card c1" id="card-Ingresos"></div>
+          <div class="kpi-card c2" id="card-Churn"></div>
+          <div class="kpi-card c3" id="card-CrossSelling"></div>
+          <div class="kpi-card c4" id="card-ClientesNuevos"></div>
+        </div>
+        <div class="section-hdr"><div class="section-hdr-txt">Satisfacción &amp; Rentabilidad</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="card-NPS"></div>
+          <div class="kpi-card c2" id="card-MargenBruto"></div>
+          <div class="kpi-card c3" id="card-SGA"></div>
+        </div>
+        <div class="section-hdr"><div class="section-hdr-txt">Gestión Financiera</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-4">
+          <div class="kpi-card c1" id="card-CxC"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: RESUMEN -->
+  <div class="page" id="page-resumen">
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-bar-left">
+        <button class="tab-btn" id="tab-1" onclick="selectQ(1,this)">Q1 · Ene – Abr</button>
+        <button class="tab-btn" id="tab-2" onclick="selectQ(2,this)">Q2 · May – Ago</button>
+        <button class="tab-btn" id="tab-3" onclick="selectQ(3,this)">Q3 · Sep – Dic</button>
+        <button class="tab-btn anual" id="tab-anual" onclick="selectQ('anual',this)">📅 Anual · Ene – Dic</button>
+      </div>
+      <button class="pdf-btn" id="pdfBtn" onclick="exportPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Exportar PDF
+      </button>
+    </div>
+    <div class="content" style="padding-top:24px;">
+      <div id="r-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="r-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="r-errorMsg">Error.</p></div>
+      <div id="r-mainContent" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;" id="r-summary-cards"></div>
+        <div class="table-wrap"><div class="table-scroll"><table id="resumenTable"></table></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: CVA - KPIs Mensual: Central Monitoreo CVA -->
+  <div class="page" id="page-cva" style="flex:1;flex-direction:column;">
+    <!-- CVA Month selector bar (reuses SF styling) -->
+    <div class="month-panel" id="cva-month-panel">
+      <div>
+        <div class="month-panel-title">Central de Monitoreo CVA · Período de análisis</div>
+        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:nowrap;" id="cva-monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
+        <div style="padding:0 24px;">
+          <div class="sum-lbl">Mes activo</div>
+          <div class="sum-val" id="cva-mes-label">—</div>
+          <div class="sum-sub">Central Monitoreo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="cva-content">
+      <!-- Recuperaciones -->
+      <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
+      <div class="grid grid-3" style="margin-bottom:26px;">
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-robos">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🚨</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Robos</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-robos">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 90%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-robos"> </div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-robos" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-robos">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-robos">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-abusos">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">⚠️</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Abusos de Confianza</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-abusos">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 80%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-abusos"> </div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-abusos" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-abusos">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-abusos">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-creditos">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">💳</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Créditos</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-creditos">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 90%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-creditos"> </div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-creditos" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-creditos">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-creditos">⏳ Sin datos</span>
+        </div>
+      </div>
+
+      <!-- Soporte -->
+      <div class="section-hdr"><div class="section-hdr-txt">🎧 Soporte</div><div class="section-hdr-line"></div></div>
+      <div class="grid grid-3" style="margin-bottom:26px;">
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-tickets">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🎫</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Tiempo de Primera Respuesta</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-tickets">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≤ 15 min</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-tickets"> </div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-tickets" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-tickets">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-tickets">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-capac">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📚</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Satisfacción de Capacitaciones</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-capac">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 95%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-capac"> </div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-capac" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-capac">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-capac">⏳ Sin datos</span>
+        </div>
+      </div>
+
+      <!-- Conectividad -->
+      <div class="section-hdr"><div class="section-hdr-txt">🌐 Conectividad</div><div class="section-hdr-line"></div></div>
+
+      <div class="grid grid-4" style="margin-bottom:14px;">
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-con-general">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📡</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Conectividad General</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-general">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-general">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-general" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-general">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-general">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-con-legacy">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🗄️</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Legacy</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-legacy">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-legacy">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-legacy" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-legacy">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-legacy">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-con-s1">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S1</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s1">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s1">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s1" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s1">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-s1">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-light);" id="cva-c-con-s2">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S2</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s2">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s2">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s2" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s2">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-s2">⏳ Sin datos</span>
+        </div>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:26px;">
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-con-s3">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S3</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s3">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s3">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s3" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s3">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-s3">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-con-bafar">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🏭</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Bafar</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-bafar">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-bafar">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-bafar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-bafar">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-bafar">⏳ Sin datos</span>
+        </div>
+        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-con-recuperamovil">
+          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📱</span>
+          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Recuperamovil</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-recuperamovil">—</div>
+          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
+          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-recuperamovil">⏳</div>
+          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-recuperamovil" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-recuperamovil">—</span><span>100%</span></div>
+          <span class="kpi-badge badge-nd" id="cva-b-con-recuperamovil">⏳ Sin datos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Numaris © 2026 · Tablero Ejecutivo de KPIs · Datos en tiempo real</span>
+    <span id="footer-ts"></span>
+  </footer>
+</div>
+
+<script>
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby59F7hn1Bqzff0Bd9sfG3uM47v35gZeMTqHM7wUM4DxN5GU0lsAFYjTLtscYc45HbGRg/exec';
+
+/* Hoja única de datos: SYyF
+   Columnas: MES | KPI | REAL | OBJETIVO
+   El ID de la columna KPI coincide exactamente con las claves de este objeto */
+var HOJA_DATOS = 'SYyF';
+
+var KPIS = {
+  Ingresos:      { label:'Ingresos',           icon:'💹', objective:'Generar crecimiento comercial sostenible',               weight:60, unit:'$',    inverse:false, fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false },
+  Churn:         { label:'Churn',              icon:'🔄', objective:'Retener clientes 3, 4 y 5 estrellas',                    weight:10, unit:'#',    inverse:true,  fixedObj:3,    objLabel:'Máx. 3',       suffix:'bajas',      cuatrimestral:true  },
+  CrossSelling:  { label:'Cross-Selling',      icon:'🔀', objective:'Clientes 3,4 y 5★ con +2 soluciones implementadas',      weight:10, unit:'#',    inverse:false, fixedObj:8,    objLabel:'8 clientes',   suffix:'cliente(s)', cuatrimestral:true  },
+  ClientesNuevos:{ label:'Clientes Nuevos 5★', icon:'⭐', objective:'Crecer con clientes de alta calidad',                    weight: 5, unit:'#',    inverse:false, fixedObj:3,    objLabel:'3 clientes',   suffix:'cliente(s)', cuatrimestral:true  },
+  NPS:           { label:'NPS',                icon:'😊', objective:'Encuesta 2x año, lograr resultado positivo',             weight: 0, unit:'%',    inverse:false, fixedObj:52,   objLabel:'≥ 52%',        suffix:null,         cuatrimestral:false },
+  MargenBruto:   { label:'Margen Bruto',       icon:'💰', objective:'Incrementar rentabilidad mediante estrategia de precios', weight: 5, unit:'%',    inverse:false, fixedObj:83,   objLabel:'≥ 83%',        suffix:null,         cuatrimestral:false },
+  SGA:           { label:'SG&A vs PPTO',       icon:'📊', objective:'Mantener gastos alineados al presupuesto',               weight: 5, unit:'$',    inverse:true,  fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false },
+  CxC:           { label:'Cuentas x Cobrar',   icon:'📅', objective:'Mantener días de CxC por debajo del objetivo',           weight: 5, unit:'días', inverse:true,  fixedObj:38,   objLabel:'Máx. 38 días', suffix:null,         cuatrimestral:false }
+};
+
+var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var QUARTERS = [
+  { q:1, label:'Q1 · Ene – Abr', meses:['Enero','Febrero','Marzo','Abril'] },
+  { q:2, label:'Q2 · May – Ago', meses:['Mayo','Junio','Julio','Agosto'] },
+  { q:3, label:'Q3 · Sep – Dic', meses:['Septiembre','Octubre','Noviembre','Diciembre'] }
+];
+
+var allData={}, selectedMes='', activeQ=1, resumenLoaded=false, currentPage='mensual';
+
+document.getElementById('topbar-date').textContent =
+  new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+/* ── UTILS ── */
+function getQBlock(mes) {
+  if (['Enero','Febrero','Marzo','Abril'].indexOf(mes)>=0) return 0;
+  if (['Mayo','Junio','Julio','Agosto'].indexOf(mes)>=0) return 1;
+  return 2;
+}
+function getQMeses(mes) { return QUARTERS[getQBlock(mes)].meses; }
+
+/* ── Carga única: una sola llamada a la hoja SYyF ──
+   Construye allData[kpiKey][mes] = { real, objetivo } para todos los KPIs y meses */
+var sfDataLoaded = false;
+var sfRawRows = [];
+
+function fetchSYyF() {
+  if (sfDataLoaded) return Promise.resolve(sfRawRows);
+  return fetch(APPS_SCRIPT_URL + '?sheet=' + encodeURIComponent(HOJA_DATOS))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      sfRawRows = d.rows || [];
+      sfDataLoaded = true;
+      return sfRawRows;
+    });
+}
+
+/* Parsea un valor crudo de la celda REAL u OBJETIVO
+   Maneja: $23,959,469 · $130,510.00 · 85.60% · 83% · 0 · 32 · NO APLICA · PENDIENTE */
+function parseVal(raw) {
+  if (raw === undefined || raw === null) return null;
+  var s = String(raw).trim();
+  if (s === '') return null;
+  if (s.toUpperCase() === 'PENDIENTE') return 'PENDIENTE';
+  if (s.toUpperCase() === 'NO APLICA' || s.toUpperCase() === 'N/A') return null;
+  // Detectar si viene con % para saber si hay que tratar como porcentaje
+  var esPct = s.indexOf('%') !== -1;
+  // Limpiar: quitar $, comas de miles, %, espacios
+  var clean = s.replace(/[$,%\s]/g, '');
+  var v = parseFloat(clean);
+  if (isNaN(v)) return null;
+  // Si venía como decimal puro (ej: 0.856) y tenía %, convertir a porcentaje entero
+  if (esPct && v > 0 && v <= 1) v = Math.round(v * 10000) / 100;
+  return v;
+}
+
+/* Carga todos los datos de la hoja SYyF en allData */
+function loadAllFromSYyF(mesesFiltro) {
+  return fetchSYyF().then(function(rows) {
+    // DEBUG TEMPORAL — ver qué devuelve el Apps Script
+    if (rows.length > 0) {
+      console.log('=== SYyF DEBUG ===');
+      console.log('Total filas:', rows.length);
+      console.log('Keys de fila 0:', Object.keys(rows[0]));
+      console.log('Fila 0 completa:', JSON.stringify(rows[0]));
+      console.log('Fila 1 completa:', JSON.stringify(rows[1]));
+    } else {
+      console.log('=== SYyF: 0 filas devueltas ===');
+    }
+    var keys = Object.keys(KPIS);
+    // Inicializar allData para los meses pedidos
+    keys.forEach(function(key) {
+      if (!allData[key]) allData[key] = {};
+      mesesFiltro.forEach(function(m) {
+        if (!allData[key][m]) allData[key][m] = { real: null, objetivo: null };
+      });
+    });
+    // Recorrer filas y poblar allData
+    rows.forEach(function(row) {
+      var mes   = String(row['MES']  || row['mes']  || '').trim();
+      var kpi   = String(row['KPI']  || row['kpi']  || '').trim();
+      var real  = parseVal(row['REAL']     || row['real']     || row['Real']);
+      var obj   = parseVal(row['OBJETIVO'] || row['objetivo'] || row['Objetivo']);
+      if (!mes || !kpi) return;
+      // Normalizar mes: ENERO → Enero, FEBRERO → Febrero, etc.
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      if (!KPIS[kpi]) return;                      // KPI desconocido, ignorar
+      if (mesesFiltro.indexOf(mes) === -1) return; // Mes fuera del filtro, ignorar
+      var cfg = KPIS[kpi];
+      allData[kpi][mes] = {
+        real:     real,
+        objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
+      };
+    });
+  });
+}
+
+function fmtVal(val, unit, suffix) {
+  if (val===null||val===undefined) return '—';
+  if (val==='PENDIENTE') return 'Pendiente';
+  if (unit==='$') return '$'+val.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+  if (unit==='%') return val+'%';
+  if (unit==='días') return val+' días';
+  return val+(suffix?' '+suffix:'');
+}
+
+// Sum real values for a list of months (only valid numbers)
+function getBlockAccum(key, meses) {
+  var total=0, hasAny=false;
+  meses.forEach(function(m){
+    if (!allData[key]||!allData[key][m]) return;
+    var v=allData[key][m].real;
+    if (v===null||v==='PENDIENTE') return;
+    total+=v; hasAny=true;
+  });
+  return hasAny?total:null;
+}
+
+// Compute estatus score for a KPI over a block of months
+// Returns { score, weight, barPct, mesesConDatos, acum, obj } or null if no data
+function calcKpiEstatus(key, meses) {
+  var cfg=KPIS[key];
+  if (cfg.weight===0) return null;
+  var validMeses=meses.filter(function(m){
+    return allData[key]&&allData[key][m]&&allData[key][m].real!==null&&allData[key][m].real!=='PENDIENTE';
+  });
+  if (!validMeses.length) return null;
+
+  var score, barPct, acum=null, obj=null;
+
+  if (cfg.cuatrimestral) {
+    // Sum all valid months in block vs full cuatrimestral target
+    acum=getBlockAccum(key, validMeses);
+    if (acum===null) return null;
+    obj=cfg.fixedObj;
+    var cumpl=Math.min(cfg.inverse?(obj/Math.max(acum,0.01)):(acum/obj),1);
+    score=cumpl*cfg.weight;
+    barPct=Math.round(cumpl*100);
+  } else {
+    // Average monthly compliance weighted by (weight / total months in block)
+    var totalMeses=meses.length;
+    var acc=0;
+    validMeses.forEach(function(m){
+      var d=allData[key][m];
+      if (d.objetivo===null) return;
+      acc+=Math.min(cfg.inverse?(d.objetivo/Math.max(d.real,0.01)):(d.real/d.objetivo),1)*(cfg.weight/totalMeses);
+    });
+    score=acc;
+    barPct=cfg.weight>0?Math.round((score/cfg.weight)*100):0;
+  }
+
+  return { score:score, weight:cfg.weight, barPct:barPct, mesesConDatos:validMeses.length, totalMeses:meses.length, acum:acum, obj:obj };
+}
+
+/* ── NAVIGATION ── */
+function navigate(page) {
+  currentPage=page;
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if (page==='mensual') {
+    document.getElementById('topbar-title').textContent='KPIs Mensual: Servicios Financieros y Flotas';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Servicios Financieros y Flotas';
+  } else if (page==='cva') {
+    document.getElementById('topbar-title').textContent='KPIs Mensual: Central Monitoreo CVA';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Central Monitoreo CVA';
+    if (!cvaLoaded) loadCVAData();
+  } else {
+    document.getElementById('topbar-title').textContent='KPIs Resumen';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Resumen';
+    if (!resumenLoaded) loadResumenData();
+  }
+}
+
+function refreshData() {
+  allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[];
+  if (currentPage==='mensual') loadMensualData();
+  else if (currentPage==='cva') { cvaLoaded=false; loadCVAData(); }
+  else loadResumenData();
+}
+
+/* ── MENSUAL PAGE ── */
+function buildMonthSelector() {
+  var container=document.getElementById('monthBtns');
+  var currentMonth=new Date().getMonth();
+  var defaultIdx=Math.max(currentMonth-1,0);
+  MESES.forEach(function(mes,i){
+    var btn=document.createElement('button');
+    btn.className='mbtn'; btn.textContent=mes.substring(0,3).toUpperCase(); btn.title=mes;
+    if (i>=currentMonth){ btn.disabled=true; }
+    else { btn.onclick=(function(m,b){ return function(){ selectMonth(m,b); }; })(mes,btn); }
+    if (i===defaultIdx){ selectedMes=mes; btn.classList.add('active'); }
+    container.appendChild(btn);
+  });
+}
+
+function selectMonth(mes, activeBtn) {
+  selectedMes=mes;
+  document.querySelectorAll('.mbtn').forEach(function(b){ b.classList.remove('active'); });
+  activeBtn.classList.add('active');
+  loadMensualData();
+}
+
+function renderCard(key) {
+  var cfg=KPIS[key];
+  var el=document.getElementById('card-'+key);
+  if (!el||!allData[key]||!allData[key][selectedMes]) return;
+
+  var d=allData[key][selectedMes];
+  var real=d.real, obj=d.objetivo;
+  var isPendiente=real==='PENDIENTE';
+  var realNum=isPendiente?null:real;
+  var realDisplay=fmtVal(real,cfg.unit,cfg.suffix);
+
+  // Monthly evaluation: use proportional target for badge/ok check
+  var evalObj = (cfg.cuatrimestral && obj!==null) ? obj/4 : obj;
+  var ok=(realNum!==null&&evalObj!==null)?(cfg.inverse?realNum<=evalObj:realNum>=evalObj):false;
+  var pct=(realNum!==null&&evalObj!==null&&evalObj>0)?Math.round((cfg.inverse?(evalObj/Math.max(realNum,0.01))*100:(realNum/evalObj)*100)*10)/10:0;
+
+  // Bar uses cumplimiento % (acumulado vs meta cuatrimestral for cuatrimestral KPIs)
+  var barPct = pct;
+  if (cfg.cuatrimestral && !isPendiente && realNum !== null && obj !== null) {
+    var qMesesBar = getQMeses(selectedMes);
+    var idxBar = qMesesBar.indexOf(selectedMes);
+    var acumBar = getBlockAccum(key, qMesesBar.slice(0, idxBar+1));
+    if (acumBar !== null) {
+      barPct = Math.round((cfg.inverse ? (obj/Math.max(acumBar,0.01))*100 : (acumBar/obj)*100)*10)/10;
+    }
+  }
+  var pw=Math.min(barPct,100);
+  var barCls='bar-ok';
+
+  // % cumplimiento: cuatrimestral = acumulado bloque vs meta completa; mensual = real vs meta
+  var cumpl=null;
+  var acumDisplay=null;
+  if (cfg.cuatrimestral && !isPendiente && realNum!==null) {
+    var qMeses=getQMeses(selectedMes);
+    var idxMes=qMeses.indexOf(selectedMes);
+    var mesesToAccum=qMeses.slice(0,idxMes+1);
+    var acum=getBlockAccum(key, mesesToAccum);
+    if (acum!==null) {
+      acumDisplay=fmtVal(acum,cfg.unit,cfg.suffix)+' acumulado cuatrimestral';
+      if (obj!==null) {
+        cumpl=cfg.inverse
+          ?(acum<=obj?100:Math.round((obj/Math.max(acum,0.01))*1000)/10)
+          :obj>0?Math.round((acum/obj)*1000)/10:null;
+      }
+    }
+  } else if (!isPendiente && realNum!==null && evalObj!==null) {
+    cumpl=cfg.inverse?(realNum<=evalObj?100:Math.round((evalObj/Math.max(realNum,0.01))*1000)/10):evalObj>0?Math.round((realNum/evalObj)*1000)/10:null;
+  }
+
+  var cumplColor = cumpl===null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
+  var noCumpl=(key==='MargenBruto'||key==='CxC'||key==='NPS');
+  var cumplHtml=noCumpl?'':(cumpl!==null?'<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>':'<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+
+  var badgeHtml;
+  if (isPendiente)                       badgeHtml='<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum===null||evalObj===null)badgeHtml='<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                           badgeHtml='<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
+  else if (pct>=80)                      badgeHtml='<span class="kpi-badge badge-near">&#9889; Cerca</span>';
+  else                                   badgeHtml='<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+
+  var metaDisplay=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):'Del presupuesto');
+  var metaLabel=cfg.cuatrimestral?'Meta cuatrimestral: ':'Meta: ';
+
+  el.innerHTML=[
+    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
+    '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
+    '<div class="kpi-objective">'+cfg.objective+'</div>',
+    '<div class="kpi-real-val">'+realDisplay+'</div>',
+    acumDisplay?'<div class="kpi-acum-val">📦 '+acumDisplay+'</div>':'',
+    '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
+    cumplHtml,
+    '<div class="kpi-divider"></div>',
+    '<div class="progress-wrap">',
+      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw>0?pw+'%':'—')+'</span><span>100%</span></div>',
+      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
+    '</div>',
+    badgeHtml
+  ].join('');
+}
+
+function calcSummary() {
+  var score=0, totalW=0, ok=0;
+  Object.keys(KPIS).forEach(function(key){
+    var cfg=KPIS[key];
+    if (cfg.weight===0||!allData[key]||!allData[key][selectedMes]) return;
+    var d=allData[key][selectedMes];
+    if (d.real===null||d.real==='PENDIENTE'||d.objetivo===null) return;
+    var evalObj=cfg.cuatrimestral?d.objetivo/4:d.objetivo;
+    var evalReal=d.real;
+    score+=Math.min(cfg.inverse?(evalObj/Math.max(evalReal,0.01)):(evalReal/evalObj),1)*cfg.weight;
+    totalW+=cfg.weight;
+    if (cfg.inverse?evalReal<=evalObj:evalReal>=evalObj) ok++;
+  });
+  return { pct:totalW>0?Math.round((score/totalW)*100):null, ok:ok };
+}
+
+function loadMensualData() {
+  if (!selectedMes) return;
+  document.getElementById('m-loadingBox').style.display='block';
+  document.getElementById('m-errorBox').style.display='none';
+  document.getElementById('m-mainContent').style.display='none';
+
+  var qMeses = getQMeses(selectedMes);
+
+  loadAllFromSYyF(qMeses).then(function() {
+    var keys = Object.keys(KPIS);
+    keys.forEach(function(key){ renderCard(key); });
+    var s = calcSummary();
+    document.getElementById('sum-ok').textContent = s.ok + ' / 7';
+    var te = document.getElementById('sum-trend');
+    if (s.pct !== null) {
+      te.textContent = s.pct>=75 ? '↑ Positiva' : s.pct>=50 ? '→ Estable' : '↓ Atención';
+      te.style.color = s.pct>=75 ? 'var(--green)' : s.pct>=60 ? 'var(--amber)' : 'var(--red)';
+    }
+    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    document.getElementById('m-loadingBox').style.display='none';
+    document.getElementById('m-mainContent').style.display='block';
+  }).catch(function(e) {
+    document.getElementById('m-loadingBox').style.display='none';
+    document.getElementById('m-errorBox').style.display='block';
+    document.getElementById('m-errorMsg').textContent = 'Error: ' + e.message;
+  });
+}
+
+/* ── RESUMEN PAGE ── */
+function loadResumenData() {
+  document.getElementById('r-loadingBox').style.display='block';
+  document.getElementById('r-errorBox').style.display='none';
+  document.getElementById('r-mainContent').style.display='none';
+
+  loadAllFromSYyF(MESES).then(function() {
+    resumenLoaded = true;
+    updateTabStates();
+    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    document.getElementById('r-loadingBox').style.display='none';
+    document.getElementById('r-mainContent').style.display='block';
+    renderTable();
+  }).catch(function(e) {
+    document.getElementById('r-loadingBox').style.display='none';
+    document.getElementById('r-errorBox').style.display='block';
+    document.getElementById('r-errorMsg').textContent = 'Error: ' + e.message;
+  });
+}
+
+function hasDataForQ(q) {
+  if (q==='anual') return QUARTERS.some(function(qObj){ return hasDataForQ(qObj.q); });
+  var meses=QUARTERS.find(function(x){ return x.q===q; }).meses;
+  var keys=Object.keys(allData);
+  for (var i=0;i<meses.length;i++)
+    for (var j=0;j<keys.length;j++){
+      var d=allData[keys[j]][meses[i]];
+      if (d&&d.real!==null&&d.real!=='PENDIENTE') return true;
+    }
+  return false;
+}
+
+function updateTabStates() {
+  var firstQ=null;
+  QUARTERS.forEach(function(qObj){
+    var btn=document.getElementById('tab-'+qObj.q);
+    if (!btn) return;
+    if (hasDataForQ(qObj.q)){ btn.classList.add('enabled'); if (!firstQ) firstQ=qObj.q; }
+    else btn.classList.remove('enabled','active');
+  });
+  var anualBtn=document.getElementById('tab-anual');
+  if (hasDataForQ('anual')){ anualBtn.classList.add('enabled'); if (!firstQ) firstQ='anual'; }
+  if (firstQ){
+    activeQ=firstQ;
+    var btn=document.getElementById('tab-'+firstQ);
+    if (btn) btn.classList.add('active');
+  }
+}
+
+function selectQ(q, btn) {
+  if (!btn.classList.contains('enabled')) return;
+  activeQ=q;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderTable();
+}
+
+/* ── BUILD ESTATUS CELL (single source of truth) ── */
+function buildEstatusCell(key, meses) {
+  var cfg=KPIS[key];
+  if (cfg.weight===0) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin peso</span></td>';
+  var est=calcKpiEstatus(key, meses);
+  if (!est) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin datos</span></td>';
+  var barColor='var(--blue-main)';
+  var sub = cfg.cuatrimestral
+    ? 'Σ '+fmtVal(est.acum,cfg.unit,cfg.suffix)+' vs meta '+fmtVal(est.obj,cfg.unit,cfg.suffix)+' · '+est.barPct+'% avance'
+    : est.mesesConDatos+' de '+est.totalMeses+' meses · '+est.barPct+'% avance';
+  return '<td style="padding:12px 16px;"><div>'
+    +'<span class="estatus-vals">'+est.score.toFixed(2)+'</span>'
+    +'<span class="estatus-max"> / '+est.weight+'</span>'
+    +'<div class="estatus-track"><div class="estatus-bar" style="width:'+Math.min(est.barPct,100)+'%;background:'+barColor+';"></div></div>'
+    +'<div class="estatus-sub">'+sub+'</div>'
+    +'</div></td>';
+}
+
+// Compute total score as sum of all KPI estatus scores over given blocks
+// blocks = array of month arrays (one per Q for annual, one for cuatrimestral)
+function computeTotalScore(blocks) {
+  var total=0;
+  Object.keys(KPIS).forEach(function(key){
+    var cfg=KPIS[key];
+    if (cfg.weight===0) return;
+    if (cfg.cuatrimestral) {
+      // Each block is a separate cuatrimestral evaluation
+      blocks.forEach(function(meses){
+        var est=calcKpiEstatus(key, meses);
+        if (!est) return;
+        // For annual (multiple blocks), divide score by number of blocks
+        total+=est.score / blocks.length;
+      });
+    } else {
+      // For monthly KPIs, flatten all months and evaluate as one block
+      var allMeses=[]; blocks.forEach(function(m){ allMeses=allMeses.concat(m); });
+      var est=calcKpiEstatus(key, allMeses);
+      if (est) total+=est.score;
+    }
+  });
+  return total;
+}
+
+function renderTable() {
+  var isAnual=activeQ==='anual';
+  var meses, qLabel;
+  if (isAnual){ meses=MESES; qLabel='Anual · Ene – Dic'; }
+  else { var q=QUARTERS.find(function(x){ return x.q===activeQ; }); meses=q.meses; qLabel=q.label; }
+
+  var keys=Object.keys(KPIS);
+  var tbl=document.getElementById('resumenTable');
+  var html='<thead><tr class="q-header">';
+  html+='<th rowspan="2">KPI</th>';
+  html+='<th rowspan="2" class="sticky-2" style="text-align:center;min-width:80px;">Peso</th>';
+  html+='<th rowspan="2" class="sticky-3" style="text-align:center;min-width:120px;">Meta</th>';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj,qi){ html+='<th colspan="'+qObj.meses.length+'"'+(qi>0?' class="q-sep-header"':'')+'>'+qObj.label+'</th>'; });
+    html+='<th rowspan="2" style="text-align:center;min-width:200px;">Estatus Anual</th>';
+  } else {
+    html+='<th colspan="'+meses.length+'">'+qLabel+'</th>';
+    html+='<th rowspan="2" style="text-align:center;min-width:200px;">Estatus Cuatrimestral</th>';
+  }
+  html+='</tr><tr class="m-header">';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj,qi){
+      qObj.meses.forEach(function(mes,mi){ html+='<th'+(qi>0&&mi===0?' class="q-sep-header"':'')+'>'+mes.toUpperCase().substring(0,3)+'</th>'; });
+    });
+  } else {
+    meses.forEach(function(mes){ html+='<th>'+mes.toUpperCase()+'</th>'; });
+  }
+  html+='</tr></thead><tbody>';
+
+  keys.forEach(function(key){
+    var cfg=KPIS[key];
+    var metaLbl=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):'Del presupuesto');
+    var tipoBadge=cfg.cuatrimestral
+      ?'<div><span class="meta-badge meta-cuatrimestral">📦 Cuatrimestral</span></div>'
+      :'<div><span class="meta-badge meta-mensual">📅 Mensual</span></div>';
+
+    // Estatus cell
+    var estatusCell;
+    if (isAnual) {
+      if (cfg.cuatrimestral) {
+        // Sum scores across 3 Q blocks, each evaluated independently
+        var totalScore=0, anyData=false;
+        QUARTERS.forEach(function(qObj){
+          var est=calcKpiEstatus(key, qObj.meses);
+          if (!est) return;
+          anyData=true;
+          totalScore+=est.score/3; // normalize to weight
+        });
+        if (!anyData) {
+          estatusCell='<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin datos</span></td>';
+        } else {
+          var barPct=Math.round((totalScore/cfg.weight)*100);
+          var barColor='var(--blue-main)';
+          estatusCell='<td style="padding:12px 16px;"><div>'
+            +'<span class="estatus-vals">'+totalScore.toFixed(2)+'</span>'
+            +'<span class="estatus-max"> / '+cfg.weight+'</span>'
+            +'<div class="estatus-track"><div class="estatus-bar" style="width:'+Math.min(barPct,100)+'%;background:'+barColor+';"></div></div>'
+            +'<div class="estatus-sub">Suma 3 cuatrimestres · '+barPct+'% avance</div>'
+            +'</div></td>';
+        }
+      } else {
+        estatusCell=buildEstatusCell(key, MESES);
+      }
+    } else {
+      estatusCell=buildEstatusCell(key, meses);
+    }
+
+    html+='<tr>';
+    html+='<td><span class="t-icon">'+cfg.icon+'</span><span class="kpi-name">'+cfg.label+'</span><div class="kpi-sub">Meta: '+metaLbl+'</div></td>';
+    html+='<td class="sticky-2" style="text-align:center;font-weight:800;font-size:13px;color:var(--blue-dark);">'+cfg.weight+'%</td>';
+    html+='<td class="sticky-3" style="text-align:center;"><span style="font-weight:700;font-size:12px;color:var(--blue-dark);">'+metaLbl+'</span>'+tipoBadge+'</td>';
+
+    if (isAnual) {
+      QUARTERS.forEach(function(qObj,qi){
+        qObj.meses.forEach(function(mes,mi){
+          var isSep=qi>0&&mi===0;
+          var d=allData[key]&&allData[key][mes]?allData[key][mes]:{real:null,objetivo:null};
+          html+=buildMonthCell(cfg, d, isSep);
+        });
+      });
+    } else {
+      meses.forEach(function(mes){
+        var d=allData[key]&&allData[key][mes]?allData[key][mes]:{real:null,objetivo:null};
+        html+=buildMonthCell(cfg, d, false);
+      });
+    }
+    html+=estatusCell+'</tr>';
+  });
+
+  html+='</tbody>';
+  tbl.innerHTML=html;
+  renderSummaryCards(meses, isAnual);
+}
+
+function buildMonthCell(cfg, d, isSep) {
+  var isPendiente=d.real==='PENDIENTE';
+  var realNum=isPendiente?null:d.real;
+  var evalObj=cfg.cuatrimestral&&d.objetivo!==null?d.objetivo/4:d.objetivo;
+  var ok=(realNum!==null&&evalObj!==null)?(cfg.inverse?realNum<=evalObj:realNum>=evalObj):false;
+  var pct=(realNum!==null&&evalObj!==null&&evalObj>0)?Math.round(cfg.inverse?(evalObj/Math.max(realNum,0.01))*100:(realNum/evalObj)*100):null;
+  var status=isPendiente?'nd':realNum===null||evalObj===null?'nd':ok?'ok':pct>=80?'near':'off';
+  var badgeTxt=isPendiente?'⏳ Pend.':status==='ok'?'✓ OK':status==='near'?'~ Cerca':status==='off'?'↓ Fuera':'S/D';
+  return '<td'+(isSep?' class="q-sep-col"':'')+'><div class="cell-inner">'
+    +'<span class="cell-val"><span class="dot dot-'+status+'"></span>'+fmtVal(d.real,cfg.unit,cfg.suffix)+'</span>'
+    +'<span class="tbadge tbadge-'+status+'">'+badgeTxt+'</span>'
+    +'</div></td>';
+}
+
+/* ── SUMMARY CARDS (score = sum of estatus scores) ── */
+function renderSummaryCards(meses, isAnual) {
+  var keys=Object.keys(KPIS);
+  var totalScore=0;
+
+  if (isAnual) {
+    keys.forEach(function(key){
+      var cfg=KPIS[key];
+      if (cfg.weight===0) return;
+      if (cfg.cuatrimestral) {
+        QUARTERS.forEach(function(qObj){
+          var est=calcKpiEstatus(key, qObj.meses);
+          if (est) totalScore+=est.score/3;
+        });
+      } else {
+        var est=calcKpiEstatus(key, MESES);
+        if (est) totalScore+=est.score;
+      }
+    });
+  } else {
+    keys.forEach(function(key){
+      var cfg=KPIS[key];
+      if (cfg.weight===0) return;
+      var est=calcKpiEstatus(key, meses);
+      if (est) totalScore+=est.score;
+    });
+  }
+
+  // Proyección: how many months have data vs total
+  var mesesConDatos=0, totalMeses=isAnual?12:4;
+  var checkMeses=isAnual?MESES:meses;
+  checkMeses.forEach(function(mes){
+    var hasAny=false;
+    keys.forEach(function(key){
+      if (KPIS[key].weight===0) return;
+      var d=allData[key]&&allData[key][mes]?allData[key][mes]:{real:null,objetivo:null};
+      if (d.real!==null&&d.real!=='PENDIENTE') hasAny=true;
+    });
+    if (hasAny) mesesConDatos++;
+  });
+  var proyeccion=mesesConDatos>0?Math.min((totalScore/mesesConDatos)*totalMeses,100):null;
+
+  var scoreColor=totalScore>=80?'#0f7a4a':totalScore>=50?'#b45309':'#b91c1c';
+  var proyColor=proyeccion===null?'#8aaac8':proyeccion>=80?'#0f7a4a':proyeccion>=50?'#b45309':'#b91c1c';
+
+  function miniCard(icon,title,value,sub,accentColor){
+    return '<div style="background:#fff;border:1px solid #e4ecf4;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(13,46,94,0.07);display:flex;align-items:center;gap:18px;border-left:4px solid '+accentColor+';">'
+      +'<div style="font-size:28px;line-height:1;flex-shrink:0;">'+icon+'</div>'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#8aaac8;font-weight:700;margin-bottom:4px;">'+title+'</div>'
+      +'<div style="font-size:28px;font-weight:900;color:#0d2e5e;line-height:1.1;">'+value+'</div>'
+      +'<div style="font-size:10px;color:#8aaac8;margin-top:3px;">'+sub+'</div>'
+      +'</div></div>';
+  }
+
+  document.getElementById('r-summary-cards').innerHTML=
+    miniCard('📊','Score Acumulado',totalScore.toFixed(2)+'%',isAnual?'de 100% anual':'de 100% cuatrimestral',scoreColor)
+    +miniCard('🎯','Proyección Cierre',proyeccion!==null?proyeccion.toFixed(2)+'%':'—',isAnual?'al finalizar el año':'al finalizar el cuatrimestre',proyColor);
+}
+
+/* ── PDF EXPORT ── */
+function exportPDF() {
+  var btn=document.getElementById('pdfBtn');
+  if (!resumenLoaded) return;
+  var isAnual=activeQ==='anual';
+  var titleStr=isAnual?'Numaris · KPIs Resumen — Anual · Ene – Dic':'Numaris · KPIs Resumen — '+(QUARTERS.find(function(x){return x.q===activeQ;})||{label:''}).label;
+  btn.classList.add('loading');
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generando…';
+  var target=document.getElementById('r-mainContent');
+  var stickyEls=target.querySelectorAll('td:first-child,td.sticky-2,td.sticky-3');
+  stickyEls.forEach(function(el){ el.style.position='static'; });
+  html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#f5f8fc',logging:false}).then(function(canvas){
+    stickyEls.forEach(function(el){ el.style.position=''; });
+    var {jsPDF}=window.jspdf;
+    var imgData=canvas.toDataURL('image/png');
+    var imgW=canvas.width,imgH=canvas.height;
+    var pageW=297,pageH=210,margin=10,usableW=pageW-margin*2;
+    var ratio=usableW/(imgW/2),renderedH=(imgH/2)*ratio;
+    var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    pdf.setFillColor(13,46,94);pdf.rect(0,0,pageW,18,'F');
+    pdf.setTextColor(255,255,255);pdf.setFontSize(11);pdf.setFont('helvetica','bold');
+    pdf.text(titleStr,margin,12);
+    pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(180,200,220);
+    pdf.text('Generado: '+new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),pageW-margin,12,{align:'right'});
+    var startY=22,availH=pageH-startY-8;
+    if (renderedH<=availH){ pdf.addImage(imgData,'PNG',margin,startY,usableW,renderedH); }
+    else {
+      var chunkH=Math.floor((availH/ratio)*2),pages=Math.ceil(imgH/chunkH);
+      for (var p=0;p<pages;p++){
+        if (p>0){
+          pdf.addPage([297,210],'landscape');
+          pdf.setFillColor(13,46,94);pdf.rect(0,0,pageW,14,'F');
+          pdf.setTextColor(255,255,255);pdf.setFontSize(8);pdf.setFont('helvetica','bold');
+          pdf.text(titleStr+' (cont.)',margin,9);
+          startY=18;availH=pageH-startY-8;chunkH=Math.floor((availH/ratio)*2);
+        }
+        var sc=document.createElement('canvas'),sliceH=Math.min(chunkH,imgH-p*chunkH);
+        sc.width=imgW;sc.height=sliceH;
+        sc.getContext('2d').drawImage(canvas,0,p*chunkH,imgW,sliceH,0,0,imgW,sliceH);
+        pdf.addImage(sc.toDataURL('image/png'),'PNG',margin,startY,usableW,(sliceH/2)*ratio);
+      }
+    }
+    var pgCount=pdf.getNumberOfPages();
+    for (var i=1;i<=pgCount;i++){
+      pdf.setPage(i);pdf.setFontSize(7);pdf.setTextColor(150,170,190);pdf.setFont('helvetica','normal');
+      pdf.text('Numaris © 2026 · Tablero Ejecutivo de KPIs',margin,pageH-4);
+      pdf.text('Página '+i+' de '+pgCount,pageW-margin,pageH-4,{align:'right'});
+    }
+    pdf.save('Numaris_KPIs_'+(isAnual?'Anual':activeQ)+'_'+new Date().getFullYear()+'.pdf');
+    btn.classList.remove('loading');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Exportar PDF';
+  }).catch(function(err){
+    stickyEls.forEach(function(el){ el.style.position=''; });
+    btn.classList.remove('loading');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Exportar PDF';
+    alert('Error al generar PDF: '+err.message);
+  });
+}
+
+/* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
+var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
+var cvaLoaded = false;
+// Mismas estructuras que el original: recData, srvData, robosData, conectividadData, zohoHistorial
+var cvaRecData=[], cvaSrvData=[], cvaRobosData=[], cvaConectividadData={}, cvaConectividadHistorial={}, cvaZohoHistorial={};
+var cvaSelectedMes='';
+var cvaFallbackGlobal=0, cvaFallbackMap={};
+
+var CVA_MESES_ORD=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+var CVA_CON_MAP={'general':['GENERAL','CONECTIVIDAD GENERAL'],'legacy':['LEGACY'],'s1':['S1'],'s2':['S2'],'s3':['S3'],'bafar':['BAFAR'],'recuperamovil':['RECUPERAMOVIL']};
+
+/* Formato HH:MM:SS igual al original fmtMin() */
+function cvaFmtMin(m){return Math.floor(m/60).toString().padStart(2,'0')+':'+Math.floor(m%60).toString().padStart(2,'0')+':'+Math.floor((m*60)%60).toString().padStart(2,'0');}
+
+function buildCVAMonthSelector(){
+  var container=document.getElementById('cva-monthBtns');
+  var nowD=new Date(); var currentMonth=nowD.getMonth();
+  var defaultIdx=Math.max(currentMonth-1,0);
+  MESES.forEach(function(mes,i){
+    var btn=document.createElement('button');
+    btn.className='mbtn'; btn.textContent=mes.substring(0,3).toUpperCase(); btn.title=mes;
+    if(i>=currentMonth){ btn.disabled=true; }
+    else{ btn.onclick=(function(m,b){return function(){selectCVAMonth(m,b);};})(mes,btn); }
+    if(i===defaultIdx){ cvaSelectedMes=mes.toUpperCase(); btn.classList.add('active'); }
+    container.appendChild(btn);
+  });
+}
+
+function selectCVAMonth(mes,activeBtn){
+  cvaSelectedMes=mes.toUpperCase();
+  document.querySelectorAll('#cva-monthBtns .mbtn').forEach(function(b){b.classList.remove('active');});
+  activeBtn.classList.add('active');
+  document.getElementById('cva-mes-label').textContent=mes.charAt(0).toUpperCase()+mes.slice(1).toLowerCase();
+  cvaRenderMensual(cvaSelectedMes);
+}
+
+/* ── Helpers idénticos al original ── */
+function cvaGetConPctMes(key,mes){
+  var aliases=CVA_CON_MAP[key]||[key.toUpperCase()];
+  var mesDat=cvaConectividadData[mes]||{};
+  var found=null;
+  aliases.forEach(function(a){
+    if(found!==null)return;
+    if(mesDat[a]!==undefined){found=mesDat[a];return;}
+    Object.keys(mesDat).forEach(function(k){if(found===null&&(k===a||k.indexOf(a)!==-1))found=mesDat[k];});
+  });
+  return found;
+}
+
+/* setKPI / resetKPI — adaptados al prefijo "cva-" pero lógica idéntica al original */
+function cvaSetKPI(id,d,meta){
+  // d tiene forma {pct, recup, noRec} para recuperaciones; null si no hay datos
+  if(!d||d.pct===null||isNaN(d.pct)){cvaResetKPI(id);return;}
+  var pct=d.pct, good=pct>=meta;
+  document.getElementById('cva-v-'+id).textContent=pct.toFixed(2)+'%';
+  document.getElementById('cva-d-'+id).textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas';
+  var pw=Math.min(pct,100);
+  document.getElementById('cva-pb-'+id).style.width=pw+'%';
+  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
+  document.getElementById('cva-pl-'+id).textContent=pct.toFixed(2)+'%';
+  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
+  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
+  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
+  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
+}
+
+function cvaSetKPISimple(id,pct,total,meta){
+  // Para capacitaciones: pct ya es el valor calculado, total = encuestas
+  if(isNaN(pct)){cvaResetKPI(id);return;}
+  var good=pct>=meta;
+  document.getElementById('cva-v-'+id).textContent=pct.toFixed(2)+'%';
+  document.getElementById('cva-d-'+id).textContent=total+' encuestas respondidas';
+  var pw=Math.min(pct,100);
+  document.getElementById('cva-pb-'+id).style.width=pw+'%';
+  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
+  document.getElementById('cva-pl-'+id).textContent=pct.toFixed(2)+'%';
+  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
+  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
+  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
+  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
+}
+
+function cvaSetKPITickets(id,avgMin,totalTickets,meta){
+  if(!avgMin||isNaN(avgMin)){cvaResetKPI(id);return;}
+  var good=avgMin>0&&avgMin<=meta;
+  var label=avgMin>0?cvaFmtMin(avgMin):'—';
+  document.getElementById('cva-v-'+id).textContent=label;
+  document.getElementById('cva-d-'+id).textContent='Total: '+totalTickets+' tickets';
+  var pw=avgMin>0?Math.min((meta/avgMin)*100,100):0;
+  document.getElementById('cva-pb-'+id).style.width=pw+'%';
+  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
+  document.getElementById('cva-pl-'+id).textContent=label;
+  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
+  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
+  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Sobre meta';
+  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
+}
+
+function cvaSetKPIConectividad(id,pct,det,meta){
+  var good=pct!==null&&pct>=meta;
+  document.getElementById('cva-v-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
+  document.getElementById('cva-d-'+id).textContent=pct!==null?(det||'Conectividad registrada'):'Sin datos';
+  var pw=pct!==null?Math.min(pct,100):0;
+  document.getElementById('cva-pb-'+id).style.width=pw+'%';
+  document.getElementById('cva-pb-'+id).className='progress-bar '+(pct===null?'bar-ok':good?'bar-ok':'bar-off');
+  document.getElementById('cva-pl-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
+  document.getElementById('cva-pl-'+id).style.color=pct===null?'var(--gray-400)':good?'var(--green)':'var(--red)';
+  document.getElementById('cva-b-'+id).className='kpi-badge '+(pct===null?'badge-nd':good?'badge-ok':'badge-off');
+  document.getElementById('cva-b-'+id).textContent=pct===null?'⏳ Sin datos':good?'✅ Cumple meta':'❌ Bajo meta';
+  document.getElementById('cva-c-'+id).style.borderTopColor=pct===null?'var(--gray-200)':good?'var(--green)':'var(--red)';
+}
+
+function cvaResetKPI(id){
+  document.getElementById('cva-v-'+id).textContent='—';
+  document.getElementById('cva-d-'+id).textContent='Sin datos para este período';
+  document.getElementById('cva-pb-'+id).style.width='0%';
+  document.getElementById('cva-pb-'+id).className='progress-bar bar-ok';
+  document.getElementById('cva-pl-'+id).textContent='—';
+  document.getElementById('cva-pl-'+id).style.color='';
+  document.getElementById('cva-b-'+id).className='kpi-badge badge-nd';
+  document.getElementById('cva-b-'+id).textContent='⏳ Sin datos';
+  document.getElementById('cva-c-'+id).style.borderTopColor='var(--gray-200)';
+}
+
+
+/* Dado un mes deseado, retorna el mes más cercano (hacia atrás, luego adelante)
+   que tenga datos según la función tieneDatos(m) */
+function cvaFallbackMes(mesDeseado, tieneDatos){
+  var idx=CVA_MESES_ORD.indexOf(mesDeseado);
+  for(var i=idx;i>=0;i--){ if(tieneDatos(CVA_MESES_ORD[i]))return CVA_MESES_ORD[i]; }
+  for(var j=idx+1;j<CVA_MESES_ORD.length;j++){ if(tieneDatos(CVA_MESES_ORD[j]))return CVA_MESES_ORD[j]; }
+  return null;
+}
+
+/* Etiqueta pequeña que indica de qué mes proviene el dato si difiere del seleccionado */
+function cvaSufMes(mesFuente, mesDeseado){
+  if(!mesFuente||mesFuente===mesDeseado)return'';
+  return' · dato de '+mesFuente.charAt(0)+mesFuente.slice(1).toLowerCase();
+}
+
+/* ── renderMensual — siempre muestra el dato más reciente disponible ── */
+function cvaRenderMensual(mes){
+  if(!mes)return;
+  document.getElementById('cva-mes-label').textContent=mes.charAt(0)+mes.slice(1).toLowerCase();
+
+  // 1. Recuperaciones — usa el mes con datos más cercano al seleccionado
+  var mesRec=cvaFallbackMes(mes,function(m){
+    return cvaRecData.some(function(r){return r.mes===m;});
+  });
+  var rows=mesRec?cvaRecData.filter(function(r){return r.mes===mesRec;}):[]; 
+  var agg={};
+  rows.forEach(function(r){if(!agg[r.tipo])agg[r.tipo]={recup:0,noRec:0};agg[r.tipo].recup+=r.recup;agg[r.tipo].noRec+=r.noRec;});
+  Object.keys(agg).forEach(function(k){var t=agg[k].recup+agg[k].noRec;agg[k].pct=t>0?(agg[k].recup/t)*100:null;});
+  var findRec=function(t){var k=Object.keys(agg).find(function(k){return k.includes(t);});return k?agg[k]:null;};
+  var sufRec=cvaSufMes(mesRec,mes);
+  [['robos','rob',90],['abusos','abu',80],['creditos','cred',90]].forEach(function(cfg){
+    var d=findRec(cfg[1]);
+    if(!d||d.pct===null){cvaResetKPI(cfg[0]);return;}
+    var good=d.pct>=cfg[2];
+    document.getElementById('cva-v-'+cfg[0]).textContent=d.pct.toFixed(2)+'%';
+    document.getElementById('cva-d-'+cfg[0]).textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas'+sufRec;
+    document.getElementById('cva-pb-'+cfg[0]).style.width=Math.min(d.pct,100)+'%';
+    document.getElementById('cva-pb-'+cfg[0]).className='progress-bar '+(good?'bar-ok':'bar-off');
+    document.getElementById('cva-pl-'+cfg[0]).textContent=d.pct.toFixed(2)+'%';
+    document.getElementById('cva-pl-'+cfg[0]).style.color=good?'var(--green)':'var(--red)';
+    document.getElementById('cva-b-'+cfg[0]).className='kpi-badge '+(good?'badge-ok':'badge-off');
+    document.getElementById('cva-b-'+cfg[0]).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
+    document.getElementById('cva-c-'+cfg[0]).style.borderTopColor=good?'var(--green)':'var(--red)';
+  });
+
+  // 2. Tickets — fetch directo por mes; si no hay datos usa fallback de zohoHistorial
+  cvaLoadZohoTickets(mes);
+
+  // 3. Capacitaciones — usa el mes con datos más cercano al seleccionado
+  var mesSrv=cvaFallbackMes(mes,function(m){
+    return cvaSrvData.some(function(r){return r.mes===m&&r.total>0;});
+  });
+  var srvRows=mesSrv?cvaSrvData.filter(function(r){return r.mes===mesSrv;}):[]; 
+  if(srvRows.length){
+    var tot=srvRows.reduce(function(s,r){return s+r.total;},0);
+    var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);
+    var sufSrv=cvaSufMes(mesSrv,mes);
+    var good95=avg>=95;
+    document.getElementById('cva-v-capac').textContent=avg.toFixed(2)+'%';
+    document.getElementById('cva-d-capac').textContent=tot+' encuestas respondidas'+sufSrv;
+    document.getElementById('cva-pb-capac').style.width=Math.min(avg,100)+'%';
+    document.getElementById('cva-pb-capac').className='progress-bar '+(good95?'bar-ok':'bar-off');
+    document.getElementById('cva-pl-capac').textContent=avg.toFixed(2)+'%';
+    document.getElementById('cva-pl-capac').style.color=good95?'var(--green)':'var(--red)';
+    document.getElementById('cva-b-capac').className='kpi-badge '+(good95?'badge-ok':'badge-off');
+    document.getElementById('cva-b-capac').textContent=good95?'✅ Cumple meta':'❌ Bajo meta';
+    document.getElementById('cva-c-capac').style.borderTopColor=good95?'var(--green)':'var(--red)';
+  } else { cvaResetKPI('capac'); }
+
+  // 4. Conectividad
+  cvaRenderConectividad(mes);
+}
+
+/* Conectividad — busca el mes más cercano con datos por plataforma;
+   si no hay datos por plataforma usa el historial general, también con fallback */
+function cvaRenderConectividad(mes){
+  var META=85;
+  var subKeys=['legacy','s1','s2','s3','bafar','recuperamovil'];
+
+  // Para cada sub-plataforma, busca el mes más cercano con dato
+  function getConFallback(key){
+    var mesFuente=cvaFallbackMes(mes,function(m){
+      return cvaGetConPctMes(key,m)!==null;
+    });
+    if(!mesFuente)return{pct:null,suf:''};
+    return{pct:cvaGetConPctMes(key,mesFuente),suf:cvaSufMes(mesFuente,mes)};
+  }
+
+  var platResults=subKeys.map(getConFallback);
+  var platValsDisp=platResults.map(function(r){return r.pct;}).filter(function(v){return v!==null;});
+
+  // General: promedio de plataformas si existen, si no usa historial con fallback
+  var generalPct=null, generalSuf='';
+  if(platValsDisp.length){
+    generalPct=platValsDisp.reduce(function(s,v){return s+v;},0)/platValsDisp.length;
+  } else {
+    var mesGen=cvaFallbackMes(mes,function(m){return cvaConectividadHistorial[m]!==undefined;});
+    if(mesGen){generalPct=cvaConectividadHistorial[mesGen];generalSuf=cvaSufMes(mesGen,mes);}
+  }
+
+  cvaSetKPIConectividad('con-general',generalPct,
+    platValsDisp.length?('Promedio de '+platValsDisp.length+' plataformas'+generalSuf):('Conectividad del mes'+generalSuf),META);
+
+  subKeys.forEach(function(id,i){
+    var r=platResults[i];
+    cvaSetKPIConectividad('con-'+id,r.pct,'Conectividad registrada'+r.suf,META);
+  });
+}
+
+/* Tickets — copia exacta de loadZohoTickets() del original, con prefijo cva */
+async function cvaLoadZohoTickets(mes){
+  var mesKey=mes||CVA_MESES_ORD[new Date().getMonth()];
+  document.getElementById('cva-d-tickets').textContent='⏳ Consultando Zoho...';
+  try{
+    var json=await fetch(CVA_API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
+    if(json.error)throw new Error(json.error);
+    var agentes=json.data||[];
+    var totalTickets=agentes.reduce(function(s,a){return s+a.tickets;},0);
+    var tMin=agentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
+    var tCnt=agentes.reduce(function(s,a){return s+(a.count||0);},0);
+    var avgMin=tCnt>0?tMin/tCnt:0;
+    // fallback al mes anterior si no hay datos (igual que getGlobalFrt del original)
+    if(!avgMin)avgMin=cvaFallbackGlobal;
+    if(tCnt>0)cvaZohoHistorial[mesKey]=tMin/tCnt;
+    if(!totalTickets&&!avgMin){cvaResetKPI('tickets');return;}
+    cvaSetKPITickets('tickets',avgMin,totalTickets,15);
+  }catch(e){
+    document.getElementById('cva-d-tickets').textContent='⚠️ '+e.message;
+    cvaResetKPI('tickets');
+  }
+}
+
+/* Carga inicial — igual a loadAll() del original */
+async function loadCVAData(){
+  if(cvaLoaded){cvaRenderMensual(cvaSelectedMes);return;}
+  try{
+    var results=await Promise.all([
+      fetch(CVA_API+'?sheet=RECUPERACIONES').then(function(r){return r.json();}),
+      fetch(CVA_API+'?sheet=SERVICIO').then(function(r){return r.json();}),
+      fetch(CVA_API+'?sheet=CONECTIVIDAD').then(function(r){return r.json();})
+    ]);
+    var j1=results[0],j2=results[1],j3=results[2];
+    if(j1.error)throw new Error(j1.error);
+
+    // recData — igual al original
+    cvaRecData=(j1.rows||[]).map(function(r){
+      return{tipo:String(r['recup']||'').toLowerCase().trim(),mes:String(r['mes']||'').toUpperCase().trim(),recup:parseFloat(r['recuperadas'])||0,noRec:parseFloat(r['no_recuperadas'])||0};
+    }).filter(function(r){return r.tipo&&r.mes;});
+
+    // srvData — igual al original
+    cvaSrvData=(j2.rows||[]).map(function(r){
+      return{mes:String(r['mes']||'').toUpperCase().trim(),total:parseFloat(r['total de encuestas']||0)||0,calif:parseFloat(r['calificación']||r['calificacion']||0)};
+    }).filter(function(r){return r.mes;});
+
+    // conectividadData + conectividadHistorial
+    if(!j3.error){
+      cvaConectividadData={};cvaConectividadHistorial={};
+      (j3.rows||[]).forEach(function(r){
+        var keys=Object.keys(r);
+        var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
+        var kPlat=keys.find(function(k){return k.toLowerCase().trim()==='plataforma';});
+        var kConect=keys.find(function(k){return k.toLowerCase().trim()==='conectividad';});
+        var kMesH=keys.find(function(k){return k.toLowerCase().trim()==='mes_hist';});
+        var kConectG=keys.find(function(k){return k.toLowerCase().trim()==='conect_general';});
+        if(kMes&&kPlat&&kConect){
+          var mes2=String(r[kMes]||'').toUpperCase().trim();
+          var plat=String(r[kPlat]||'').toUpperCase().trim();
+          var raw=String(r[kConect]||'').replace('%','').replace(',','.').trim();
+          var pct=parseFloat(raw)||null;
+          if(pct!==null&&pct>0&&pct<=1)pct=parseFloat((pct*100).toPrecision(6));
+          if(mes2&&plat&&pct!==null){if(!cvaConectividadData[mes2])cvaConectividadData[mes2]={};cvaConectividadData[mes2][plat]=pct;}
+        }
+        if(kMesH&&kConectG){
+          var mesH=String(r[kMesH]||'').toUpperCase().trim();
+          var rawG=String(r[kConectG]||'').replace('%','').replace(',','.').trim();
+          var pctG=parseFloat(rawG)||null;
+          if(pctG!==null&&pctG>0&&pctG<=1)pctG=parseFloat((pctG*100).toPrecision(6));
+          if(mesH&&pctG!==null)cvaConectividadHistorial[mesH]=pctG;
+        }
+      });
+    }
+
+    // Precargar FRT fallback (mes anterior) — igual a loadFrtFallback del original
+    var nowD=new Date(); var mesActual=cvaSelectedMes||CVA_MESES_ORD[nowD.getMonth()];
+    var idx=CVA_MESES_ORD.indexOf(mesActual);
+    if(idx>0){
+      try{
+        var fb=await fetch(CVA_API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(CVA_MESES_ORD[idx-1])).then(function(r){return r.json();});
+        if(!fb.error){
+          var fbData=fb.data||[];
+          cvaFallbackMap={};
+          fbData.forEach(function(a){if(a.count>0)cvaFallbackMap[a.nombre]=(a.totalMinutes||0)/a.count;});
+          var fbMin=fbData.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
+          var fbCnt=fbData.reduce(function(s,a){return s+(a.count||0);},0);
+          cvaFallbackGlobal=fbCnt>0?fbMin/fbCnt:0;
+        }
+      }catch(e){}
+    }
+
+    cvaLoaded=true;
+    cvaRenderMensual(cvaSelectedMes);
+  }catch(e){
+    console.error('Error loading CVA data:',e);
+  }
+}
+
+/* INIT */
+buildMonthSelector();
+buildCVAMonthSelector();
+loadMensualData();
+</script>
+</body>
+</html>
