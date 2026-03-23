@@ -519,8 +519,10 @@ function loadAllFromSYyF(mesesFiltro) {
     rows.forEach(function(row) {
       var mes   = String(row['MES']  || row['mes']  || '').trim();
       var kpi   = String(row['KPI']  || row['kpi']  || '').trim();
-      var real  = parseVal(row['REAL']     || row['real']     || row['Real'],     kpi);
-      var obj   = parseVal(row['OBJETIVO'] || row['objetivo'] || row['Objetivo'], kpi);
+      var rawReal = row['REAL'] !== undefined ? row['REAL'] : (row['real'] !== undefined ? row['real'] : row['Real']);
+      var rawObj  = row['OBJETIVO'] !== undefined ? row['OBJETIVO'] : (row['objetivo'] !== undefined ? row['objetivo'] : row['Objetivo']);
+      var real  = parseVal(rawReal, kpi);
+      var obj   = parseVal(rawObj,  kpi);
       if (!mes || !kpi) return;
       // Normalizar mes: ENERO → Enero, FEBRERO → Febrero, etc.
       mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
