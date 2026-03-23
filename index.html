@@ -428,7 +428,7 @@ var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby59F7hn1Bqzff0Bd
 /* Hoja única de datos: SYyF
    Columnas: MES | KPI | REAL | OBJETIVO
    El ID de la columna KPI coincide exactamente con las claves de este objeto */
-var HOJA_DATOS = 'SYyF';
+var HOJA_DATOS = 'SFyF';
 
 var KPIS = {
   Ingresos:      { label:'Ingresos',           icon:'💹', objective:'Generar crecimiento comercial sostenible',               weight:60, unit:'$',    inverse:false, fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false },
@@ -499,16 +499,6 @@ function parseVal(raw) {
 /* Carga todos los datos de la hoja SYyF en allData */
 function loadAllFromSYyF(mesesFiltro) {
   return fetchSYyF().then(function(rows) {
-    // DEBUG TEMPORAL — ver qué devuelve el Apps Script
-    if (rows.length > 0) {
-      console.log('=== SYyF DEBUG ===');
-      console.log('Total filas:', rows.length);
-      console.log('Keys de fila 0:', Object.keys(rows[0]));
-      console.log('Fila 0 completa:', JSON.stringify(rows[0]));
-      console.log('Fila 1 completa:', JSON.stringify(rows[1]));
-    } else {
-      console.log('=== SYyF: 0 filas devueltas ===');
-    }
     var keys = Object.keys(KPIS);
     // Inicializar allData para los meses pedidos
     keys.forEach(function(key) {
