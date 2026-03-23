@@ -478,21 +478,23 @@ function fetchSYyF() {
 }
 
 /* Parsea un valor crudo de la celda REAL u OBJETIVO
-   Maneja: $23,959,469 · $130,510.00 · 85.60% · 83% · 0 · 32 · NO APLICA · PENDIENTE */
-function parseVal(raw) {
+   Maneja: $23,959,469 · $130,510.00 · 85.60% · 0.856 · 83% · 0.83 · 0 · 32 · NO APLICA · PENDIENTE */
+function parseVal(raw, kpi) {
   if (raw === undefined || raw === null) return null;
   var s = String(raw).trim();
   if (s === '') return null;
   if (s.toUpperCase() === 'PENDIENTE') return 'PENDIENTE';
   if (s.toUpperCase() === 'NO APLICA' || s.toUpperCase() === 'N/A') return null;
-  // Detectar si viene con % para saber si hay que tratar como porcentaje
   var esPct = s.indexOf('%') !== -1;
-  // Limpiar: quitar $, comas de miles, %, espacios
   var clean = s.replace(/[$,%\s]/g, '');
   var v = parseFloat(clean);
   if (isNaN(v)) return null;
-  // Si venía como decimal puro (ej: 0.856) y tenía %, convertir a porcentaje entero
+  // Si venía con % y es decimal entre 0 y 1, convertir a porcentaje
   if (esPct && v > 0 && v <= 1) v = Math.round(v * 10000) / 100;
+  // MargenBruto y NPS pueden venir como decimal puro (0.856) sin símbolo %
+  if (!esPct && (kpi === 'MargenBruto' || kpi === 'NPS') && v > 0 && v <= 1) {
+    v = Math.round(v * 10000) / 100;
+  }
   return v;
 }
 
@@ -511,8 +513,8 @@ function loadAllFromSYyF(mesesFiltro) {
     rows.forEach(function(row) {
       var mes   = String(row['MES']  || row['mes']  || '').trim();
       var kpi   = String(row['KPI']  || row['kpi']  || '').trim();
-      var real  = parseVal(row['REAL']     || row['real']     || row['Real']);
-      var obj   = parseVal(row['OBJETIVO'] || row['objetivo'] || row['Objetivo']);
+      var real  = parseVal(row['REAL']     || row['real']     || row['Real'],     kpi);
+      var obj   = parseVal(row['OBJETIVO'] || row['objetivo'] || row['Objetivo'], kpi);
       if (!mes || !kpi) return;
       // Normalizar mes: ENERO → Enero, FEBRERO → Febrero, etc.
       mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
