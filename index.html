@@ -481,6 +481,14 @@ function fetchSYyF() {
    Maneja: $23,959,469 · $130,510.00 · 85.60% · 0.856 · 83% · 0.83 · 0 · 32 · NO APLICA · PENDIENTE */
 function parseVal(raw, kpi) {
   if (raw === undefined || raw === null) return null;
+  // El Apps Script devuelve números directamente (incluyendo 0)
+  if (typeof raw === 'number') {
+    var vn = raw;
+    if ((kpi === 'MargenBruto' || kpi === 'NPS') && vn > 0 && vn <= 1) {
+      vn = Math.round(vn * 10000) / 100;
+    }
+    return vn;
+  }
   var s = String(raw).trim();
   if (s === '') return null;
   if (s.toUpperCase() === 'PENDIENTE') return 'PENDIENTE';
@@ -489,9 +497,7 @@ function parseVal(raw, kpi) {
   var clean = s.replace(/[$,%\s]/g, '');
   var v = parseFloat(clean);
   if (isNaN(v)) return null;
-  // Si venía con % y es decimal entre 0 y 1, convertir a porcentaje
   if (esPct && v > 0 && v <= 1) v = Math.round(v * 10000) / 100;
-  // MargenBruto y NPS pueden venir como decimal puro (0.856) sin símbolo %
   if (!esPct && (kpi === 'MargenBruto' || kpi === 'NPS') && v > 0 && v <= 1) {
     v = Math.round(v * 10000) / 100;
   }
