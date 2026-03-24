@@ -234,6 +234,17 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
 
   <!-- PAGE: VyP - KPIs Venta Postventa -->
   <div class="page" id="page-vyp">
+
+    <!-- MODAL COMENTARIOS -->
+    <div id="vyp-modal-overlay" onclick="vypCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
+        <button onclick="vypCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="vyp-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
+        <div id="vyp-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
     <div class="month-panel">
       <div>
         <div class="month-panel-title">Venta Postventa · Período de análisis</div>
@@ -268,6 +279,24 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
           <div class="kpi-card c1" id="vyp-card-CROSS-SELLING"></div>
           <div class="kpi-card c2" id="vyp-card-NPS"></div>
         </div>
+
+        <!-- TABLA LOGROS E IMPEDIMENTOS -->
+        <div id="vyp-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--blue-dark);">
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;width:160px;">KPI</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
+                </tr>
+              </thead>
+              <tbody id="vyp-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -663,7 +692,7 @@ function navigate(page) {
 
 function refreshData() {
   allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[];
-  vypAllData={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
+  vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
   if (currentPage==='mensual') loadMensualData();
   else if (currentPage==='vyp') loadVypData();
   else if (currentPage==='cva') { cvaLoaded=false; loadCVAData(); }
@@ -1194,12 +1223,18 @@ function fetchVyp() {
     .then(function(d){ vypRawRows = d.rows || []; vypDataLoaded = true; return vypRawRows; });
 }
 
+var vypExtras = {}; // { kpi: { mes: { comentarios, logros, impedimentos } } }
+
 function loadVypAllData(mesesFiltro) {
   return fetchVyp().then(function(rows) {
     var keys = Object.keys(VYP_KPIS);
     keys.forEach(function(key) {
       if (!vypAllData[key]) vypAllData[key] = {};
-      mesesFiltro.forEach(function(m) { vypAllData[key][m] = { real: null, objetivo: null }; });
+      if (!vypExtras[key])  vypExtras[key]  = {};
+      mesesFiltro.forEach(function(m) {
+        vypAllData[key][m] = { real: null, objetivo: null };
+        vypExtras[key][m]  = { comentarios: '', logros: '', impedimentos: '' };
+      });
     });
     rows.forEach(function(row) {
       var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
@@ -1213,11 +1248,61 @@ function loadVypAllData(mesesFiltro) {
       var obj  = parseVal(rawObj,  kpi);
       var cfg  = VYP_KPIS[kpi];
       vypAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
+      // Columnas extra
+      var keys2 = Object.keys(row);
+      var kCom = keys2.find(function(k){ return k.toUpperCase().trim() === 'COMENTARIOS'; });
+      var kLog = keys2.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
+      var kImp = keys2.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!vypExtras[kpi]) vypExtras[kpi] = {};
+      if (!vypExtras[kpi][mes]) vypExtras[kpi][mes] = { comentarios:'', logros:'', impedimentos:'' };
+      if (kCom) vypExtras[kpi][mes].comentarios = String(row[kCom] || '').trim();
+      if (kLog) vypExtras[kpi][mes].logros       = String(row[kLog] || '').trim();
+      if (kImp) vypExtras[kpi][mes].impedimentos = String(row[kImp] || '').trim();
     });
   });
 }
 
-function vypGetBlockAccum(key, meses) {
+function vypOpenModal(kpi, comentario) {
+  var cfg = VYP_KPIS[kpi];
+  document.getElementById('vyp-modal-kpi').textContent = cfg ? cfg.label : kpi;
+  document.getElementById('vyp-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var overlay = document.getElementById('vyp-modal-overlay');
+  overlay.style.display = 'flex';
+}
+function vypCloseModal() {
+  document.getElementById('vyp-modal-overlay').style.display = 'none';
+}
+
+function renderVypLI() {
+  var tbody = document.getElementById('vyp-li-tbody');
+  var section = document.getElementById('vyp-li-section');
+  var rows = [];
+  Object.keys(VYP_KPIS).forEach(function(key) {
+    var ext = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
+    var logros = ext.logros || '';
+    var imped  = ext.impedimentos || '';
+    if (logros || imped) {
+      rows.push({ kpi: VYP_KPIS[key].label, logros: logros, imped: imped });
+    }
+  });
+  if (!rows.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  tbody.innerHTML = rows.map(function(r, i) {
+    var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
+    return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
+      + '<td style="padding:14px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;">'+r.kpi+'</td>'
+      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+( r.logros || '<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped || '<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function vypBuildAcumClick(key, acumText) {
+  var ext = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
+  var com = ext.comentarios || '';
+  if (!com) return '<div class="kpi-acum-val">📦 '+acumText+'</div>';
+  return '<div class="kpi-acum-val" style="cursor:pointer;" onclick="vypOpenModal(\''+key+'\',\''+com.replace(/'/g,"\\'").replace(/\n/g,'\\n')+'\')">📦 '+acumText+' 💬</div>';
+}
   var total = 0, hasAny = false;
   meses.forEach(function(m) {
     if (!vypAllData[key] || !vypAllData[key][m]) return;
@@ -1294,7 +1379,7 @@ function vypRenderCard(key) {
     '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
     '<div class="kpi-objective">'+cfg.objective+'</div>',
     '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
-    acumDisplay ? '<div class="kpi-acum-val">📦 '+acumDisplay+'</div>' : '',
+    acumDisplay ? vypBuildAcumClick(key, fmtVal(acum, cfg.unit, cfg.suffix)+' acumulado cuatrimestral') : '',
     '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
     cumplHtml,
     '<div class="kpi-divider"></div>',
@@ -1332,6 +1417,7 @@ function loadVypData() {
   loadVypAllData(qMeses).then(function() {
     vypLoaded = true;
     Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
+    renderVypLI();
     var s = vypCalcSummary();
     document.getElementById('vyp-sum-ok').textContent = s.ok + ' / 4';
     var te = document.getElementById('vyp-sum-trend');
