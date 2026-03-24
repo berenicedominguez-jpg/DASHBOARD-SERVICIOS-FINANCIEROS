@@ -721,7 +721,7 @@ function renderCard(key) {
   var pw=Math.min(barPct,100);
   var barCls='bar-ok';
 
-  // % cumplimiento: cuatrimestral = acumulado bloque vs meta completa; mensual = real vs meta
+  // % cumplimiento: cuatrimestral = acumulado vs meta PROPORCIONAL al mes en curso
   var cumpl=null;
   var acumDisplay=null;
   if (cfg.cuatrimestral && !isPendiente && realNum!==null) {
@@ -732,9 +732,15 @@ function renderCard(key) {
     if (acum!==null) {
       acumDisplay=fmtVal(acum,cfg.unit,cfg.suffix)+' acumulado cuatrimestral';
       if (obj!==null) {
-        cumpl=cfg.inverse
-          ?(acum<=obj?100:Math.round((obj/Math.max(acum,0.01))*1000)/10)
-          :obj>0?Math.round((acum/obj)*1000)/10:null;
+        // Meta proporcional: obj × (meses transcurridos / 4)
+        var metaProp = obj * (idxMes+1) / 4;
+        ok = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+        cumpl = cfg.inverse
+          ?(acum<=metaProp?100:Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+          :metaProp>0?Math.round((acum/metaProp)*1000)/10:null;
+        // Barra también contra meta proporcional
+        pw = Math.min(Math.round(cfg.inverse?(metaProp/Math.max(acum,0.01))*100:(acum/metaProp)*100), 100);
+        barCls = ok ? 'bar-ok' : pw>=80 ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum!==null && evalObj!==null) {
@@ -1254,10 +1260,16 @@ function vypRenderCard(key) {
     var acum = vypGetBlockAccum(key, qMeses.slice(0, idxMes+1));
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
-      if (obj !== null) cumpl = cfg.inverse ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10) : obj > 0 ? Math.round((acum/obj)*1000)/10 : null;
-      pw = Math.min(obj > 0 ? Math.round((cfg.inverse ? (obj/Math.max(acum,0.01)) : (acum/obj))*100) : 0, 100);
-      ok = cfg.inverse ? acum <= obj : acum >= obj;
-      barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+      if (obj !== null) {
+        // Meta proporcional al mes en curso
+        var metaProp = obj * (idxMes+1) / 4;
+        ok = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+        cumpl = cfg.inverse
+          ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+          : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
+        pw = Math.min(Math.round(cfg.inverse ? (metaProp/Math.max(acum,0.01))*100 : (acum/metaProp)*100), 100);
+        barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+      }
     }
   } else if (!isPendiente && realNum !== null && evalObj !== null) {
     cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
