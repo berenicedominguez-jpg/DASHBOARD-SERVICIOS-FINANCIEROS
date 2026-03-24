@@ -754,11 +754,11 @@ function navigate(page) {
   } else if (page==='vyp') {
     document.getElementById('topbar-title').textContent='KPIs: Venta Postventa';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Venta Postventa';
-    if (!vypLoaded) loadVypData();
+    loadVypData();
   } else if (page==='sis') {
     document.getElementById('topbar-title').textContent='KPIs: Sistemas';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Sistemas';
-    if (!sisLoaded) loadSisData();
+    loadSisData();
   } else if (page==='cva') {
     document.getElementById('topbar-title').textContent='KPIs Mensual: Central Monitoreo CVA';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Central Monitoreo CVA';
