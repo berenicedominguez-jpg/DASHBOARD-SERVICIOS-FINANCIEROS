@@ -649,18 +649,29 @@ var sfLIData = {}; // { mes: { logros: [], impedimentos: [] } }
 var sfDataLoaded = false;
 var sfRawRows = [];
 
-function renderSfLI(mes) {
-  var section = document.getElementById('sf-li-section');
-  var tbody   = document.getElementById('sf-li-tbody');
-  var data = sfLIData[mes] || {};
-  var logros = (data.logros || []).filter(Boolean).join('\n');
-  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
-  if (!logros && !imped) { section.style.display = 'none'; return; }
+/* Función genérica para renderizar tabla Logros & Impedimentos — una fila por ítem */
+function renderLITable(sectionId, tbodyId, logrosArr, impedArr) {
+  var section = document.getElementById(sectionId);
+  var tbody   = document.getElementById(tbodyId);
+  var logros = (logrosArr || []).filter(Boolean);
+  var imped  = (impedArr  || []).filter(Boolean);
+  if (!logros.length && !imped.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
-  tbody.innerHTML = '<tr style="background:#fff;">'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '</tr>';
+  var maxRows = Math.max(logros.length, imped.length);
+  tbody.innerHTML = Array.from({length: maxRows}, function(_, i) {
+    var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
+    var l = logros[i] ? logros[i] : '';
+    var im = imped[i]  ? imped[i]  : '';
+    return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;">'+(l||'')+'</td>'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;">'+(im||'')+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function renderSfLI(mes) {
+  var data = sfLIData[mes] || {};
+  renderLITable('sf-li-section', 'sf-li-tbody', data.logros || [], data.impedimentos || []);
 }
 
 function fetchSYyF() {
@@ -1423,25 +1434,23 @@ function vypCloseModal() {
 }
 
 function renderVypLI() {
-  var tbody = document.getElementById('vyp-li-tbody');
   var section = document.getElementById('vyp-li-section');
+  var tbody   = document.getElementById('vyp-li-tbody');
   var rows = [];
   Object.keys(VYP_KPIS).forEach(function(key) {
     var ext = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
     var logros = ext.logros || '';
     var imped  = ext.impedimentos || '';
-    if (logros || imped) {
-      rows.push({ kpi: VYP_KPIS[key].label, logros: logros, imped: imped });
-    }
+    if (logros || imped) rows.push({ label: VYP_KPIS[key].label, logros: logros, imped: imped });
   });
   if (!rows.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   tbody.innerHTML = rows.map(function(r, i) {
     var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
     return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
-      + '<td style="padding:14px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;">'+r.kpi+'</td>'
-      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:12px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;width:160px;">'+r.label+'</td>'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
       + '</tr>';
   }).join('');
 }
@@ -1678,17 +1687,8 @@ function sisCloseModal() {
 }
 
 function renderSisAM() {
-  var tbody = document.getElementById('sis-am-tbody');
-  var section = document.getElementById('sis-am-section');
   var data = sisExtras['_general'] && sisExtras['_general'][sisSelectedMes] ? sisExtras['_general'][sisSelectedMes] : {};
-  var logros = (data.logros || []).filter(Boolean).join('\n');
-  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
-  if (!logros && !imped) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  tbody.innerHTML = '<tr style="background:#fff;">'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '</tr>';
+  renderLITable('sis-am-section', 'sis-am-tbody', data.logros || [], data.impedimentos || []);
 }
 
 function sisRenderCard(key) {
@@ -1817,17 +1817,8 @@ function fetchCvaLI() {
 }
 
 function renderCvaLI(mes) {
-  var section = document.getElementById('cva-li-section');
-  var tbody   = document.getElementById('cva-li-tbody');
   var data = cvaLIData[mes] || {};
-  var logros = (data.logros || []).filter(Boolean).join('\n');
-  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
-  if (!logros && !imped) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  tbody.innerHTML = '<tr style="background:#fff;">'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-    + '</tr>';
+  renderLITable('cva-li-section', 'cva-li-tbody', data.logros || [], data.impedimentos || []);
 }
 var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
 var cvaLoaded = false;
