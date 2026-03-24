@@ -161,7 +161,7 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
   <div class="sidebar-nav">
     <div class="nav-group-label">KPIs</div>
     <a class="nav-item active" id="nav-mensual" onclick="navigate('mensual')" href="#">
-      <span class="nav-icon">📊</span><span>KPIs: Servicios Financieros y Flotas</span>
+      <span class="nav-icon">📊</span><span>KPIs Mensual: Servicios Financieros y Flotas</span>
     </a>
     <a class="nav-item" id="nav-vyp" onclick="navigate('vyp')" href="#">
       <span class="nav-icon">🏷️</span><span>KPIs: Venta Postventa</span>
@@ -170,10 +170,10 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
       <span class="nav-icon">🖥️</span><span>KPIs: Sistemas</span>
     </a>
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
-      <span class="nav-icon">🎯</span><span>KPIs: Central Monitoreo CVA</span>
+      <span class="nav-icon">🎯</span><span>KPIs Mensual: Central Monitoreo CVA</span>
     </a>
     <a class="nav-item" id="nav-resumen" onclick="navigate('resumen')" href="#">
-      <span class="nav-icon">📋</span><span>KPIs Resumen Servicios Financieros y Flotas</span>
+      <span class="nav-icon">📋</span><span>KPIs Resumen</span>
     </a>
   </div>
 </nav>
@@ -231,6 +231,23 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
         <div class="grid grid-4">
           <div class="kpi-card c1" id="card-CxC"></div>
         </div>
+
+        <!-- TABLA LOGROS E IMPEDIMENTOS SFyF -->
+        <div id="sf-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--blue-dark);">
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
+                </tr>
+              </thead>
+              <tbody id="sf-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -561,6 +578,23 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
           <span class="kpi-badge badge-nd" id="cva-b-con-recuperamovil">⏳ Sin datos</span>
         </div>
       </div>
+
+      <!-- TABLA LOGROS E IMPEDIMENTOS CVA -->
+      <div id="cva-li-section" style="display:none;">
+        <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:26px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:var(--blue-dark);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr>
+            </thead>
+            <tbody id="cva-li-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -611,8 +645,23 @@ function getQMeses(mes) { return QUARTERS[getQBlock(mes)].meses; }
 
 /* ── Carga única: una sola llamada a la hoja SYyF ──
    Construye allData[kpiKey][mes] = { real, objetivo } para todos los KPIs y meses */
+var sfLIData = {}; // { mes: { logros, impedimentos } }
 var sfDataLoaded = false;
 var sfRawRows = [];
+
+function renderSfLI(mes) {
+  var section = document.getElementById('sf-li-section');
+  var tbody   = document.getElementById('sf-li-tbody');
+  var data = sfLIData[mes] || {};
+  var logros = data.logros || '';
+  var imped  = data.impedimentos || '';
+  if (!logros && !imped) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  tbody.innerHTML = '<tr style="background:#fff;">'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '</tr>';
+}
 
 function fetchSYyF() {
   if (sfDataLoaded) return Promise.resolve(sfRawRows);
@@ -678,6 +727,23 @@ function loadAllFromSYyF(mesesFiltro) {
         real:     real,
         objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
       };
+    });
+    // También capturar filas de logros/impedimentos (sin KPI o KPI no reconocido)
+    rows.forEach(function(row) {
+      var mes = String(row['MES'] !== undefined ? row['MES'] : (row['mes'] || '')).trim();
+      if (!mes) return;
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      var rkeys = Object.keys(row);
+      var kLog = rkeys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
+      var kImp = rkeys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!kLog && !kImp) return;
+      var logros = String(row[kLog]||'').trim();
+      var imped  = String(row[kImp]||'').trim();
+      if (logros || imped) {
+        if (!sfLIData[mes]) sfLIData[mes] = { logros:'', impedimentos:'' };
+        if (logros) sfLIData[mes].logros = logros;
+        if (imped)  sfLIData[mes].impedimentos = imped;
+      }
     });
   });
 }
@@ -771,13 +837,13 @@ function navigate(page) {
 }
 
 function refreshData() {
-  allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[];
+  allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[]; sfLIData={};
   vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
   sisAllData={}; sisExtras={}; sisLoaded=false; sisDataLoaded=false; sisRawRows=[];
   if (currentPage==='mensual') loadMensualData();
   else if (currentPage==='vyp') loadVypData();
   else if (currentPage==='sis') loadSisData();
-  else if (currentPage==='cva') { cvaLoaded=false; loadCVAData(); }
+  if (currentPage==='cva') { cvaLoaded=false; cvaLILoaded=false; cvaLIData={}; cvaLIRows=[]; loadCVAData(); }
   else loadResumenData();
 }
 
@@ -918,6 +984,7 @@ function loadMensualData() {
   loadAllFromSYyF(qMeses).then(function() {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key){ renderCard(key); });
+    renderSfLI(selectedMes);
     var s = calcSummary();
     document.getElementById('sum-ok').textContent = s.ok + ' / 7';
     var te = document.getElementById('sum-trend');
@@ -1732,6 +1799,49 @@ function loadSisData() {
 }
 
 /* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
+var cvaLIData = {}; // { mes: { logros, impedimentos } }
+var cvaLILoaded = false;
+var cvaLIRows = [];
+
+function fetchCvaLI() {
+  if (cvaLILoaded) return Promise.resolve(cvaLIRows);
+  return fetch(CVA_API + '?sheet=Monitoreo')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      cvaLIRows = d.rows || [];
+      cvaLILoaded = true;
+      // Parsear filas
+      cvaLIRows.forEach(function(row) {
+        var keys = Object.keys(row);
+        var kMes = keys.find(function(k){ return k.toUpperCase().trim() === 'MES'; });
+        var kLog = keys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
+        var kImp = keys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+        if (!kMes) return;
+        var mes = String(row[kMes]||'').toUpperCase().trim();
+        if (!mes) return;
+        cvaLIData[mes] = {
+          logros:       String(row[kLog]||'').trim(),
+          impedimentos: String(row[kImp]||'').trim()
+        };
+      });
+      return cvaLIRows;
+    })
+    .catch(function(){ return []; });
+}
+
+function renderCvaLI(mes) {
+  var section = document.getElementById('cva-li-section');
+  var tbody   = document.getElementById('cva-li-tbody');
+  var data = cvaLIData[mes] || {};
+  var logros = data.logros || '';
+  var imped  = data.impedimentos || '';
+  if (!logros && !imped) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  tbody.innerHTML = '<tr style="background:#fff;">'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '</tr>';
+}
 var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
 var cvaLoaded = false;
 // Mismas estructuras que el original: recData, srvData, robosData, conectividadData, zohoHistorial
@@ -1927,6 +2037,9 @@ function cvaRenderMensual(mes){
 
   // 4. Conectividad
   cvaRenderConectividad(mes);
+
+  // 5. Logros e Impedimentos
+  fetchCvaLI().then(function(){ renderCvaLI(mes); });
 }
 
 /* Conectividad — busca el mes más cercano con datos por plataforma;
