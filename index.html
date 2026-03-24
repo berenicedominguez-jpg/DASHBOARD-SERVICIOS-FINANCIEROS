@@ -1520,15 +1520,14 @@ function loadVypData() {
 
 /* ── SISTEMAS PAGE ── */
 var SIS_KPIS = {
-  'NPS (%)':                                    { label:'NPS (%)',                              icon:'😊', objective:'Satisfacción de clientes',                   weight:0,  unit:'%',    inverse:false, fixedObj:null,  objLabel:'NO APLICA', suffix:null,      cuatrimestral:false },
-  'Servidores Activos':                         { label:'Servidores Activos',                   icon:'🖥️', objective:'Mantener servidores activos bajo el umbral',  weight:15, unit:'%',    inverse:true,  fixedObj:null,  objLabel:'< 70%',     suffix:null,      cuatrimestral:false },
-  'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 98%',     suffix:null,      cuatrimestral:false },
-  'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                    icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
-  'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                    icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
-  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',             icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$USD', inverse:true,  fixedObj:null,  objLabel:'≤ $0.95',   suffix:null,      cuatrimestral:false }
+  'NPS (%)':                                    { label:'NPS (%)',                               icon:'😊', objective:'Satisfacción de clientes',                   weight:0,  unit:'%',  inverse:false, fixedObj:null,  objLabel:'NO APLICA', suffix:null, cuatrimestral:false },
+  'Servidores Activos':                         { label:'Servidores Activos',                    icon:'🖥️', objective:'Mantener servidores activos bajo el umbral',  weight:15, unit:'%',  inverse:true,  fixedObj:70,    objLabel:'< 70%',     suffix:null, cuatrimestral:false },
+  'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',  inverse:false, fixedObj:98,    objLabel:'≥ 98%',     suffix:null, cuatrimestral:false },
+  'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                     icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
+  'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                     icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
+  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',              icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$',  inverse:true,  fixedObj:0.95,  objLabel:'≤ $0.95',   suffix:null, cuatrimestral:false }
 };
 
-var SIS_PCT_KEYS = ['NPS (%)', 'Servidores Activos', 'Intermitencias Plataforma Tecnometrics', 'Ticketes Internos (Áreas Internas)', 'Ticketes Externos (Clientes Activos / PV)'];
 var sisRawRows = [];
 var sisDataLoaded = false;
 var sisAllData = {};
