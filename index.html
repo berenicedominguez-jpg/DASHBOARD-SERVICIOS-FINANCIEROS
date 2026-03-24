@@ -373,15 +373,15 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
           <div class="kpi-card c3" id="sis-card-NPS (%)"></div>
         </div>
 
-        <!-- TABLA ACCIONES DE MEJORA -->
+        <!-- TABLA LOGROS E IMPEDIMENTOS SISTEMAS -->
         <div id="sis-am-section" style="display:none;">
-          <div class="section-hdr"><div class="section-hdr-txt">Acciones de Mejora</div><div class="section-hdr-line"></div></div>
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
               <thead>
                 <tr style="background:var(--blue-dark);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;width:220px;">KPI</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🔧 Acciones de Mejora</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
                 </tr>
               </thead>
               <tbody id="sis-am-tbody"></tbody>
@@ -1440,8 +1440,8 @@ function renderVypLI() {
     var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
     return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
       + '<td style="padding:14px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;">'+r.kpi+'</td>'
-      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+( r.logros || '<span style="color:var(--gray-300);">—</span>')+'</td>'
-      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped || '<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
       + '</tr>';
   }).join('');
 }
@@ -1634,10 +1634,8 @@ function loadSisAllData(mesesFiltro) {
     var keys = Object.keys(SIS_KPIS);
     keys.forEach(function(key) {
       if (!sisAllData[key]) sisAllData[key] = {};
-      if (!sisExtras[key])  sisExtras[key]  = {};
       mesesFiltro.forEach(function(m) {
         sisAllData[key][m] = { real: null, objetivo: null };
-        sisExtras[key][m]  = { comentarios: '', accionesMejora: '' };
       });
     });
     rows.forEach(function(row) {
@@ -1657,14 +1655,14 @@ function loadSisAllData(mesesFiltro) {
         if (obj  !== null && obj  !== 'PENDIENTE' && obj  > 0 && obj  <= 1) obj  = Math.round(obj  * 10000) / 100;
       }
       sisAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
-      // Columnas extra
+      // Columnas extra LOGROS e IMPEDIMENTOS
       var rkeys = Object.keys(row);
-      var kCom = rkeys.find(function(k){ return k.toUpperCase().trim() === 'COMENTARIOS'; });
-      var kAcc = rkeys.find(function(k){ return k.toUpperCase().trim() === 'ACCIONES DE MEJORA'; });
-      if (!sisExtras[kpi]) sisExtras[kpi] = {};
-      if (!sisExtras[kpi][mes]) sisExtras[kpi][mes] = { comentarios:'', accionesMejora:'' };
-      if (kCom) sisExtras[kpi][mes].comentarios    = String(row[kCom] || '').trim();
-      if (kAcc) sisExtras[kpi][mes].accionesMejora = String(row[kAcc] || '').trim();
+      var kLog = rkeys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
+      var kImp = rkeys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!sisExtras['_general']) sisExtras['_general'] = {};
+      if (!sisExtras['_general'][mes]) sisExtras['_general'][mes] = { logros:'', impedimentos:'' };
+      if (kLog && row[kLog]) sisExtras['_general'][mes].logros       = String(row[kLog]||'').trim();
+      if (kImp && row[kImp]) sisExtras['_general'][mes].impedimentos = String(row[kImp]||'').trim();
     });
   });
 }
@@ -1682,21 +1680,15 @@ function sisCloseModal() {
 function renderSisAM() {
   var tbody = document.getElementById('sis-am-tbody');
   var section = document.getElementById('sis-am-section');
-  var rows = [];
-  Object.keys(SIS_KPIS).forEach(function(key) {
-    var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
-    var acc = ext.accionesMejora || '';
-    if (acc) rows.push({ label: SIS_KPIS[key].label, acc: acc });
-  });
-  if (!rows.length) { section.style.display = 'none'; return; }
+  var data = sisExtras['_general'] && sisExtras['_general'][sisSelectedMes] ? sisExtras['_general'][sisSelectedMes] : {};
+  var logros = data.logros || '';
+  var imped  = data.impedimentos || '';
+  if (!logros && !imped) { section.style.display = 'none'; return; }
   section.style.display = 'block';
-  tbody.innerHTML = rows.map(function(r, i) {
-    var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
-    return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
-      + '<td style="padding:14px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;">'+r.label+'</td>'
-      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+r.acc+'</td>'
-      + '</tr>';
-  }).join('');
+  tbody.innerHTML = '<tr style="background:#fff;">'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+    + '</tr>';
 }
 
 function sisRenderCard(key) {
@@ -1734,13 +1726,7 @@ function sisRenderCard(key) {
 
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : '—');
   var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
-
-  // Comentarios click
-  var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
-  var com = ext.comentarios || '';
-  var metaHtml = com
-    ? '<div class="kpi-meta" style="cursor:pointer;" onclick="sisOpenModal(\''+key.replace(/'/g,"\\'").replace(/\(/g,'\\(').replace(/\)/g,'\\)')+'\',\''+com.replace(/'/g,"\\'").replace(/\n/g,'\\n')+'\')">Meta: '+metaDisplay+' 💬</div>'
-    : '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
+  var metaHtml = '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
 
   el.innerHTML = [
     '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
