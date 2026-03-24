@@ -686,8 +686,9 @@ function fmtVal(val, unit, suffix) {
   if (val===null||val===undefined) return '—';
   if (val==='PENDIENTE') return 'Pendiente';
   var n = val;
-  if (unit==='$') return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
-  if (unit==='%') return n+'%';
+  if (unit==='$')    return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (unit==='$USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (unit==='%')    return n+'%';
   if (unit==='días') return n+' días';
   return n+(suffix?' '+suffix:'');
 }
@@ -1524,10 +1525,10 @@ var SIS_KPIS = {
   'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 98%',     suffix:null,      cuatrimestral:false },
   'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                    icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
   'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                    icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
-  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',             icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$',    inverse:true,  fixedObj:null,  objLabel:'≤ $0.95',   suffix:null,      cuatrimestral:false }
+  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',             icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$USD', inverse:true,  fixedObj:null,  objLabel:'≤ $0.95',   suffix:null,      cuatrimestral:false }
 };
 
-var sisLoaded = false;
+var SIS_PCT_KEYS = ['NPS (%)', 'Servidores Activos', 'Intermitencias Plataforma Tecnometrics', 'Ticketes Internos (Áreas Internas)', 'Ticketes Externos (Clientes Activos / PV)'];
 var sisRawRows = [];
 var sisDataLoaded = false;
 var sisAllData = {};
@@ -1584,6 +1585,13 @@ function loadSisAllData(mesesFiltro) {
       var real = parseVal(rawReal, kpi);
       var obj  = parseVal(rawObj,  kpi);
       var cfg  = SIS_KPIS[kpi];
+      // Si la unidad es % y el valor viene como decimal entre 0 y 1, convertir a porcentaje
+      if (cfg.unit === '%' && real !== null && real !== 'PENDIENTE' && real > 0 && real <= 1) {
+        real = Math.round(real * 10000) / 100;
+      }
+      if (cfg.unit === '%' && obj !== null && obj !== 'PENDIENTE' && obj > 0 && obj <= 1) {
+        obj = Math.round(obj * 10000) / 100;
+      }
       sisAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
       // Columnas extra
       var rkeys = Object.keys(row);
