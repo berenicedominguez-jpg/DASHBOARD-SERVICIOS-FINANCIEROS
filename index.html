@@ -645,7 +645,7 @@ function getQMeses(mes) { return QUARTERS[getQBlock(mes)].meses; }
 
 /* ── Carga única: una sola llamada a la hoja SYyF ──
    Construye allData[kpiKey][mes] = { real, objetivo } para todos los KPIs y meses */
-var sfLIData = {}; // { mes: { logros, impedimentos } }
+var sfLIData = {}; // { mes: { logros: [], impedimentos: [] } }
 var sfDataLoaded = false;
 var sfRawRows = [];
 
@@ -653,8 +653,8 @@ function renderSfLI(mes) {
   var section = document.getElementById('sf-li-section');
   var tbody   = document.getElementById('sf-li-tbody');
   var data = sfLIData[mes] || {};
-  var logros = data.logros || '';
-  var imped  = data.impedimentos || '';
+  var logros = (data.logros || []).filter(Boolean).join('\n');
+  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
   if (!logros && !imped) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   tbody.innerHTML = '<tr style="background:#fff;">'
@@ -740,9 +740,9 @@ function loadAllFromSYyF(mesesFiltro) {
       var logros = String(row[kLog]||'').trim();
       var imped  = String(row[kImp]||'').trim();
       if (logros || imped) {
-        if (!sfLIData[mes]) sfLIData[mes] = { logros:'', impedimentos:'' };
-        if (logros) sfLIData[mes].logros = logros;
-        if (imped)  sfLIData[mes].impedimentos = imped;
+        if (!sfLIData[mes]) sfLIData[mes] = { logros:[], impedimentos:[] };
+        if (logros) sfLIData[mes].logros.push(logros);
+        if (imped)  sfLIData[mes].impedimentos.push(imped);
       }
     });
   });
@@ -1660,9 +1660,9 @@ function loadSisAllData(mesesFiltro) {
       var kLog = rkeys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
       var kImp = rkeys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
       if (!sisExtras['_general']) sisExtras['_general'] = {};
-      if (!sisExtras['_general'][mes]) sisExtras['_general'][mes] = { logros:'', impedimentos:'' };
-      if (kLog && row[kLog]) sisExtras['_general'][mes].logros       = String(row[kLog]||'').trim();
-      if (kImp && row[kImp]) sisExtras['_general'][mes].impedimentos = String(row[kImp]||'').trim();
+      if (!sisExtras['_general'][mes]) sisExtras['_general'][mes] = { logros:[], impedimentos:[] };
+      if (kLog && row[kLog]) sisExtras['_general'][mes].logros.push(String(row[kLog]||'').trim());
+      if (kImp && row[kImp]) sisExtras['_general'][mes].impedimentos.push(String(row[kImp]||'').trim());
     });
   });
 }
@@ -1681,8 +1681,8 @@ function renderSisAM() {
   var tbody = document.getElementById('sis-am-tbody');
   var section = document.getElementById('sis-am-section');
   var data = sisExtras['_general'] && sisExtras['_general'][sisSelectedMes] ? sisExtras['_general'][sisSelectedMes] : {};
-  var logros = data.logros || '';
-  var imped  = data.impedimentos || '';
+  var logros = (data.logros || []).filter(Boolean).join('\n');
+  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
   if (!logros && !imped) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   tbody.innerHTML = '<tr style="background:#fff;">'
@@ -1785,18 +1785,17 @@ function loadSisData() {
 }
 
 /* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
-var cvaLIData = {}; // { mes: { logros, impedimentos } }
+var cvaLIData = {}; // { mes: { logros: [], impedimentos: [] } }
 var cvaLILoaded = false;
 var cvaLIRows = [];
 
 function fetchCvaLI() {
   if (cvaLILoaded) return Promise.resolve(cvaLIRows);
-  return fetch(CVA_API + '?sheet=Monitoreo')
+  return fetch(APPS_SCRIPT_URL + '?sheet=Monitoreo')
     .then(function(r){ return r.json(); })
     .then(function(d){
       cvaLIRows = d.rows || [];
       cvaLILoaded = true;
-      // Parsear filas
       cvaLIRows.forEach(function(row) {
         var keys = Object.keys(row);
         var kMes = keys.find(function(k){ return k.toUpperCase().trim() === 'MES'; });
@@ -1805,10 +1804,12 @@ function fetchCvaLI() {
         if (!kMes) return;
         var mes = String(row[kMes]||'').toUpperCase().trim();
         if (!mes) return;
-        cvaLIData[mes] = {
-          logros:       String(row[kLog]||'').trim(),
-          impedimentos: String(row[kImp]||'').trim()
-        };
+        var logros = String(row[kLog]||'').trim();
+        var imped  = String(row[kImp]||'').trim();
+        if (!logros && !imped) return;
+        if (!cvaLIData[mes]) cvaLIData[mes] = { logros:[], impedimentos:[] };
+        if (logros) cvaLIData[mes].logros.push(logros);
+        if (imped)  cvaLIData[mes].impedimentos.push(imped);
       });
       return cvaLIRows;
     })
@@ -1819,8 +1820,8 @@ function renderCvaLI(mes) {
   var section = document.getElementById('cva-li-section');
   var tbody   = document.getElementById('cva-li-tbody');
   var data = cvaLIData[mes] || {};
-  var logros = data.logros || '';
-  var imped  = data.impedimentos || '';
+  var logros = (data.logros || []).filter(Boolean).join('\n');
+  var imped  = (data.impedimentos || []).filter(Boolean).join('\n');
   if (!logros && !imped) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   tbody.innerHTML = '<tr style="background:#fff;">'
