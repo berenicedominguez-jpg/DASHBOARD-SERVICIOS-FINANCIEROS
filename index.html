@@ -1303,6 +1303,8 @@ function vypBuildAcumClick(key, acumText) {
   if (!com) return '<div class="kpi-acum-val">📦 '+acumText+'</div>';
   return '<div class="kpi-acum-val" style="cursor:pointer;" onclick="vypOpenModal(\''+key+'\',\''+com.replace(/'/g,"\\'").replace(/\n/g,'\\n')+'\')">📦 '+acumText+' 💬</div>';
 }
+
+function vypGetBlockAccum(key, meses) {
   var total = 0, hasAny = false;
   meses.forEach(function(m) {
     if (!vypAllData[key] || !vypAllData[key][m]) return;
