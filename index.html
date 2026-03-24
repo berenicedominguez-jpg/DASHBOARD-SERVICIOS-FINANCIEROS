@@ -163,6 +163,9 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
     <a class="nav-item active" id="nav-mensual" onclick="navigate('mensual')" href="#">
       <span class="nav-icon">📊</span><span>KPIs Mensual: Servicios Financieros y Flotas</span>
     </a>
+    <a class="nav-item" id="nav-vyp" onclick="navigate('vyp')" href="#">
+      <span class="nav-icon">🏷️</span><span>KPIs: Venta Postventa</span>
+    </a>
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
       <span class="nav-icon">🎯</span><span>KPIs Mensual: Central Monitoreo CVA</span>
     </a>
@@ -224,6 +227,46 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
         <div class="section-hdr"><div class="section-hdr-txt">Gestión Financiera</div><div class="section-hdr-line"></div></div>
         <div class="grid grid-4">
           <div class="kpi-card c1" id="card-CxC"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: VyP - KPIs Venta Postventa -->
+  <div class="page" id="page-vyp">
+    <div class="month-panel">
+      <div>
+        <div class="month-panel-title">Venta Postventa · Período de análisis</div>
+        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
+      </div>
+      <div class="month-btns" id="vyp-monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
+        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
+          <div class="sum-lbl">Tendencia</div>
+          <div class="sum-val" id="vyp-sum-trend">—</div>
+          <div class="sum-sub">Resultado general</div>
+        </div>
+        <div style="padding:0 24px;">
+          <div class="sum-lbl">En objetivo</div>
+          <div class="sum-val" id="vyp-sum-ok">—</div>
+          <div class="sum-sub">de 4 KPIs ponderados</div>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="vyp-errorMsg">Error.</p></div>
+      <div id="vyp-mainContent" style="display:none;">
+        <div class="section-hdr"><div class="section-hdr-txt">Ventas</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="vyp-card-VENTAS"></div>
+          <div class="kpi-card c2" id="vyp-card-UNIDADES"></div>
+          <div class="kpi-card c3" id="vyp-card-CHURN"></div>
+        </div>
+        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="vyp-card-CROSS-SELLING"></div>
+          <div class="kpi-card c2" id="vyp-card-NPS"></div>
         </div>
       </div>
     </div>
@@ -603,6 +646,10 @@ function navigate(page) {
   if (page==='mensual') {
     document.getElementById('topbar-title').textContent='KPIs Mensual: Servicios Financieros y Flotas';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Servicios Financieros y Flotas';
+  } else if (page==='vyp') {
+    document.getElementById('topbar-title').textContent='KPIs: Venta Postventa';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Venta Postventa';
+    if (!vypLoaded) loadVypData();
   } else if (page==='cva') {
     document.getElementById('topbar-title').textContent='KPIs Mensual: Central Monitoreo CVA';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Central Monitoreo CVA';
@@ -616,7 +663,9 @@ function navigate(page) {
 
 function refreshData() {
   allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[];
+  vypAllData={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
   if (currentPage==='mensual') loadMensualData();
+  else if (currentPage==='vyp') loadVypData();
   else if (currentPage==='cva') { cvaLoaded=false; loadCVAData(); }
   else loadResumenData();
 }
@@ -1096,6 +1145,197 @@ function exportPDF() {
   });
 }
 
+/* ── VyP PAGE (Venta Postventa) ── */
+var VYP_KPIS = {
+  'VENTAS':        { label:'Ventas',          icon:'💰', objective:'Crecimiento de ventas',                    weight:27.5, unit:'$',    inverse:false, fixedObj:null, objLabel:null,         suffix:null,         cuatrimestral:false },
+  'UNIDADES':      { label:'Unidades',        icon:'📦', objective:'Crecimiento en unidades vendidas',         weight:27.5, unit:'#',    inverse:false, fixedObj:null, objLabel:null,         suffix:'unidades',   cuatrimestral:false },
+  'CHURN':         { label:'Churn',           icon:'🔄', objective:'Retener clientes 3, 4 y 5 estrellas',     weight:25,   unit:'#',    inverse:true,  fixedObj:3,    objLabel:'Máx. 3',     suffix:'bajas',      cuatrimestral:true  },
+  'CROSS-SELLING': { label:'Cross-Selling',   icon:'🔀', objective:'Clientes con más de una solución',        weight:20,   unit:'#',    inverse:false, fixedObj:8,    objLabel:'8 clientes', suffix:'cliente(s)', cuatrimestral:true  },
+  'NPS':           { label:'NPS',             icon:'😊', objective:'Mantener alta satisfacción en clientes',  weight:0,    unit:'%',    inverse:false, fixedObj:52,   objLabel:'≥ 52%',      suffix:null,         cuatrimestral:false }
+};
+
+var vypLoaded = false;
+var vypRawRows = [];
+var vypDataLoaded = false;
+var vypAllData = {};
+var vypSelectedMes = '';
+
+function buildVypMonthSelector() {
+  var container = document.getElementById('vyp-monthBtns');
+  var now = new Date(); var currentMonth = now.getMonth();
+  var defaultIdx = Math.max(currentMonth-1, 0);
+  MESES.forEach(function(mes, i) {
+    var btn = document.createElement('button');
+    btn.className = 'mbtn'; btn.textContent = mes.substring(0,3).toUpperCase(); btn.title = mes;
+    if (i >= currentMonth) { btn.disabled = true; }
+    else { btn.onclick = (function(m,b){ return function(){ vypSelectMonth(m,b); }; })(mes,btn); }
+    if (i === defaultIdx) { vypSelectedMes = mes; btn.classList.add('active'); }
+    container.appendChild(btn);
+  });
+}
+
+function vypSelectMonth(mes, activeBtn) {
+  vypSelectedMes = mes;
+  document.querySelectorAll('#vyp-monthBtns .mbtn').forEach(function(b){ b.classList.remove('active'); });
+  activeBtn.classList.add('active');
+  loadVypData();
+}
+
+function fetchVyp() {
+  if (vypDataLoaded) return Promise.resolve(vypRawRows);
+  return fetch(APPS_SCRIPT_URL + '?sheet=VyP')
+    .then(function(r){ return r.json(); })
+    .then(function(d){ vypRawRows = d.rows || []; vypDataLoaded = true; return vypRawRows; });
+}
+
+function loadVypAllData(mesesFiltro) {
+  return fetchVyp().then(function(rows) {
+    var keys = Object.keys(VYP_KPIS);
+    keys.forEach(function(key) {
+      if (!vypAllData[key]) vypAllData[key] = {};
+      mesesFiltro.forEach(function(m) { vypAllData[key][m] = { real: null, objetivo: null }; });
+    });
+    rows.forEach(function(row) {
+      var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
+      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : '').trim();
+      if (!mes || !kpi || !VYP_KPIS[kpi]) return;
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      if (mesesFiltro.indexOf(mes) === -1) return;
+      var rawReal = row.hasOwnProperty('REAL') ? row['REAL'] : null;
+      var rawObj  = row.hasOwnProperty('OBJETIVO') ? row['OBJETIVO'] : null;
+      var real = parseVal(rawReal, kpi);
+      var obj  = parseVal(rawObj,  kpi);
+      var cfg  = VYP_KPIS[kpi];
+      vypAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
+    });
+  });
+}
+
+function vypGetBlockAccum(key, meses) {
+  var total = 0, hasAny = false;
+  meses.forEach(function(m) {
+    if (!vypAllData[key] || !vypAllData[key][m]) return;
+    var v = vypAllData[key][m].real;
+    if (v === null || v === 'PENDIENTE') return;
+    total += v; hasAny = true;
+  });
+  return hasAny ? total : null;
+}
+
+function vypGetQMeses(mes) {
+  if (['Enero','Febrero','Marzo','Abril'].indexOf(mes) >= 0) return QUARTERS[0].meses;
+  if (['Mayo','Junio','Julio','Agosto'].indexOf(mes) >= 0) return QUARTERS[1].meses;
+  return QUARTERS[2].meses;
+}
+
+function vypRenderCard(key) {
+  var cfg = VYP_KPIS[key];
+  var el = document.getElementById('vyp-card-' + key);
+  if (!el || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
+
+  var d = vypAllData[key][vypSelectedMes];
+  var real = d.real, obj = d.objetivo;
+  var isPendiente = real === 'PENDIENTE';
+  var realNum = isPendiente ? null : real;
+  var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
+
+  var evalObj = (cfg.cuatrimestral && obj !== null) ? obj/4 : obj;
+  var ok = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct = (realNum !== null && evalObj !== null && evalObj > 0) ? Math.round((cfg.inverse ? (evalObj/Math.max(realNum,0.01))*100 : (realNum/evalObj)*100)*10)/10 : 0;
+
+  var pw = Math.min(pct, 100);
+  var barCls = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
+
+  var acumDisplay = null;
+  var cumpl = null;
+  if (cfg.cuatrimestral && !isPendiente && realNum !== null) {
+    var qMeses = vypGetQMeses(vypSelectedMes);
+    var idxMes = qMeses.indexOf(vypSelectedMes);
+    var acum = vypGetBlockAccum(key, qMeses.slice(0, idxMes+1));
+    if (acum !== null) {
+      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
+      if (obj !== null) cumpl = cfg.inverse ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10) : obj > 0 ? Math.round((acum/obj)*1000)/10 : null;
+      pw = Math.min(obj > 0 ? Math.round((cfg.inverse ? (obj/Math.max(acum,0.01)) : (acum/obj))*100) : 0, 100);
+      ok = cfg.inverse ? acum <= obj : acum >= obj;
+      barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+    }
+  } else if (!isPendiente && realNum !== null && evalObj !== null) {
+    cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
+  }
+
+  var cumplColor = cumpl === null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
+  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+
+  var badgeHtml;
+  if (isPendiente)                         badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                             badgeHtml = '<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
+  else if (pct >= 80)                      badgeHtml = '<span class="kpi-badge badge-near">&#9889; Cerca</span>';
+  else                                     badgeHtml = '<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+
+  var metaDisplay = cfg.objLabel ? cfg.objLabel : (cfg.fixedObj !== null ? fmtVal(cfg.fixedObj, cfg.unit, cfg.suffix) : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto'));
+  var metaLabel = cfg.cuatrimestral ? 'Meta cuatrimestral: ' : 'Meta: ';
+  var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
+
+  el.innerHTML = [
+    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
+    '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
+    '<div class="kpi-objective">'+cfg.objective+'</div>',
+    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
+    acumDisplay ? '<div class="kpi-acum-val">📦 '+acumDisplay+'</div>' : '',
+    '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
+    cumplHtml,
+    '<div class="kpi-divider"></div>',
+    '<div class="progress-wrap">',
+      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw > 0 ? pw+'%' : '—')+'</span><span>100%</span></div>',
+      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
+    '</div>',
+    badgeHtml
+  ].join('');
+}
+
+function vypCalcSummary() {
+  var score = 0, totalW = 0, ok = 0;
+  Object.keys(VYP_KPIS).forEach(function(key) {
+    var cfg = VYP_KPIS[key];
+    if (cfg.weight === 0 || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
+    var d = vypAllData[key][vypSelectedMes];
+    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
+    var evalObj = cfg.cuatrimestral ? d.objetivo/4 : d.objetivo;
+    score += Math.min(cfg.inverse ? (evalObj/Math.max(d.real,0.01)) : (d.real/evalObj), 1) * cfg.weight;
+    totalW += cfg.weight;
+    if (cfg.inverse ? d.real <= evalObj : d.real >= evalObj) ok++;
+  });
+  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok };
+}
+
+function loadVypData() {
+  if (!vypSelectedMes) return;
+  document.getElementById('vyp-loadingBox').style.display = 'block';
+  document.getElementById('vyp-errorBox').style.display = 'none';
+  document.getElementById('vyp-mainContent').style.display = 'none';
+
+  var qMeses = vypGetQMeses(vypSelectedMes);
+
+  loadVypAllData(qMeses).then(function() {
+    vypLoaded = true;
+    Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
+    var s = vypCalcSummary();
+    document.getElementById('vyp-sum-ok').textContent = s.ok + ' / 4';
+    var te = document.getElementById('vyp-sum-trend');
+    if (s.pct !== null) {
+      te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
+      te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
+    }
+    document.getElementById('vyp-loadingBox').style.display = 'none';
+    document.getElementById('vyp-mainContent').style.display = 'block';
+  }).catch(function(e) {
+    document.getElementById('vyp-loadingBox').style.display = 'none';
+    document.getElementById('vyp-errorBox').style.display = 'block';
+    document.getElementById('vyp-errorMsg').textContent = 'Error: ' + e.message;
+  });
+}
+
 /* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
 var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
 var cvaLoaded = false;
@@ -1430,6 +1670,7 @@ async function loadCVAData(){
 /* INIT */
 buildMonthSelector();
 buildCVAMonthSelector();
+buildVypMonthSelector();
 loadMensualData();
 </script>
 </body>
