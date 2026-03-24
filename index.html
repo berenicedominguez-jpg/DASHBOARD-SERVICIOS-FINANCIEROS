@@ -166,6 +166,9 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
     <a class="nav-item" id="nav-vyp" onclick="navigate('vyp')" href="#">
       <span class="nav-icon">🏷️</span><span>KPIs: Venta Postventa</span>
     </a>
+    <a class="nav-item" id="nav-sis" onclick="navigate('sis')" href="#">
+      <span class="nav-icon">🖥️</span><span>KPIs: Sistemas</span>
+    </a>
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
       <span class="nav-icon">🎯</span><span>KPIs Mensual: Central Monitoreo CVA</span>
     </a>
@@ -293,6 +296,78 @@ footer{background:var(--white);border-top:1px solid var(--gray-100);padding:14px
                 </tr>
               </thead>
               <tbody id="vyp-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: SISTEMAS -->
+  <div class="page" id="page-sis">
+
+    <!-- MODAL COMENTARIOS SISTEMAS -->
+    <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
+        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
+        <div id="sis-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
+    <div class="month-panel">
+      <div>
+        <div class="month-panel-title">Sistemas · Período de análisis</div>
+        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
+      </div>
+      <div class="month-btns" id="sis-monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
+        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
+          <div class="sum-lbl">Tendencia</div>
+          <div class="sum-val" id="sis-sum-trend">—</div>
+          <div class="sum-sub">Resultado general</div>
+        </div>
+        <div style="padding:0 24px;">
+          <div class="sum-lbl">En objetivo</div>
+          <div class="sum-val" id="sis-sum-ok">—</div>
+          <div class="sum-sub">de 5 KPIs ponderados</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="sis-errorMsg">Error.</p></div>
+      <div id="sis-mainContent" style="display:none;">
+
+        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="sis-card-Servidores Activos"></div>
+          <div class="kpi-card c2" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
+          <div class="kpi-card c3" id="sis-card-Costo por unidad mensual"></div>
+        </div>
+
+        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-4">
+          <div class="kpi-card c1" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
+          <div class="kpi-card c2" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
+          <div class="kpi-card c3" id="sis-card-NPS (%)"></div>
+        </div>
+
+        <!-- TABLA ACCIONES DE MEJORA -->
+        <div id="sis-am-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Acciones de Mejora</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--blue-dark);">
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;width:220px;">KPI</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🔧 Acciones de Mejora</th>
+                </tr>
+              </thead>
+              <tbody id="sis-am-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -679,6 +754,10 @@ function navigate(page) {
     document.getElementById('topbar-title').textContent='KPIs: Venta Postventa';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Venta Postventa';
     if (!vypLoaded) loadVypData();
+  } else if (page==='sis') {
+    document.getElementById('topbar-title').textContent='KPIs: Sistemas';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Sistemas';
+    if (!sisLoaded) loadSisData();
   } else if (page==='cva') {
     document.getElementById('topbar-title').textContent='KPIs Mensual: Central Monitoreo CVA';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Central Monitoreo CVA';
@@ -693,8 +772,10 @@ function navigate(page) {
 function refreshData() {
   allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[];
   vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
+  sisAllData={}; sisExtras={}; sisLoaded=false; sisDataLoaded=false; sisRawRows=[];
   if (currentPage==='mensual') loadMensualData();
   else if (currentPage==='vyp') loadVypData();
+  else if (currentPage==='sis') loadSisData();
   else if (currentPage==='cva') { cvaLoaded=false; loadCVAData(); }
   else loadResumenData();
 }
@@ -1436,6 +1517,215 @@ function loadVypData() {
   });
 }
 
+/* ── SISTEMAS PAGE ── */
+var SIS_KPIS = {
+  'NPS (%)':                                    { label:'NPS (%)',                              icon:'😊', objective:'Satisfacción de clientes',                   weight:0,  unit:'%',    inverse:false, fixedObj:null,  objLabel:'NO APLICA', suffix:null,      cuatrimestral:false },
+  'Servidores Activos':                         { label:'Servidores Activos',                   icon:'🖥️', objective:'Mantener servidores activos bajo el umbral',  weight:15, unit:'%',    inverse:true,  fixedObj:null,  objLabel:'< 70%',     suffix:null,      cuatrimestral:false },
+  'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 98%',     suffix:null,      cuatrimestral:false },
+  'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                    icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
+  'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                    icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',    inverse:false, fixedObj:null,  objLabel:'≥ 90%',     suffix:null,      cuatrimestral:false },
+  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',             icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$',    inverse:true,  fixedObj:null,  objLabel:'≤ $0.95',   suffix:null,      cuatrimestral:false }
+};
+
+var sisLoaded = false;
+var sisRawRows = [];
+var sisDataLoaded = false;
+var sisAllData = {};
+var sisExtras = {};
+var sisSelectedMes = '';
+
+function buildSisMonthSelector() {
+  var container = document.getElementById('sis-monthBtns');
+  var now = new Date(); var currentMonth = now.getMonth();
+  var defaultIdx = Math.max(currentMonth-1, 0);
+  MESES.forEach(function(mes, i) {
+    var btn = document.createElement('button');
+    btn.className = 'mbtn'; btn.textContent = mes.substring(0,3).toUpperCase(); btn.title = mes;
+    if (i >= currentMonth) { btn.disabled = true; }
+    else { btn.onclick = (function(m,b){ return function(){ sisSelectMonth(m,b); }; })(mes,btn); }
+    if (i === defaultIdx) { sisSelectedMes = mes; btn.classList.add('active'); }
+    container.appendChild(btn);
+  });
+}
+
+function sisSelectMonth(mes, activeBtn) {
+  sisSelectedMes = mes;
+  document.querySelectorAll('#sis-monthBtns .mbtn').forEach(function(b){ b.classList.remove('active'); });
+  activeBtn.classList.add('active');
+  loadSisData();
+}
+
+function fetchSis() {
+  if (sisDataLoaded) return Promise.resolve(sisRawRows);
+  return fetch(APPS_SCRIPT_URL + '?sheet=Sistemas')
+    .then(function(r){ return r.json(); })
+    .then(function(d){ sisRawRows = d.rows || []; sisDataLoaded = true; return sisRawRows; });
+}
+
+function loadSisAllData(mesesFiltro) {
+  return fetchSis().then(function(rows) {
+    var keys = Object.keys(SIS_KPIS);
+    keys.forEach(function(key) {
+      if (!sisAllData[key]) sisAllData[key] = {};
+      if (!sisExtras[key])  sisExtras[key]  = {};
+      mesesFiltro.forEach(function(m) {
+        sisAllData[key][m] = { real: null, objetivo: null };
+        sisExtras[key][m]  = { comentarios: '', accionesMejora: '' };
+      });
+    });
+    rows.forEach(function(row) {
+      var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
+      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : '').trim();
+      if (!mes || !kpi || !SIS_KPIS[kpi]) return;
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      if (mesesFiltro.indexOf(mes) === -1) return;
+      var rawReal = row.hasOwnProperty('REAL') ? row['REAL'] : null;
+      var rawObj  = row.hasOwnProperty('OBJETIVO') ? row['OBJETIVO'] : null;
+      var real = parseVal(rawReal, kpi);
+      var obj  = parseVal(rawObj,  kpi);
+      var cfg  = SIS_KPIS[kpi];
+      sisAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
+      // Columnas extra
+      var rkeys = Object.keys(row);
+      var kCom = rkeys.find(function(k){ return k.toUpperCase().trim() === 'COMENTARIOS'; });
+      var kAcc = rkeys.find(function(k){ return k.toUpperCase().trim() === 'ACCIONES DE MEJORA'; });
+      if (!sisExtras[kpi]) sisExtras[kpi] = {};
+      if (!sisExtras[kpi][mes]) sisExtras[kpi][mes] = { comentarios:'', accionesMejora:'' };
+      if (kCom) sisExtras[kpi][mes].comentarios    = String(row[kCom] || '').trim();
+      if (kAcc) sisExtras[kpi][mes].accionesMejora = String(row[kAcc] || '').trim();
+    });
+  });
+}
+
+function sisOpenModal(kpi, comentario) {
+  var cfg = SIS_KPIS[kpi];
+  document.getElementById('sis-modal-kpi').textContent = cfg ? cfg.label : kpi;
+  document.getElementById('sis-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  document.getElementById('sis-modal-overlay').style.display = 'flex';
+}
+function sisCloseModal() {
+  document.getElementById('sis-modal-overlay').style.display = 'none';
+}
+
+function renderSisAM() {
+  var tbody = document.getElementById('sis-am-tbody');
+  var section = document.getElementById('sis-am-section');
+  var rows = [];
+  Object.keys(SIS_KPIS).forEach(function(key) {
+    var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
+    var acc = ext.accionesMejora || '';
+    if (acc) rows.push({ label: SIS_KPIS[key].label, acc: acc });
+  });
+  if (!rows.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  tbody.innerHTML = rows.map(function(r, i) {
+    var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
+    return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
+      + '<td style="padding:14px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;">'+r.label+'</td>'
+      + '<td style="padding:14px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+r.acc+'</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function sisRenderCard(key) {
+  var cfg = SIS_KPIS[key];
+  var elId = 'sis-card-' + key;
+  var el = document.getElementById(elId);
+  if (!el || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
+
+  var d = sisAllData[key][sisSelectedMes];
+  var real = d.real, obj = d.objetivo;
+  var isPendiente = real === 'PENDIENTE';
+  var realNum = isPendiente ? null : real;
+  var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
+
+  var evalObj = obj;
+  var ok = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct = (realNum !== null && evalObj !== null && evalObj > 0) ? Math.round((cfg.inverse ? (evalObj/Math.max(realNum,0.01))*100 : (realNum/evalObj)*100)*10)/10 : 0;
+  var pw = Math.min(pct, 100);
+  var barCls = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
+
+  var cumpl = null;
+  if (!isPendiente && realNum !== null && evalObj !== null) {
+    cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
+  }
+
+  var cumplColor = cumpl === null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
+  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+
+  var badgeHtml;
+  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
+  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">&#9889; Cerca</span>';
+  else                                          badgeHtml = '<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+
+  var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : '—');
+  var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
+
+  // Comentarios click
+  var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
+  var com = ext.comentarios || '';
+  var metaHtml = com
+    ? '<div class="kpi-meta" style="cursor:pointer;" onclick="sisOpenModal(\''+key.replace(/'/g,"\\'").replace(/\(/g,'\\(').replace(/\)/g,'\\)')+'\',\''+com.replace(/'/g,"\\'").replace(/\n/g,'\\n')+'\')">Meta: '+metaDisplay+' 💬</div>'
+    : '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
+
+  el.innerHTML = [
+    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
+    '<div class="kpi-label">'+cfg.label+'</div>',
+    '<div class="kpi-objective">'+cfg.objective+'</div>',
+    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
+    metaHtml,
+    cumplHtml,
+    '<div class="kpi-divider"></div>',
+    '<div class="progress-wrap">',
+      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw > 0 ? pw+'%' : '—')+'</span><span>100%</span></div>',
+      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
+    '</div>',
+    badgeHtml
+  ].join('');
+}
+
+function sisCalcSummary() {
+  var score = 0, totalW = 0, ok = 0;
+  Object.keys(SIS_KPIS).forEach(function(key) {
+    var cfg = SIS_KPIS[key];
+    if (cfg.weight === 0 || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
+    var d = sisAllData[key][sisSelectedMes];
+    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
+    score += Math.min(cfg.inverse ? (d.objetivo/Math.max(d.real,0.01)) : (d.real/d.objetivo), 1) * cfg.weight;
+    totalW += cfg.weight;
+    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+  });
+  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok };
+}
+
+function loadSisData() {
+  if (!sisSelectedMes) return;
+  document.getElementById('sis-loadingBox').style.display = 'block';
+  document.getElementById('sis-errorBox').style.display = 'none';
+  document.getElementById('sis-mainContent').style.display = 'none';
+
+  loadSisAllData([sisSelectedMes]).then(function() {
+    sisLoaded = true;
+    Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
+    renderSisAM();
+    var s = sisCalcSummary();
+    document.getElementById('sis-sum-ok').textContent = s.ok + ' / 5';
+    var te = document.getElementById('sis-sum-trend');
+    if (s.pct !== null) {
+      te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
+      te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
+    }
+    document.getElementById('sis-loadingBox').style.display = 'none';
+    document.getElementById('sis-mainContent').style.display = 'block';
+  }).catch(function(e) {
+    document.getElementById('sis-loadingBox').style.display = 'none';
+    document.getElementById('sis-errorBox').style.display = 'block';
+    document.getElementById('sis-errorMsg').textContent = 'Error: ' + e.message;
+  });
+}
+
 /* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
 var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
 var cvaLoaded = false;
@@ -1771,6 +2061,7 @@ async function loadCVAData(){
 buildMonthSelector();
 buildCVAMonthSelector();
 buildVypMonthSelector();
+buildSisMonthSelector();
 loadMensualData();
 </script>
 </body>
