@@ -549,8 +549,14 @@ footer {
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
       <span class="nav-icon">🎯</span><span>KPIs: Central Monitoreo CVA</span>
     </a>
+    <a class="nav-item" id="nav-nn" onclick="navigate('nn')" href="#">
+      <span class="nav-icon">🚀</span><span>KPIs: Nuevos Negocios</span>
+    </a>
     <a class="nav-item" id="nav-resumen" onclick="navigate('resumen')" href="#">
       <span class="nav-icon">📋</span><span>KPIs Resumen: Servicios Financieros y Flotas</span>
+    </a>
+    <a class="nav-item" id="nav-general" onclick="navigate('general')" href="#">
+      <span class="nav-icon">🗂️</span><span>Resumen General</span>
     </a>
   </div>
 </nav>
@@ -800,178 +806,207 @@ footer {
   </div>
 
   <!-- PAGE: CVA - KPIs Mensual: Central Monitoreo CVA -->
-  <div class="page" id="page-cva" style="flex:1;flex-direction:column;">
-    <!-- CVA Month selector bar (reuses SF styling) -->
-    <div class="month-panel" id="cva-month-panel">
+  <div class="page" id="page-cva">
+
+    <!-- MODAL COMENTARIOS CVA -->
+    <div id="cva-modal-overlay" onclick="cvaCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:var(--white);border-radius:14px;padding:30px 34px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
+        <button onclick="cvaCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="cva-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
+        <div id="cva-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
+    <div class="month-panel">
       <div>
         <div class="month-panel-title">Central de Monitoreo CVA · Período de análisis</div>
         <div class="month-panel-sub">Selecciona el mes a visualizar</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:nowrap;" id="cva-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
-        <div style="padding:0 24px;">
-          <div class="sum-lbl">Mes activo</div>
-          <div class="sum-val" id="cva-mes-label">—</div>
-          <div class="sum-sub">Central Monitoreo</div>
+      <div class="month-btns" id="cva-monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate4);">
+        <div style="padding:0 22px;border-right:1px solid var(--slate4);">
+          <div class="sum-lbl">Tendencia</div>
+          <div class="sum-val" id="cva-sum-trend">—</div>
+          <div class="sum-sub">Resultado general</div>
+        </div>
+        <div style="padding:0 22px;">
+          <div class="sum-lbl">En objetivo</div>
+          <div class="sum-val" id="cva-sum-ok">—</div>
+          <div class="sum-sub">de 6 KPIs</div>
         </div>
       </div>
     </div>
 
-    <div class="content" id="cva-content">
-      <!-- Recuperaciones -->
-      <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
-      <div class="grid grid-3" style="margin-bottom:26px;">
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-robos">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🚨</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Robos</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-robos">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 90%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-robos"> </div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-robos" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-robos">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-robos">⏳ Sin datos</span>
+    <div class="content">
+      <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:32px;margin-bottom:12px;opacity:0.4;">⚠</div><p id="cva-errorMsg">Error.</p></div>
+      <div id="cva-mainContent" style="display:none;">
+
+        <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="cva-card-ROBOS"></div>
+          <div class="kpi-card c2" id="cva-card-ABUSOS DE CONFIANZA"></div>
+          <div class="kpi-card c3" id="cva-card-CREDITOS"></div>
         </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-abusos">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">⚠️</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Abusos de Confianza</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-abusos">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 80%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-abusos"> </div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-abusos" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-abusos">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-abusos">⏳ Sin datos</span>
+
+        <div class="section-hdr"><div class="section-hdr-txt">🎧 Soporte &amp; Capacitación</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="cva-card-TIEMPO DE PRIMERA RESPUESTA"></div>
+          <div class="kpi-card c2" id="cva-card-SATISFACCIÓN DE CAPACITACIONES"></div>
         </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-creditos">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">💳</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Créditos</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-creditos">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 90%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-creditos"> </div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-creditos" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-creditos">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-creditos">⏳ Sin datos</span>
+
+        <div class="section-hdr"><div class="section-hdr-txt">🌐 Conectividad</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="cva-card-CONECTIVIDAD"></div>
+        </div>
+
+        <!-- LOGROS E IMPEDIMENTOS -->
+        <div id="cva-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--navy);">
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+                </tr>
+              </thead>
+              <tbody id="cva-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: NUEVOS NEGOCIOS -->
+  <div class="page" id="page-nn">
+
+    <!-- MODAL COMENTARIOS NN -->
+    <div id="nn-modal-overlay" onclick="nnCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:var(--white);border-radius:14px;padding:30px 34px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
+        <button onclick="nnCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
+        <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
+    <div class="month-panel">
+      <div>
+        <div class="month-panel-title">Nuevos Negocios – Flotillas y Financieras · Período de análisis</div>
+        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
+      </div>
+      <div class="month-btns" id="nn-monthBtns"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate4);">
+        <div style="padding:0 22px;border-right:1px solid var(--slate4);">
+          <div class="sum-lbl">Tendencia</div>
+          <div class="sum-val" id="nn-sum-trend">—</div>
+          <div class="sum-sub">Resultado general</div>
+        </div>
+        <div style="padding:0 22px;">
+          <div class="sum-lbl">En objetivo</div>
+          <div class="sum-val" id="nn-sum-ok">—</div>
+          <div class="sum-sub">de 7 KPIs</div>
         </div>
       </div>
+    </div>
 
-      <!-- Soporte -->
-      <div class="section-hdr"><div class="section-hdr-txt">🎧 Soporte</div><div class="section-hdr-line"></div></div>
-      <div class="grid grid-3" style="margin-bottom:26px;">
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-tickets">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🎫</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Tiempo de Primera Respuesta</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-tickets">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≤ 15 min</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-tickets"> </div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-tickets" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-tickets">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-tickets">⏳ Sin datos</span>
+    <div class="content">
+      <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
+      <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:32px;margin-bottom:12px;opacity:0.4;">⚠</div><p id="nn-errorMsg">Error.</p></div>
+      <div id="nn-mainContent" style="display:none;">
+
+        <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="nn-card-Ingresos"></div>
+          <div class="kpi-card c2" id="nn-card-Clientes Nuevos"></div>
+          <div class="kpi-card c3" id="nn-card-Clientes Nuevos 5 Estrellas"></div>
         </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-capac">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📚</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Satisfacción de Capacitaciones</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-capac">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 95%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-capac"> </div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-capac" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-capac">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-capac">⏳ Sin datos</span>
+
+        <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Proceso</div><div class="section-hdr-line"></div></div>
+        <div class="grid grid-4">
+          <div class="kpi-card c1" id="nn-card-Pipeline / Salesstar = Calculadora"></div>
+          <div class="kpi-card c2" id="nn-card-Proceso Zoho"></div>
+          <div class="kpi-card c3" id="nn-card-Demos Activas"></div>
+          <div class="kpi-card c4" id="nn-card-Conversión Demo - Cierre"></div>
         </div>
+
+        <!-- LOGROS E IMPEDIMENTOS -->
+        <div id="nn-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--navy);">
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+                </tr>
+              </thead>
+              <tbody id="nn-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
+    </div>
+  </div>
 
-      <!-- Conectividad -->
-      <div class="section-hdr"><div class="section-hdr-txt">🌐 Conectividad</div><div class="section-hdr-line"></div></div>
-
-      <div class="grid grid-4" style="margin-bottom:14px;">
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-con-general">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📡</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Conectividad General</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-general">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-general">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-general" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-general">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-general">⏳ Sin datos</span>
-        </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-con-legacy">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🗄️</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Legacy</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-legacy">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-legacy">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-legacy" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-legacy">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-legacy">⏳ Sin datos</span>
-        </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-con-s1">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S1</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s1">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s1">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s1" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s1">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-s1">⏳ Sin datos</span>
-        </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-light);" id="cva-c-con-s2">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S2</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s2">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s2">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s2" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s2">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-s2">⏳ Sin datos</span>
-        </div>
+  <!-- PAGE: RESUMEN GENERAL -->
+  <div class="page" id="page-general">
+    <div class="tab-bar" id="genTabBar">
+      <div class="tab-bar-left">
+        <button class="tab-btn" id="gen-tab-1" onclick="genSelectQ(1,this)">Q1 · Ene – Abr</button>
+        <button class="tab-btn" id="gen-tab-2" onclick="genSelectQ(2,this)">Q2 · May – Ago</button>
+        <button class="tab-btn" id="gen-tab-3" onclick="genSelectQ(3,this)">Q3 · Sep – Dic</button>
+        <button class="tab-btn anual" id="gen-tab-anual" onclick="genSelectQ('anual',this)">📅 Anual · Ene – Dic</button>
       </div>
-      <div class="grid grid-3" style="margin-bottom:26px;">
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-dark);" id="cva-c-con-s3">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🛰️</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">S3</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-s3">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-s3">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-s3" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-s3">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-s3">⏳ Sin datos</span>
-        </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-main);" id="cva-c-con-bafar">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">🏭</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Bafar</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-bafar">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-bafar">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-bafar" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-bafar">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-bafar">⏳ Sin datos</span>
-        </div>
-        <div style="background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm);text-align:center;border-top:4px solid var(--blue-mid);" id="cva-c-con-recuperamovil">
-          <span style="font-size:1.3rem;margin-bottom:7px;display:block;">📱</span>
-          <div style="font-size:.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gray-500);margin-bottom:4px;">Recuperamovil</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--blue-dark);line-height:1;margin-bottom:4px;" id="cva-v-con-recuperamovil">—</div>
-          <div style="font-size:.72rem;color:var(--gray-400);margin-bottom:3px;">Meta: <b style="color:var(--blue-main);">≥ 85%</b></div>
-          <div style="font-size:.7rem;color:var(--gray-500);margin-bottom:10px;" id="cva-d-con-recuperamovil">⏳</div>
-          <div class="progress-track" style="margin-bottom:4px;"><div class="progress-bar bar-ok" id="cva-pb-con-recuperamovil" style="width:0%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:.67rem;color:var(--gray-400);margin-bottom:8px;"><span>0%</span><span style="font-weight:700;color:var(--blue-dark);" id="cva-pl-con-recuperamovil">—</span><span>100%</span></div>
-          <span class="kpi-badge badge-nd" id="cva-b-con-recuperamovil">⏳ Sin datos</span>
-        </div>
-      </div>
+      <button class="pdf-btn" id="genPdfBtn" onclick="genExportPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Exportar PDF
+      </button>
+    </div>
+    <div class="content" style="padding-top:24px;" id="gen-content">
+      <div id="gen-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos de todas las áreas…</p></div>
+      <div id="gen-errorBox" class="state-box" style="display:none;"><div style="font-size:32px;margin-bottom:12px;opacity:0.4;">⚠</div><p id="gen-errorMsg">Error.</p></div>
+      <div id="gen-mainContent" style="display:none;">
 
-      <!-- TABLA LOGROS E IMPEDIMENTOS CVA -->
-      <div id="cva-li-section" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
-        <div class="table-wrap" style="margin-bottom:26px;">
-          <table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead>
-              <tr style="background:var(--blue-dark);">
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
-              </tr>
-            </thead>
-            <tbody id="cva-li-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+        <!-- Score cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
 
+        <!-- SFyF -->
+        <div class="section-hdr"><div class="section-hdr-txt">💼 Servicios Financieros y Flotas</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-sf"></table></div>
+        </div>
+
+        <!-- VyP -->
+        <div class="section-hdr"><div class="section-hdr-txt">🏷️ Venta Postventa</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-vyp"></table></div>
+        </div>
+
+        <!-- Sistemas -->
+        <div class="section-hdr"><div class="section-hdr-txt">🖥️ Sistemas</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-sis"></table></div>
+        </div>
+
+        <!-- CVA -->
+        <div class="section-hdr"><div class="section-hdr-txt">🎯 Central de Monitoreo CVA</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-cva"></table></div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -1214,9 +1249,17 @@ function navigate(page) {
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Sistemas';
     loadSisData();
   } else if (page==='cva') {
-    document.getElementById('topbar-title').textContent='KPIs Mensual: Central Monitoreo CVA';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Central Monitoreo CVA';
-    if (!cvaLoaded) loadCVAData();
+    document.getElementById('topbar-title').textContent='KPIs: Central Monitoreo CVA';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Central Monitoreo CVA';
+    loadCvaData();
+  } else if (page==='nn') {
+    document.getElementById('topbar-title').textContent='KPIs: Nuevos Negocios – Flotillas y Financieras';
+    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Nuevos Negocios';
+    loadNnData();
+  } else if (page==='general') {
+    document.getElementById('topbar-title').textContent='Resumen General · Todas las Áreas';
+    document.getElementById('topbar-crumb').textContent='Reportes · Resumen General';
+    if (!genLoaded) loadGeneral();
   } else {
     document.getElementById('topbar-title').textContent='KPIs Resumen';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Resumen';
@@ -1225,14 +1268,19 @@ function navigate(page) {
 }
 
 function refreshData() {
+  genLoaded=false;
   allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[]; sfLIData={};
   vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
   sisAllData={}; sisExtras={}; sisLoaded=false; sisDataLoaded=false; sisRawRows=[];
-  if (currentPage==='mensual') loadMensualData();
-  else if (currentPage==='vyp') loadVypData();
-  else if (currentPage==='sis') loadSisData();
-  if (currentPage==='cva') { cvaLoaded=false; cvaLILoaded=false; cvaLIData={}; cvaLIRows=[]; loadCVAData(); }
-  else loadResumenData();
+  cvaAllData={}; cvaExtras2={}; cvaPageLoaded=false; cvaRawRows2=[];
+  nnAllData={}; nnExtras={}; nnLoaded=false; nnRawRows=[];
+  if      (currentPage==='mensual')  loadMensualData();
+  else if (currentPage==='vyp')      loadVypData();
+  else if (currentPage==='sis')      loadSisData();
+  else if (currentPage==='cva')      loadCvaData();
+  else if (currentPage==='nn')       loadNnData();
+  else if (currentPage==='general')  loadGeneral();
+  else                               loadResumenData();
 }
 
 /* ── MENSUAL PAGE ── */
@@ -2010,7 +2058,7 @@ function sisSelectMonth(mes, activeBtn) {
 
 function fetchSis() {
   if (sisDataLoaded) return Promise.resolve(sisRawRows);
-  return fetch(APPS_SCRIPT_URL + '?sheet=Sistemas')
+  return fetch(APPS_SCRIPT_URL + '?sheet=SISTEMAS')
     .then(function(r){ return r.json(); })
     .then(function(d){ sisRawRows = d.rows || []; sisDataLoaded = true; return sisRawRows; });
 }
@@ -2161,380 +2209,974 @@ function loadSisData() {
   });
 }
 
-/* ── CVA PAGE (Central Monitoreo) — lógica idéntica al dashboard original ── */
-var cvaLIData = {}; // { mes: { logros: [], impedimentos: [] } }
-var cvaLILoaded = false;
-var cvaLIRows = [];
 
-function fetchCvaLI() {
-  if (cvaLILoaded) return Promise.resolve(cvaLIRows);
-  return fetch(APPS_SCRIPT_URL + '?sheet=Monitoreo')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      cvaLIRows = d.rows || [];
-      cvaLILoaded = true;
-      cvaLIRows.forEach(function(row) {
-        var keys = Object.keys(row);
-        var kMes = keys.find(function(k){ return k.toUpperCase().trim() === 'MES'; });
-        var kLog = keys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
-        var kImp = keys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
-        if (!kMes) return;
-        var mes = String(row[kMes]||'').toUpperCase().trim();
-        if (!mes) return;
-        var logros = String(row[kLog]||'').trim();
-        var imped  = String(row[kImp]||'').trim();
-        if (!logros && !imped) return;
-        if (!cvaLIData[mes]) cvaLIData[mes] = { logros:[], impedimentos:[] };
-        if (logros) cvaLIData[mes].logros.push(logros);
-        if (imped)  cvaLIData[mes].impedimentos.push(imped);
-      });
-      return cvaLIRows;
-    })
-    .catch(function(){ return []; });
+
+/* Safe comment button builder — avoids quote-escaping issues in innerHTML */
+function buildCommentBtn(fnName, key, com) {
+  var safeKey = encodeURIComponent(key);
+  var safeCom = encodeURIComponent(com);
+  return '<div class="kpi-acum-val" style="cursor:pointer;" '
+    + 'onclick="' + fnName + '(decodeURIComponent(\'' + safeKey + '\'),decodeURIComponent(\'' + safeCom + '\'))">💬 Ver comentario</div>';
 }
+/* ══════════════════════════════════════════════════════
+   PÁGINA CVA — datos desde hoja MONITOREO
+   Estructura: MES | KPI | REAL | OBJETIVO | COMENTARIOS | LOGROS | IMPEDIMENTOS
+   ══════════════════════════════════════════════════════ */
 
-function renderCvaLI(mes) {
-  var data = cvaLIData[mes] || {};
-  renderLITable('cva-li-section', 'cva-li-tbody', data.logros || [], data.impedimentos || []);
-}
-var CVA_API = 'https://script.google.com/macros/s/AKfycbwksyNuO5hu5WzMtbcywsFn5ACSdCDxrqoRWPe0OcW8C4zESEhdD7_HPgFqB0Wr3CXZaA/exec';
-var cvaLoaded = false;
-// Mismas estructuras que el original: recData, srvData, robosData, conectividadData, zohoHistorial
-var cvaRecData=[], cvaSrvData=[], cvaRobosData=[], cvaConectividadData={}, cvaConectividadHistorial={}, cvaZohoHistorial={};
-var cvaSelectedMes='';
-var cvaFallbackGlobal=0, cvaFallbackMap={};
+var CVA_KPIS = {
+  'ROBOS':                          { label:'Robos',                         icon:'🚨', objective:'Tasa de recuperación de robos',               weight:20, unit:'%',    inverse:false, fixedObj:90,   objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
+  'ABUSOS DE CONFIANZA':            { label:'Abusos de Confianza',           icon:'⚠️', objective:'Tasa de recuperación — abusos de confianza',  weight:20, unit:'%',    inverse:false, fixedObj:80,   objLabel:'≥ 80%',     suffix:null, cuatrimestral:false },
+  'CREDITOS':                       { label:'Créditos',                      icon:'💳', objective:'Tasa de recuperación de créditos',            weight:20, unit:'%',    inverse:false, fixedObj:90,   objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
+  'TIEMPO DE PRIMERA RESPUESTA':    { label:'Tiempo de Primera Respuesta',   icon:'🎫', objective:'Tiempo promedio de primera respuesta',        weight:15, unit:'min',  inverse:true,  fixedObj:15,   objLabel:'≤ 15 min',  suffix:null, cuatrimestral:false },
+  'SATISFACCIÓN DE CAPACITACIONES': { label:'Satisfacción Capacitaciones',   icon:'📚', objective:'Satisfacción en capacitaciones impartidas',   weight:15, unit:'%',    inverse:false, fixedObj:95,   objLabel:'≥ 95%',     suffix:null, cuatrimestral:false },
+  'CONECTIVIDAD':                   { label:'Conectividad',                  icon:'📡', objective:'Conectividad promedio de plataformas',        weight:10, unit:'%',    inverse:false, fixedObj:85,   objLabel:'≥ 85%',     suffix:null, cuatrimestral:false }
+};
 
-var CVA_MESES_ORD=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-var CVA_CON_MAP={'general':['GENERAL','CONECTIVIDAD GENERAL'],'legacy':['LEGACY'],'s1':['S1'],'s2':['S2'],'s3':['S3'],'bafar':['BAFAR'],'recuperamovil':['RECUPERAMOVIL']};
+var cvaRawRows2    = [];
+var cvaPageLoaded  = false;
+var cvaAllData     = {};
+var cvaExtras2     = {};
+var cvaSelectedMes2 = '';
 
-/* Formato HH:MM:SS igual al original fmtMin() */
-function cvaFmtMin(m){return Math.floor(m/60).toString().padStart(2,'0')+':'+Math.floor(m%60).toString().padStart(2,'0')+':'+Math.floor((m*60)%60).toString().padStart(2,'0');}
-
-function buildCVAMonthSelector(){
-  var container=document.getElementById('cva-monthBtns');
-  var nowD=new Date(); var currentMonth=nowD.getMonth();
-  var defaultIdx=Math.max(currentMonth-1,0);
-  MESES.forEach(function(mes,i){
-    var btn=document.createElement('button');
-    btn.className='mbtn'; btn.textContent=mes.substring(0,3).toUpperCase(); btn.title=mes;
-    if(i>=currentMonth){ btn.disabled=true; }
-    else{ btn.onclick=(function(m,b){return function(){selectCVAMonth(m,b);};})(mes,btn); }
-    if(i===defaultIdx){ cvaSelectedMes=mes.toUpperCase(); btn.classList.add('active'); }
+function buildCvaMonthSelector() {
+  var container = document.getElementById('cva-monthBtns');
+  if (!container) return;
+  var currentMonth = new Date().getMonth();
+  var defaultIdx   = Math.max(currentMonth - 1, 0);
+  MESES.forEach(function(mes, i) {
+    var btn = document.createElement('button');
+    btn.className   = 'mbtn';
+    btn.textContent = mes.substring(0, 3).toUpperCase();
+    btn.title       = mes;
+    if (i >= currentMonth) { btn.disabled = true; }
+    else { btn.onclick = (function(m, b) { return function() { cvaSelectMonth2(m, b); }; })(mes, btn); }
+    if (i === defaultIdx) { cvaSelectedMes2 = mes; btn.classList.add('active'); }
     container.appendChild(btn);
   });
 }
 
-function selectCVAMonth(mes,activeBtn){
-  cvaSelectedMes=mes.toUpperCase();
-  document.querySelectorAll('#cva-monthBtns .mbtn').forEach(function(b){b.classList.remove('active');});
+function cvaSelectMonth2(mes, activeBtn) {
+  cvaSelectedMes2 = mes;
+  document.querySelectorAll('#cva-monthBtns .mbtn').forEach(function(b) { b.classList.remove('active'); });
   activeBtn.classList.add('active');
-  document.getElementById('cva-mes-label').textContent=mes.charAt(0).toUpperCase()+mes.slice(1).toLowerCase();
-  cvaRenderMensual(cvaSelectedMes);
+  cvaRenderPage();
 }
 
-/* ── Helpers idénticos al original ── */
-function cvaGetConPctMes(key,mes){
-  var aliases=CVA_CON_MAP[key]||[key.toUpperCase()];
-  var mesDat=cvaConectividadData[mes]||{};
-  var found=null;
-  aliases.forEach(function(a){
-    if(found!==null)return;
-    if(mesDat[a]!==undefined){found=mesDat[a];return;}
-    Object.keys(mesDat).forEach(function(k){if(found===null&&(k===a||k.indexOf(a)!==-1))found=mesDat[k];});
-  });
-  return found;
-}
-
-/* setKPI / resetKPI — adaptados al prefijo "cva-" pero lógica idéntica al original */
-function cvaSetKPI(id,d,meta){
-  // d tiene forma {pct, recup, noRec} para recuperaciones; null si no hay datos
-  if(!d||d.pct===null||isNaN(d.pct)){cvaResetKPI(id);return;}
-  var pct=d.pct, good=pct>=meta;
-  document.getElementById('cva-v-'+id).textContent=pct.toFixed(2)+'%';
-  document.getElementById('cva-d-'+id).textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas';
-  var pw=Math.min(pct,100);
-  document.getElementById('cva-pb-'+id).style.width=pw+'%';
-  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
-  document.getElementById('cva-pl-'+id).textContent=pct.toFixed(2)+'%';
-  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
-  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
-  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
-  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
-}
-
-function cvaSetKPISimple(id,pct,total,meta){
-  // Para capacitaciones: pct ya es el valor calculado, total = encuestas
-  if(isNaN(pct)){cvaResetKPI(id);return;}
-  var good=pct>=meta;
-  document.getElementById('cva-v-'+id).textContent=pct.toFixed(2)+'%';
-  document.getElementById('cva-d-'+id).textContent=total+' encuestas respondidas';
-  var pw=Math.min(pct,100);
-  document.getElementById('cva-pb-'+id).style.width=pw+'%';
-  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
-  document.getElementById('cva-pl-'+id).textContent=pct.toFixed(2)+'%';
-  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
-  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
-  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
-  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
-}
-
-function cvaSetKPITickets(id,avgMin,totalTickets,meta){
-  if(!avgMin||isNaN(avgMin)){cvaResetKPI(id);return;}
-  var good=avgMin>0&&avgMin<=meta;
-  var label=avgMin>0?cvaFmtMin(avgMin):'—';
-  document.getElementById('cva-v-'+id).textContent=label;
-  document.getElementById('cva-d-'+id).textContent='Total: '+totalTickets+' tickets';
-  var pw=avgMin>0?Math.min((meta/avgMin)*100,100):0;
-  document.getElementById('cva-pb-'+id).style.width=pw+'%';
-  document.getElementById('cva-pb-'+id).className='progress-bar '+(good?'bar-ok':'bar-off');
-  document.getElementById('cva-pl-'+id).textContent=label;
-  document.getElementById('cva-pl-'+id).style.color=good?'var(--green)':'var(--red)';
-  document.getElementById('cva-b-'+id).className='kpi-badge '+(good?'badge-ok':'badge-off');
-  document.getElementById('cva-b-'+id).textContent=good?'✅ Cumple meta':'❌ Sobre meta';
-  document.getElementById('cva-c-'+id).style.borderTopColor=good?'var(--green)':'var(--red)';
-}
-
-function cvaSetKPIConectividad(id,pct,det,meta){
-  var good=pct!==null&&pct>=meta;
-  document.getElementById('cva-v-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
-  document.getElementById('cva-d-'+id).textContent=pct!==null?(det||'Conectividad registrada'):'Sin datos';
-  var pw=pct!==null?Math.min(pct,100):0;
-  document.getElementById('cva-pb-'+id).style.width=pw+'%';
-  document.getElementById('cva-pb-'+id).className='progress-bar '+(pct===null?'bar-ok':good?'bar-ok':'bar-off');
-  document.getElementById('cva-pl-'+id).textContent=pct!==null?pct.toFixed(2)+'%':'—';
-  document.getElementById('cva-pl-'+id).style.color=pct===null?'var(--gray-400)':good?'var(--green)':'var(--red)';
-  document.getElementById('cva-b-'+id).className='kpi-badge '+(pct===null?'badge-nd':good?'badge-ok':'badge-off');
-  document.getElementById('cva-b-'+id).textContent=pct===null?'⏳ Sin datos':good?'✅ Cumple meta':'❌ Bajo meta';
-  document.getElementById('cva-c-'+id).style.borderTopColor=pct===null?'var(--gray-200)':good?'var(--green)':'var(--red)';
-}
-
-function cvaResetKPI(id){
-  document.getElementById('cva-v-'+id).textContent='—';
-  document.getElementById('cva-d-'+id).textContent='Sin datos para este período';
-  document.getElementById('cva-pb-'+id).style.width='0%';
-  document.getElementById('cva-pb-'+id).className='progress-bar bar-ok';
-  document.getElementById('cva-pl-'+id).textContent='—';
-  document.getElementById('cva-pl-'+id).style.color='';
-  document.getElementById('cva-b-'+id).className='kpi-badge badge-nd';
-  document.getElementById('cva-b-'+id).textContent='⏳ Sin datos';
-  document.getElementById('cva-c-'+id).style.borderTopColor='var(--gray-200)';
-}
-
-
-/* Dado un mes deseado, retorna el mes más cercano (hacia atrás, luego adelante)
-   que tenga datos según la función tieneDatos(m) */
-function cvaFallbackMes(mesDeseado, tieneDatos){
-  var idx=CVA_MESES_ORD.indexOf(mesDeseado);
-  for(var i=idx;i>=0;i--){ if(tieneDatos(CVA_MESES_ORD[i]))return CVA_MESES_ORD[i]; }
-  for(var j=idx+1;j<CVA_MESES_ORD.length;j++){ if(tieneDatos(CVA_MESES_ORD[j]))return CVA_MESES_ORD[j]; }
-  return null;
-}
-
-/* Etiqueta pequeña que indica de qué mes proviene el dato si difiere del seleccionado */
-function cvaSufMes(mesFuente, mesDeseado){
-  if(!mesFuente||mesFuente===mesDeseado)return'';
-  return' · dato de '+mesFuente.charAt(0)+mesFuente.slice(1).toLowerCase();
-}
-
-/* ── renderMensual — siempre muestra el dato más reciente disponible ── */
-function cvaRenderMensual(mes){
-  if(!mes)return;
-  document.getElementById('cva-mes-label').textContent=mes.charAt(0)+mes.slice(1).toLowerCase();
-
-  // 1. Recuperaciones — usa el mes con datos más cercano al seleccionado
-  var mesRec=cvaFallbackMes(mes,function(m){
-    return cvaRecData.some(function(r){return r.mes===m;});
-  });
-  var rows=mesRec?cvaRecData.filter(function(r){return r.mes===mesRec;}):[]; 
-  var agg={};
-  rows.forEach(function(r){if(!agg[r.tipo])agg[r.tipo]={recup:0,noRec:0};agg[r.tipo].recup+=r.recup;agg[r.tipo].noRec+=r.noRec;});
-  Object.keys(agg).forEach(function(k){var t=agg[k].recup+agg[k].noRec;agg[k].pct=t>0?(agg[k].recup/t)*100:null;});
-  var findRec=function(t){var k=Object.keys(agg).find(function(k){return k.includes(t);});return k?agg[k]:null;};
-  var sufRec=cvaSufMes(mesRec,mes);
-  [['robos','rob',90],['abusos','abu',80],['creditos','cred',90]].forEach(function(cfg){
-    var d=findRec(cfg[1]);
-    if(!d||d.pct===null){cvaResetKPI(cfg[0]);return;}
-    var good=d.pct>=cfg[2];
-    document.getElementById('cva-v-'+cfg[0]).textContent=d.pct.toFixed(2)+'%';
-    document.getElementById('cva-d-'+cfg[0]).textContent=d.recup+' recuperadas · '+d.noRec+' no recuperadas'+sufRec;
-    document.getElementById('cva-pb-'+cfg[0]).style.width=Math.min(d.pct,100)+'%';
-    document.getElementById('cva-pb-'+cfg[0]).className='progress-bar '+(good?'bar-ok':'bar-off');
-    document.getElementById('cva-pl-'+cfg[0]).textContent=d.pct.toFixed(2)+'%';
-    document.getElementById('cva-pl-'+cfg[0]).style.color=good?'var(--green)':'var(--red)';
-    document.getElementById('cva-b-'+cfg[0]).className='kpi-badge '+(good?'badge-ok':'badge-off');
-    document.getElementById('cva-b-'+cfg[0]).textContent=good?'✅ Cumple meta':'❌ Bajo meta';
-    document.getElementById('cva-c-'+cfg[0]).style.borderTopColor=good?'var(--green)':'var(--red)';
-  });
-
-  // 2. Tickets — fetch directo por mes; si no hay datos usa fallback de zohoHistorial
-  cvaLoadZohoTickets(mes);
-
-  // 3. Capacitaciones — usa el mes con datos más cercano al seleccionado
-  var mesSrv=cvaFallbackMes(mes,function(m){
-    return cvaSrvData.some(function(r){return r.mes===m&&r.total>0;});
-  });
-  var srvRows=mesSrv?cvaSrvData.filter(function(r){return r.mes===mesSrv;}):[]; 
-  if(srvRows.length){
-    var tot=srvRows.reduce(function(s,r){return s+r.total;},0);
-    var avg=srvRows.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);
-    var sufSrv=cvaSufMes(mesSrv,mes);
-    var good95=avg>=95;
-    document.getElementById('cva-v-capac').textContent=avg.toFixed(2)+'%';
-    document.getElementById('cva-d-capac').textContent=tot+' encuestas respondidas'+sufSrv;
-    document.getElementById('cva-pb-capac').style.width=Math.min(avg,100)+'%';
-    document.getElementById('cva-pb-capac').className='progress-bar '+(good95?'bar-ok':'bar-off');
-    document.getElementById('cva-pl-capac').textContent=avg.toFixed(2)+'%';
-    document.getElementById('cva-pl-capac').style.color=good95?'var(--green)':'var(--red)';
-    document.getElementById('cva-b-capac').className='kpi-badge '+(good95?'badge-ok':'badge-off');
-    document.getElementById('cva-b-capac').textContent=good95?'✅ Cumple meta':'❌ Bajo meta';
-    document.getElementById('cva-c-capac').style.borderTopColor=good95?'var(--green)':'var(--red)';
-  } else { cvaResetKPI('capac'); }
-
-  // 4. Conectividad
-  cvaRenderConectividad(mes);
-
-  // 5. Logros e Impedimentos
-  fetchCvaLI().then(function(){ renderCvaLI(mes); });
-}
-
-/* Conectividad — busca el mes más cercano con datos por plataforma;
-   si no hay datos por plataforma usa el historial general, también con fallback */
-function cvaRenderConectividad(mes){
-  var META=85;
-  var subKeys=['legacy','s1','s2','s3','bafar','recuperamovil'];
-
-  // Para cada sub-plataforma, busca el mes más cercano con dato
-  function getConFallback(key){
-    var mesFuente=cvaFallbackMes(mes,function(m){
-      return cvaGetConPctMes(key,m)!==null;
+function fetchCva2() {
+  if (cvaPageLoaded) return Promise.resolve(cvaRawRows2);
+  return fetch(APPS_SCRIPT_URL + '?sheet=MONITOREO')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      cvaRawRows2   = d.rows || [];
+      cvaPageLoaded = true;
+      return cvaRawRows2;
     });
-    if(!mesFuente)return{pct:null,suf:''};
-    return{pct:cvaGetConPctMes(key,mesFuente),suf:cvaSufMes(mesFuente,mes)};
-  }
+}
 
-  var platResults=subKeys.map(getConFallback);
-  var platValsDisp=platResults.map(function(r){return r.pct;}).filter(function(v){return v!==null;});
+function loadCvaAllData(mesesFiltro) {
+  return fetchCva2().then(function(rows) {
+    var keys = Object.keys(CVA_KPIS);
+    keys.forEach(function(key) {
+      if (!cvaAllData[key])  cvaAllData[key]  = {};
+      if (!cvaExtras2[key])  cvaExtras2[key]  = {};
+      mesesFiltro.forEach(function(m) {
+        cvaAllData[key][m]  = { real: null, objetivo: null };
+        cvaExtras2[key][m]  = { comentarios: '', logros: '', impedimentos: '' };
+      });
+    });
 
-  // General: promedio de plataformas si existen, si no usa historial con fallback
-  var generalPct=null, generalSuf='';
-  if(platValsDisp.length){
-    generalPct=platValsDisp.reduce(function(s,v){return s+v;},0)/platValsDisp.length;
-  } else {
-    var mesGen=cvaFallbackMes(mes,function(m){return cvaConectividadHistorial[m]!==undefined;});
-    if(mesGen){generalPct=cvaConectividadHistorial[mesGen];generalSuf=cvaSufMes(mesGen,mes);}
-  }
+    rows.forEach(function(row) {
+      var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
+      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : '').trim().toUpperCase();
+      if (!mes || !kpi) return;
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      if (mesesFiltro.indexOf(mes) === -1) return;
 
-  cvaSetKPIConectividad('con-general',generalPct,
-    platValsDisp.length?('Promedio de '+platValsDisp.length+' plataformas'+generalSuf):('Conectividad del mes'+generalSuf),META);
+      // Normalize KPI key (trim + uppercase)
+      var matchKey = Object.keys(CVA_KPIS).find(function(k) { return k.toUpperCase() === kpi; });
+      if (!matchKey) return;
 
-  subKeys.forEach(function(id,i){
-    var r=platResults[i];
-    cvaSetKPIConectividad('con-'+id,r.pct,'Conectividad registrada'+r.suf,META);
+      var rawReal = row.hasOwnProperty('REAL')     ? row['REAL']     : null;
+      var rawObj  = row.hasOwnProperty('OBJETIVO')  ? row['OBJETIVO'] : null;
+      var real    = parseVal(rawReal, matchKey);
+      var obj     = parseVal(rawObj,  matchKey);
+      var cfg     = CVA_KPIS[matchKey];
+
+      cvaAllData[matchKey][mes] = {
+        real:     real,
+        objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
+      };
+
+      var rkeys = Object.keys(row);
+      var kCom  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'COMENTARIOS'; });
+      var kLog  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'LOGROS'; });
+      var kImp  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!cvaExtras2[matchKey][mes]) cvaExtras2[matchKey][mes] = { comentarios:'', logros:'', impedimentos:'' };
+      if (kCom) cvaExtras2[matchKey][mes].comentarios = String(row[kCom] || '').trim();
+      if (kLog) cvaExtras2[matchKey][mes].logros       = String(row[kLog] || '').trim();
+      if (kImp) cvaExtras2[matchKey][mes].impedimentos = String(row[kImp] || '').trim();
+    });
   });
 }
 
-/* Tickets — copia exacta de loadZohoTickets() del original, con prefijo cva */
-async function cvaLoadZohoTickets(mes){
-  var mesKey=mes||CVA_MESES_ORD[new Date().getMonth()];
-  document.getElementById('cva-d-tickets').textContent='⏳ Consultando Zoho...';
-  try{
-    var json=await fetch(CVA_API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(mesKey)).then(function(r){return r.json();});
-    if(json.error)throw new Error(json.error);
-    var agentes=json.data||[];
-    var totalTickets=agentes.reduce(function(s,a){return s+a.tickets;},0);
-    var tMin=agentes.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
-    var tCnt=agentes.reduce(function(s,a){return s+(a.count||0);},0);
-    var avgMin=tCnt>0?tMin/tCnt:0;
-    // fallback al mes anterior si no hay datos (igual que getGlobalFrt del original)
-    if(!avgMin)avgMin=cvaFallbackGlobal;
-    if(tCnt>0)cvaZohoHistorial[mesKey]=tMin/tCnt;
-    if(!totalTickets&&!avgMin){cvaResetKPI('tickets');return;}
-    cvaSetKPITickets('tickets',avgMin,totalTickets,15);
-  }catch(e){
-    document.getElementById('cva-d-tickets').textContent='⚠️ '+e.message;
-    cvaResetKPI('tickets');
+function cvaOpenModal(kpi, comentario) {
+  var cfg = CVA_KPIS[kpi];
+  document.getElementById('cva-modal-kpi').textContent  = cfg ? cfg.label : kpi;
+  document.getElementById('cva-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  document.getElementById('cva-modal-overlay').style.display = 'flex';
+}
+function cvaCloseModal() {
+  document.getElementById('cva-modal-overlay').style.display = 'none';
+}
+
+function cvaRenderCard(key) {
+  var cfg = CVA_KPIS[key];
+  var elId = 'cva-card-' + key;
+  var el   = document.getElementById(elId);
+  if (!el || !cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
+
+  var d          = cvaAllData[key][cvaSelectedMes2];
+  var real       = d.real, obj = d.objetivo;
+  var isPendiente = real === 'PENDIENTE';
+  var realNum    = isPendiente ? null : real;
+  var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
+
+  var evalObj = obj;
+  var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
+    ? Math.round((cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) * 10) / 10 : 0;
+  var pw      = Math.min(pct, 100);
+  var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
+
+  var cumpl = null;
+  if (!isPendiente && realNum !== null && evalObj !== null) {
+    cumpl = cfg.inverse
+      ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
+      : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
+  }
+
+  var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
+  var realColor  = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
+
+  var badgeHtml;
+  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
+
+  var ext  = (cvaExtras2[key] && cvaExtras2[key][cvaSelectedMes2]) || {};
+  var com  = ext.comentarios || '';
+  var acumHtml = com ? buildCommentBtn('cvaOpenModal', key, com) : '';
+
+  el.innerHTML = [
+    '<div class="kpi-icon-wrap">' + cfg.icon + '</div>',
+    '<div class="kpi-label">' + cfg.label + '</div>',
+    '<div class="kpi-objective">' + cfg.objective + '</div>',
+    '<div class="kpi-real-val" style="color:' + realColor + ';">' + realDisplay + '</div>',
+    acumHtml,
+    '<div class="kpi-meta">Meta: ' + cfg.objLabel + '</div>',
+    cumpl !== null ? '<div class="kpi-cumpl" style="color:' + cumplColor + ';">' + cumpl + '% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>',
+    '<div class="kpi-divider"></div>',
+    '<div class="progress-wrap">',
+      '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (pw > 0 ? pw + '%' : '—') + '</span><span>100%</span></div>',
+      '<div class="progress-track"><div class="progress-bar ' + barCls + '" style="width:' + pw + '%"></div></div>',
+    '</div>',
+    badgeHtml
+  ].join('');
+}
+
+function cvaRenderLI() {
+  var section = document.getElementById('cva-li-section');
+  var tbody   = document.getElementById('cva-li-tbody');
+  if (!section || !tbody) return;
+  var logros = [], imped = [];
+  Object.keys(CVA_KPIS).forEach(function(key) {
+    var ext = (cvaExtras2[key] && cvaExtras2[key][cvaSelectedMes2]) || {};
+    if (ext.logros)       logros.push(ext.logros);
+    if (ext.impedimentos) imped.push(ext.impedimentos);
+  });
+  renderLITable('cva-li-section', 'cva-li-tbody', logros, imped);
+}
+
+function cvaCalcSummary2() {
+  var score = 0, totalW = 0, ok = 0;
+  Object.keys(CVA_KPIS).forEach(function(key) {
+    var cfg = CVA_KPIS[key];
+    if (cfg.weight === 0 || !cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
+    var d = cvaAllData[key][cvaSelectedMes2];
+    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
+    score  += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * cfg.weight;
+    totalW += cfg.weight;
+    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+  });
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
+}
+
+function cvaRenderPage() {
+  if (!cvaSelectedMes2) return;
+  Object.keys(CVA_KPIS).forEach(function(key) { cvaRenderCard(key); });
+  cvaRenderLI();
+  var s  = cvaCalcSummary2();
+  var te = document.getElementById('cva-sum-trend');
+  var ok = document.getElementById('cva-sum-ok');
+  if (ok)  ok.textContent = s.ok + ' / 6';
+  if (te && s.pct !== null) {
+    te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
+    te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
   }
 }
 
-/* Carga inicial — igual a loadAll() del original */
-async function loadCVAData(){
-  if(cvaLoaded){cvaRenderMensual(cvaSelectedMes);return;}
-  try{
-    var results=await Promise.all([
-      fetch(CVA_API+'?sheet=RECUPERACIONES').then(function(r){return r.json();}),
-      fetch(CVA_API+'?sheet=SERVICIO').then(function(r){return r.json();}),
-      fetch(CVA_API+'?sheet=CONECTIVIDAD').then(function(r){return r.json();})
-    ]);
-    var j1=results[0],j2=results[1],j3=results[2];
-    if(j1.error)throw new Error(j1.error);
+function loadCvaData() {
+  if (!cvaSelectedMes2) return;
+  document.getElementById('cva-loadingBox').style.display  = 'block';
+  document.getElementById('cva-errorBox').style.display    = 'none';
+  document.getElementById('cva-mainContent').style.display = 'none';
 
-    // recData — igual al original
-    cvaRecData=(j1.rows||[]).map(function(r){
-      return{tipo:String(r['recup']||'').toLowerCase().trim(),mes:String(r['mes']||'').toUpperCase().trim(),recup:parseFloat(r['recuperadas'])||0,noRec:parseFloat(r['no_recuperadas'])||0};
-    }).filter(function(r){return r.tipo&&r.mes;});
+  var qMeses = getQMeses(cvaSelectedMes2);
 
-    // srvData — igual al original
-    cvaSrvData=(j2.rows||[]).map(function(r){
-      return{mes:String(r['mes']||'').toUpperCase().trim(),total:parseFloat(r['total de encuestas']||0)||0,calif:parseFloat(r['calificación']||r['calificacion']||0)};
-    }).filter(function(r){return r.mes;});
+  loadCvaAllData(qMeses).then(function() {
+    cvaRenderPage();
+    document.getElementById('footer-ts').textContent     = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    document.getElementById('cva-loadingBox').style.display  = 'none';
+    document.getElementById('cva-mainContent').style.display = 'block';
+  }).catch(function(e) {
+    document.getElementById('cva-loadingBox').style.display = 'none';
+    document.getElementById('cva-errorBox').style.display   = 'block';
+    document.getElementById('cva-errorMsg').textContent     = 'Error: ' + e.message;
+  });
+}
 
-    // conectividadData + conectividadHistorial
-    if(!j3.error){
-      cvaConectividadData={};cvaConectividadHistorial={};
-      (j3.rows||[]).forEach(function(r){
-        var keys=Object.keys(r);
-        var kMes=keys.find(function(k){return k.toLowerCase().trim()==='mes';});
-        var kPlat=keys.find(function(k){return k.toLowerCase().trim()==='plataforma';});
-        var kConect=keys.find(function(k){return k.toLowerCase().trim()==='conectividad';});
-        var kMesH=keys.find(function(k){return k.toLowerCase().trim()==='mes_hist';});
-        var kConectG=keys.find(function(k){return k.toLowerCase().trim()==='conect_general';});
-        if(kMes&&kPlat&&kConect){
-          var mes2=String(r[kMes]||'').toUpperCase().trim();
-          var plat=String(r[kPlat]||'').toUpperCase().trim();
-          var raw=String(r[kConect]||'').replace('%','').replace(',','.').trim();
-          var pct=parseFloat(raw)||null;
-          if(pct!==null&&pct>0&&pct<=1)pct=parseFloat((pct*100).toPrecision(6));
-          if(mes2&&plat&&pct!==null){if(!cvaConectividadData[mes2])cvaConectividadData[mes2]={};cvaConectividadData[mes2][plat]=pct;}
-        }
-        if(kMesH&&kConectG){
-          var mesH=String(r[kMesH]||'').toUpperCase().trim();
-          var rawG=String(r[kConectG]||'').replace('%','').replace(',','.').trim();
-          var pctG=parseFloat(rawG)||null;
-          if(pctG!==null&&pctG>0&&pctG<=1)pctG=parseFloat((pctG*100).toPrecision(6));
-          if(mesH&&pctG!==null)cvaConectividadHistorial[mesH]=pctG;
-        }
+/* ══════════════════════════════════════════════════════
+   PÁGINA NUEVOS NEGOCIOS — hoja COMERCIAL
+   ══════════════════════════════════════════════════════ */
+
+var NN_KPIS = {
+  'Ingresos':                         { label:'Ingresos',                      icon:'💹', objective:'Crecimiento de ingresos en nuevos negocios',     weight:25, unit:'$',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
+  'Clientes Nuevos':                  { label:'Clientes Nuevos',               icon:'🏢', objective:'Captación total de nuevos clientes',             weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'clientes',  cuatrimestral:false },
+  'Clientes Nuevos 5 Estrellas':      { label:'Clientes Nuevos 5★',            icon:'⭐', objective:'Captación de clientes de alta calidad (5★)',     weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'clientes',  cuatrimestral:false },
+  'Pipeline / Salesstar = Calculadora':{ label:'Pipeline / Calculadora',       icon:'📊', objective:'Valor del pipeline activo en Salesstar',         weight:15, unit:'$',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
+  'Proceso Zoho':                     { label:'Proceso Zoho',                  icon:'🔵', objective:'Cumplimiento del proceso en Zoho CRM',           weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
+  'Demos Activas':                    { label:'Demos Activas',                 icon:'🎯', objective:'Demostraciones activas en el período',           weight:10, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'demos',     cuatrimestral:false },
+  'Conversión Demo - Cierre':         { label:'Conversión Demo → Cierre',      icon:'✅', objective:'Tasa de conversión de demos a cierres',          weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false }
+};
+
+var nnRawRows  = [];
+var nnLoaded   = false;
+var nnAllData  = {};
+var nnExtras   = {};
+var nnSelectedMes = '';
+
+function buildNnMonthSelector() {
+  var container = document.getElementById('nn-monthBtns');
+  if (!container) return;
+  var currentMonth = new Date().getMonth();
+  var defaultIdx   = Math.max(currentMonth - 1, 0);
+  MESES.forEach(function(mes, i) {
+    var btn = document.createElement('button');
+    btn.className   = 'mbtn';
+    btn.textContent = mes.substring(0, 3).toUpperCase();
+    btn.title       = mes;
+    if (i >= currentMonth) { btn.disabled = true; }
+    else { btn.onclick = (function(m, b) { return function() { nnSelectMonth(m, b); }; })(mes, btn); }
+    if (i === defaultIdx) { nnSelectedMes = mes; btn.classList.add('active'); }
+    container.appendChild(btn);
+  });
+}
+
+function nnSelectMonth(mes, activeBtn) {
+  nnSelectedMes = mes;
+  document.querySelectorAll('#nn-monthBtns .mbtn').forEach(function(b) { b.classList.remove('active'); });
+  activeBtn.classList.add('active');
+  loadNnData();
+}
+
+function fetchNn() {
+  if (nnLoaded) return Promise.resolve(nnRawRows);
+  return fetch(APPS_SCRIPT_URL + '?sheet=COMERCIAL')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      nnRawRows = d.rows || [];
+      nnLoaded  = true;
+      return nnRawRows;
+    });
+}
+
+function loadNnAllData(mesesFiltro) {
+  return fetchNn().then(function(rows) {
+    var keys = Object.keys(NN_KPIS);
+    keys.forEach(function(key) {
+      if (!nnAllData[key]) nnAllData[key] = {};
+      if (!nnExtras[key])  nnExtras[key]  = {};
+      mesesFiltro.forEach(function(m) {
+        nnAllData[key][m] = { real: null, objetivo: null };
+        nnExtras[key][m]  = { comentarios: '', logros: '', impedimentos: '' };
+      });
+    });
+
+    rows.forEach(function(row) {
+      var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
+      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : '').trim();
+      if (!mes || !kpi) return;
+      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
+      if (mesesFiltro.indexOf(mes) === -1) return;
+
+      // Match key (trim comparison)
+      var matchKey = Object.keys(NN_KPIS).find(function(k) { return k.trim() === kpi.trim(); });
+      if (!matchKey) return;
+
+      var rawReal = row.hasOwnProperty('REAL')    ? row['REAL']    : null;
+      var rawObj  = row.hasOwnProperty('OBJETIVO') ? row['OBJETIVO'] : null;
+      var real    = parseVal(rawReal, matchKey);
+      var obj     = parseVal(rawObj,  matchKey);
+      var cfg     = NN_KPIS[matchKey];
+
+      nnAllData[matchKey][mes] = {
+        real:     real,
+        objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
+      };
+
+      var rkeys = Object.keys(row);
+      var kCom  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'COMENTARIOS'; });
+      var kLog  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'LOGROS'; });
+      var kImp  = rkeys.find(function(k) { return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!nnExtras[matchKey][mes]) nnExtras[matchKey][mes] = { comentarios:'', logros:'', impedimentos:'' };
+      if (kCom) nnExtras[matchKey][mes].comentarios = String(row[kCom] || '').trim();
+      if (kLog) nnExtras[matchKey][mes].logros       = String(row[kLog] || '').trim();
+      if (kImp) nnExtras[matchKey][mes].impedimentos = String(row[kImp] || '').trim();
+    });
+  });
+}
+
+function nnOpenModal(kpi, comentario) {
+  var cfg = NN_KPIS[kpi];
+  document.getElementById('nn-modal-kpi').textContent  = cfg ? cfg.label : kpi;
+  document.getElementById('nn-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  document.getElementById('nn-modal-overlay').style.display = 'flex';
+}
+function nnCloseModal() {
+  document.getElementById('nn-modal-overlay').style.display = 'none';
+}
+
+function nnRenderCard(key) {
+  var cfg = NN_KPIS[key];
+  var el  = document.getElementById('nn-card-' + key);
+  if (!el || !nnAllData[key] || !nnAllData[key][nnSelectedMes]) return;
+
+  var d           = nnAllData[key][nnSelectedMes];
+  var real        = d.real, obj = d.objetivo;
+  var isPendiente = real === 'PENDIENTE';
+  var realNum     = isPendiente ? null : real;
+  var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
+
+  var evalObj = obj;
+  var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
+    ? Math.round((cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) * 10) / 10 : 0;
+  var pw      = Math.min(pct, 100);
+  var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
+
+  var cumpl = null;
+  if (!isPendiente && realNum !== null && evalObj !== null) {
+    cumpl = cfg.inverse
+      ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
+      : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
+  }
+
+  var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
+  var realColor  = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
+
+  var badgeHtml;
+  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
+
+  var ext     = (nnExtras[key] && nnExtras[key][nnSelectedMes]) || {};
+  var com     = ext.comentarios || '';
+  var acumHtml = com ? buildCommentBtn('nnOpenModal', key, com) : '';
+
+  var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto');
+
+  el.innerHTML = [
+    '<div class="kpi-icon-wrap">' + cfg.icon + '</div>',
+    '<div class="kpi-label">' + cfg.label + '</div>',
+    '<div class="kpi-objective">' + cfg.objective + '</div>',
+    '<div class="kpi-real-val" style="color:' + realColor + ';">' + realDisplay + '</div>',
+    acumHtml,
+    '<div class="kpi-meta">Meta: ' + metaDisplay + '</div>',
+    cumpl !== null ? '<div class="kpi-cumpl" style="color:' + cumplColor + ';">' + cumpl + '% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>',
+    '<div class="kpi-divider"></div>',
+    '<div class="progress-wrap">',
+      '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (pw > 0 ? pw + '%' : '—') + '</span><span>100%</span></div>',
+      '<div class="progress-track"><div class="progress-bar ' + barCls + '" style="width:' + pw + '%"></div></div>',
+    '</div>',
+    badgeHtml
+  ].join('');
+}
+
+function nnRenderLI() {
+  var logros = [], imped = [], rowsData = [];
+  Object.keys(NN_KPIS).forEach(function(key) {
+    var ext = (nnExtras[key] && nnExtras[key][nnSelectedMes]) || {};
+    if (ext.logros || ext.impedimentos) {
+      rowsData.push({ label: NN_KPIS[key].label, logros: ext.logros, imped: ext.impedimentos });
+    }
+  });
+  var section = document.getElementById('nn-li-section');
+  var tbody   = document.getElementById('nn-li-tbody');
+  if (!section || !tbody) return;
+  if (!rowsData.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  tbody.innerHTML = rowsData.map(function(r, i) {
+    var bg = i % 2 === 0 ? '#fff' : 'var(--off)';
+    return '<tr style="background:' + bg + ';border-bottom:1px solid var(--slate5);">'
+      + '<td style="padding:12px 18px;font-family:Barlow Condensed,sans-serif;font-weight:700;letter-spacing:.04em;color:var(--navy);font-size:12px;vertical-align:top;width:160px;">' + r.label + '</td>'
+      + '<td style="padding:12px 18px;color:var(--navy);font-size:12px;vertical-align:top;white-space:pre-wrap;">' + (r.logros  || '<span style="color:var(--slate3);">—</span>') + '</td>'
+      + '<td style="padding:12px 18px;color:var(--navy);font-size:12px;vertical-align:top;white-space:pre-wrap;">' + (r.imped   || '<span style="color:var(--slate3);">—</span>') + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function nnCalcSummary() {
+  var score = 0, totalW = 0, ok = 0;
+  Object.keys(NN_KPIS).forEach(function(key) {
+    var cfg = NN_KPIS[key];
+    if (cfg.weight === 0 || !nnAllData[key] || !nnAllData[key][nnSelectedMes]) return;
+    var d = nnAllData[key][nnSelectedMes];
+    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
+    score  += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * cfg.weight;
+    totalW += cfg.weight;
+    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+  });
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
+}
+
+function loadNnData() {
+  if (!nnSelectedMes) return;
+  document.getElementById('nn-loadingBox').style.display  = 'block';
+  document.getElementById('nn-errorBox').style.display    = 'none';
+  document.getElementById('nn-mainContent').style.display = 'none';
+
+  loadNnAllData([nnSelectedMes]).then(function() {
+    Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
+    nnRenderLI();
+    var s  = nnCalcSummary();
+    var te = document.getElementById('nn-sum-trend');
+    var ok = document.getElementById('nn-sum-ok');
+    if (ok)  ok.textContent = s.ok + ' / 7';
+    if (te && s.pct !== null) {
+      te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
+      te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
+    }
+    document.getElementById('footer-ts').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    document.getElementById('nn-loadingBox').style.display  = 'none';
+    document.getElementById('nn-mainContent').style.display = 'block';
+  }).catch(function(e) {
+    document.getElementById('nn-loadingBox').style.display = 'none';
+    document.getElementById('nn-errorBox').style.display   = 'block';
+    document.getElementById('nn-errorMsg').textContent     = 'Error: ' + e.message;
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   RESUMEN GENERAL — todas las áreas, tabs Q1/Q2/Q3/Anual
+   ══════════════════════════════════════════════════════ */
+
+var genLoaded   = false;
+var genActiveQ  = 1;
+
+/* CVA KPIs: definición para la tabla general */
+var CVA_GEN_KPIS = [
+  { key:'robos',        label:'Recuperaciones · Robos',         icon:'🚨', meta:90,  metaLabel:'≥ 90%',  inverse:false },
+  { key:'abusos',       label:'Recuperaciones · Abusos',        icon:'⚠️', meta:80,  metaLabel:'≥ 80%',  inverse:false },
+  { key:'creditos',     label:'Recuperaciones · Créditos',      icon:'💳', meta:90,  metaLabel:'≥ 90%',  inverse:false },
+  { key:'tickets',      label:'Soporte · Primera Respuesta',    icon:'🎫', meta:15,  metaLabel:'≤ 15 min', inverse:true, isTime:true },
+  { key:'capac',        label:'Satisfacción Capacitaciones',    icon:'📚', meta:95,  metaLabel:'≥ 95%',  inverse:false },
+  { key:'con-general',  label:'Conectividad General',           icon:'📡', meta:85,  metaLabel:'≥ 85%',  inverse:false },
+];
+
+/* Helpers de cálculo cuatrimestral reutilizando allData / vypAllData / sisAllData */
+function genGetBlockAccum(data, key, meses) {
+  var total = 0, hasAny = false;
+  meses.forEach(function(m) {
+    if (!data[key] || !data[key][m]) return;
+    var v = data[key][m].real;
+    if (v === null || v === 'PENDIENTE') return;
+    total += v; hasAny = true;
+  });
+  return hasAny ? total : null;
+}
+
+function genCalcEstatus(data, kpis, key, meses) {
+  var cfg = kpis[key];
+  if (!cfg || cfg.weight === 0) return null;
+  var validMeses = meses.filter(function(m) {
+    return data[key] && data[key][m] && data[key][m].real !== null && data[key][m].real !== 'PENDIENTE';
+  });
+  if (!validMeses.length) return null;
+  var score, barPct, acum = null, obj = null;
+  if (cfg.cuatrimestral) {
+    acum = genGetBlockAccum(data, key, validMeses);
+    if (acum === null) return null;
+    obj  = cfg.fixedObj;
+    var cumpl = Math.min(cfg.inverse ? (obj / Math.max(acum, 0.01)) : (acum / obj), 1);
+    score  = cumpl * cfg.weight;
+    barPct = Math.round(cumpl * 100);
+  } else {
+    var totalM = meses.length, acc = 0;
+    validMeses.forEach(function(m) {
+      var d = data[key][m];
+      if (d.objetivo === null) return;
+      acc += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * (cfg.weight / totalM);
+    });
+    score  = acc;
+    barPct = cfg.weight > 0 ? Math.round((score / cfg.weight) * 100) : 0;
+  }
+  return { score:score, weight:cfg.weight, barPct:barPct, mesesConDatos:validMeses.length, totalMeses:meses.length, acum:acum, obj:obj };
+}
+
+function genCalcTotal(data, kpis, meses, isAnual) {
+  var total = 0;
+  Object.keys(kpis).forEach(function(key) {
+    var cfg = kpis[key];
+    if (!cfg || cfg.weight === 0) return;
+    if (cfg.cuatrimestral && isAnual) {
+      QUARTERS.forEach(function(qObj) {
+        var est = genCalcEstatus(data, kpis, key, qObj.meses);
+        if (est) total += est.score / 3;
+      });
+    } else {
+      var est = genCalcEstatus(data, kpis, key, meses);
+      if (est) total += est.score;
+    }
+  });
+  return total;
+}
+
+/* Build a mini estatus cell for the table */
+function genEstatusCell(score, weight, barPct) {
+  if (score === null) return '<td style="text-align:center;"><span style="font-family:var(--font-cond,Barlow Condensed,sans-serif);font-size:10px;color:var(--slate2);">Sin datos</span></td>';
+  var color = 'var(--blue)';
+  return '<td style="padding:10px 14px;">'
+    + '<div><span style="font-family:Cormorant Garamond,serif;font-size:14px;font-weight:600;color:var(--navy);">' + score.toFixed(1) + '</span>'
+    + '<span style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--slate2);"> / ' + weight + '</span>'
+    + '<div style="height:4px;background:var(--slate5);border-radius:2px;overflow:hidden;margin:4px 0;">'
+    + '<div style="height:100%;border-radius:2px;background:' + color + ';width:' + Math.min(barPct, 100) + '%;"></div></div>'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--slate);letter-spacing:.04em;">' + barPct + '% avance</div>'
+    + '</div></td>';
+}
+
+/* Build month cell (reuse existing logic) */
+function genMonthCell(cfg, d, isSep) {
+  if (!d) d = { real:null, objetivo:null };
+  var isPend   = d.real === 'PENDIENTE';
+  var realNum  = isPend ? null : d.real;
+  var evalObj  = (cfg.cuatrimestral && d.objetivo !== null) ? d.objetivo / 4 : d.objetivo;
+  var ok       = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct      = (realNum !== null && evalObj !== null && evalObj > 0) ? Math.round(cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) : null;
+  var status   = isPend ? 'nd' : realNum === null || evalObj === null ? 'nd' : ok ? 'ok' : pct >= 80 ? 'near' : 'off';
+  var badge    = isPend ? '⏳' : status === 'ok' ? '✓ OK' : status === 'near' ? '~ Cerca' : status === 'off' ? '↓ Fuera' : 'S/D';
+  return '<td' + (isSep ? ' class="q-sep-col"' : '') + '>'
+    + '<div class="cell-inner">'
+    + '<span class="cell-val"><span class="dot dot-' + status + '"></span>' + fmtVal(d.real, cfg.unit, cfg.suffix) + '</span>'
+    + '<span class="tbadge tbadge-' + status + '">' + badge + '</span>'
+    + '</div></td>';
+}
+
+/* Build a full area table */
+function genBuildTable(tableId, areaLabel, kpisObj, dataObj, meses, isAnual) {
+  var keys = Object.keys(kpisObj);
+  var tbl  = document.getElementById(tableId);
+  if (!tbl) return;
+
+  var html = '<thead><tr class="q-header">';
+  html += '<th rowspan="2" style="text-align:left;min-width:180px;">KPI</th>';
+  html += '<th rowspan="2" class="sticky-2" style="text-align:center;min-width:70px;">Peso</th>';
+  html += '<th rowspan="2" class="sticky-3" style="text-align:center;min-width:100px;">Meta</th>';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj, qi) {
+      html += '<th colspan="' + qObj.meses.length + '"' + (qi > 0 ? ' class="q-sep-header"' : '') + '>' + qObj.label + '</th>';
+    });
+    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Estatus Anual</th>';
+  } else {
+    var q = QUARTERS.find(function(x) { return x.q === genActiveQ; });
+    html += '<th colspan="' + meses.length + '">' + (q ? q.label : '') + '</th>';
+    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Estatus</th>';
+  }
+  html += '</tr><tr class="m-header">';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj, qi) {
+      qObj.meses.forEach(function(mes, mi) {
+        html += '<th' + (qi > 0 && mi === 0 ? ' class="q-sep-header"' : '') + '>' + mes.toUpperCase().substring(0, 3) + '</th>';
+      });
+    });
+  } else {
+    meses.forEach(function(mes) { html += '<th>' + mes.toUpperCase().substring(0, 3) + '</th>'; });
+  }
+  html += '</tr></thead><tbody>';
+
+  keys.forEach(function(key) {
+    var cfg = kpisObj[key];
+    var metaLbl = cfg.objLabel ? cfg.objLabel : (cfg.fixedObj !== null ? fmtVal(cfg.fixedObj, cfg.unit, cfg.suffix) : 'Del presupuesto');
+    var tipoBadge = cfg.cuatrimestral
+      ? '<div><span class="meta-badge meta-cuatrimestral">📦 Cuatrimestral</span></div>'
+      : '<div><span class="meta-badge meta-mensual">📅 Mensual</span></div>';
+
+    /* Estatus cell */
+    var estatusCell;
+    if (isAnual && cfg.cuatrimestral) {
+      var totalScore = 0, anyData = false;
+      QUARTERS.forEach(function(qObj) {
+        var est = genCalcEstatus(dataObj, kpisObj, key, qObj.meses);
+        if (est) { anyData = true; totalScore += est.score / 3; }
+      });
+      estatusCell = anyData ? genEstatusCell(totalScore, cfg.weight, Math.round((totalScore / cfg.weight) * 100)) : genEstatusCell(null, cfg.weight, 0);
+    } else if (isAnual) {
+      var est2 = genCalcEstatus(dataObj, kpisObj, key, MESES);
+      estatusCell = est2 ? genEstatusCell(est2.score, est2.weight, est2.barPct) : genEstatusCell(null, cfg.weight, 0);
+    } else {
+      var est3 = genCalcEstatus(dataObj, kpisObj, key, meses);
+      estatusCell = est3 ? genEstatusCell(est3.score, est3.weight, est3.barPct) : genEstatusCell(null, cfg.weight, 0);
+    }
+
+    html += '<tr>';
+    html += '<td><span class="t-icon">' + cfg.icon + '</span><span class="kpi-name">' + cfg.label + '</span><div class="kpi-sub">Meta: ' + metaLbl + '</div></td>';
+    html += '<td class="sticky-2" style="text-align:center;font-family:Cormorant Garamond,serif;font-weight:700;font-size:14px;color:var(--navy);">' + cfg.weight + '%</td>';
+    html += '<td class="sticky-3" style="text-align:center;"><span style="font-weight:700;font-size:12px;color:var(--navy);">' + metaLbl + '</span>' + tipoBadge + '</td>';
+
+    if (isAnual) {
+      QUARTERS.forEach(function(qObj, qi) {
+        qObj.meses.forEach(function(mes, mi) {
+          var isSep = qi > 0 && mi === 0;
+          var d = dataObj[key] && dataObj[key][mes] ? dataObj[key][mes] : { real:null, objetivo:null };
+          html += genMonthCell(cfg, d, isSep);
+        });
+      });
+    } else {
+      meses.forEach(function(mes) {
+        var d = dataObj[key] && dataObj[key][mes] ? dataObj[key][mes] : { real:null, objetivo:null };
+        html += genMonthCell(cfg, d, false);
+      });
+    }
+    html += estatusCell + '</tr>';
+  });
+
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+/* CVA table — usa cvaRecData / cvaSrvData / cvaConectividadData por mes */
+function genBuildCVATable(meses, isAnual) {
+  var tbl = document.getElementById('gen-table-cva');
+  if (!tbl) return;
+
+  function getCvaVal(key, mes) {
+    var mesU = mes.toUpperCase();
+    if (key === 'robos' || key === 'abusos' || key === 'creditos') {
+      var aliasMap = { robos:'rob', abusos:'abu', creditos:'cred' };
+      var alias = aliasMap[key];
+      var rows = cvaRecData.filter(function(r) { return r.mes === mesU; });
+      var agg = {};
+      rows.forEach(function(r) { if (!agg[r.tipo]) agg[r.tipo] = {recup:0,noRec:0}; agg[r.tipo].recup += r.recup; agg[r.tipo].noRec += r.noRec; });
+      var found = null;
+      Object.keys(agg).forEach(function(k) { if (found === null && k.indexOf(alias) !== -1) found = agg[k]; });
+      if (!found) return null;
+      var t = found.recup + found.noRec;
+      return t > 0 ? parseFloat((found.recup / t * 100).toFixed(2)) : null;
+    }
+    if (key === 'capac') {
+      var rows2 = cvaSrvData.filter(function(r) { return r.mes === mesU; });
+      if (!rows2.length) return null;
+      var tot = rows2.reduce(function(s, r) { return s + r.total; }, 0);
+      var avg = rows2.reduce(function(s, r) { return s + r.calif * r.total; }, 0) / (tot || 1);
+      return parseFloat(avg.toFixed(2));
+    }
+    if (key === 'con-general') {
+      var pct = cvaGetConPctMes('general', mesU);
+      return pct !== null ? parseFloat(pct.toFixed(2)) : null;
+    }
+    return null;
+  }
+
+  var html = '<thead><tr class="q-header">';
+  html += '<th rowspan="2" style="text-align:left;min-width:200px;">KPI</th>';
+  html += '<th rowspan="2" class="sticky-2" style="text-align:center;min-width:70px;">Meta</th>';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj, qi) {
+      html += '<th colspan="' + qObj.meses.length + '"' + (qi > 0 ? ' class="q-sep-header"' : '') + '>' + qObj.label + '</th>';
+    });
+    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Promedio</th>';
+  } else {
+    var q = QUARTERS.find(function(x) { return x.q === genActiveQ; });
+    html += '<th colspan="' + meses.length + '">' + (q ? q.label : '') + '</th>';
+    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Promedio</th>';
+  }
+  html += '</tr><tr class="m-header">';
+  if (isAnual) {
+    QUARTERS.forEach(function(qObj, qi) {
+      qObj.meses.forEach(function(mes, mi) {
+        html += '<th' + (qi > 0 && mi === 0 ? ' class="q-sep-header"' : '') + '>' + mes.toUpperCase().substring(0, 3) + '</th>';
+      });
+    });
+  } else {
+    meses.forEach(function(mes) { html += '<th>' + mes.toUpperCase().substring(0, 3) + '</th>'; });
+  }
+  html += '</tr></thead><tbody>';
+
+  var allMeses = isAnual ? MESES : meses;
+
+  CVA_GEN_KPIS.forEach(function(cfg) {
+    var vals = allMeses.map(function(mes) { return getCvaVal(cfg.key, mes); });
+    var validVals = vals.filter(function(v) { return v !== null; });
+    var avg = validVals.length ? validVals.reduce(function(s, v) { return s + v; }, 0) / validVals.length : null;
+
+    html += '<tr>';
+    html += '<td><span class="t-icon">' + cfg.icon + '</span><span class="kpi-name">' + cfg.label + '</span><div class="kpi-sub">Meta: ' + cfg.metaLabel + '</div></td>';
+    html += '<td class="sticky-2" style="text-align:center;font-weight:700;font-size:12px;color:var(--navy);">' + cfg.metaLabel + '</td>';
+
+    if (isAnual) {
+      QUARTERS.forEach(function(qObj, qi) {
+        qObj.meses.forEach(function(mes, mi) {
+          var isSep = qi > 0 && mi === 0;
+          var v = getCvaVal(cfg.key, mes);
+          var ok = v !== null ? (cfg.inverse ? v <= cfg.meta : v >= cfg.meta) : false;
+          var status = v === null ? 'nd' : ok ? 'ok' : 'off';
+          var display = v !== null ? (cfg.isTime ? cvaFmtMin(v) : v.toFixed(1) + '%') : '—';
+          html += '<td' + (isSep ? ' class="q-sep-col"' : '') + '><div class="cell-inner">'
+            + '<span class="cell-val"><span class="dot dot-' + status + '"></span>' + display + '</span>'
+            + '<span class="tbadge tbadge-' + status + '">' + (status === 'ok' ? '✓ OK' : status === 'off' ? '↓ Fuera' : 'S/D') + '</span>'
+            + '</div></td>';
+        });
+      });
+    } else {
+      meses.forEach(function(mes) {
+        var v = getCvaVal(cfg.key, mes);
+        var ok = v !== null ? (cfg.inverse ? v <= cfg.meta : v >= cfg.meta) : false;
+        var status = v === null ? 'nd' : ok ? 'ok' : 'off';
+        var display = v !== null ? (cfg.isTime ? cvaFmtMin(v) : v.toFixed(1) + '%') : '—';
+        html += '<td><div class="cell-inner">'
+          + '<span class="cell-val"><span class="dot dot-' + status + '"></span>' + display + '</span>'
+          + '<span class="tbadge tbadge-' + status + '">' + (status === 'ok' ? '✓ OK' : status === 'off' ? '↓ Fuera' : 'S/D') + '</span>'
+          + '</div></td>';
       });
     }
 
-    // Precargar FRT fallback (mes anterior) — igual a loadFrtFallback del original
-    var nowD=new Date(); var mesActual=cvaSelectedMes||CVA_MESES_ORD[nowD.getMonth()];
-    var idx=CVA_MESES_ORD.indexOf(mesActual);
-    if(idx>0){
-      try{
-        var fb=await fetch(CVA_API+'?sheet=ZOHO_AGENTES&mes='+encodeURIComponent(CVA_MESES_ORD[idx-1])).then(function(r){return r.json();});
-        if(!fb.error){
-          var fbData=fb.data||[];
-          cvaFallbackMap={};
-          fbData.forEach(function(a){if(a.count>0)cvaFallbackMap[a.nombre]=(a.totalMinutes||0)/a.count;});
-          var fbMin=fbData.reduce(function(s,a){return s+(a.totalMinutes||0);},0);
-          var fbCnt=fbData.reduce(function(s,a){return s+(a.count||0);},0);
-          cvaFallbackGlobal=fbCnt>0?fbMin/fbCnt:0;
-        }
-      }catch(e){}
+    /* Promedio */
+    if (avg !== null) {
+      var avgOk = cfg.inverse ? avg <= cfg.meta : avg >= cfg.meta;
+      var avgDisplay = cfg.isTime ? cvaFmtMin(avg) : avg.toFixed(1) + '%';
+      var avgColor = avgOk ? 'var(--green)' : 'var(--red)';
+      html += '<td style="padding:10px 14px;text-align:center;">'
+        + '<div style="font-family:Cormorant Garamond,serif;font-size:14px;font-weight:600;color:' + avgColor + ';">' + avgDisplay + '</div>'
+        + '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--slate);margin-top:2px;">' + validVals.length + ' meses con datos</div>'
+        + '</td>';
+    } else {
+      html += '<td style="text-align:center;"><span style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--slate2);">Sin datos</span></td>';
     }
 
-    cvaLoaded=true;
-    cvaRenderMensual(cvaSelectedMes);
-  }catch(e){
-    console.error('Error loading CVA data:',e);
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+/* Score cards — una por área */
+function genRenderScoreCards(meses, isAnual) {
+  var container = document.getElementById('gen-score-cards');
+  if (!container) return;
+
+  function scoreCard(icon, label, score, maxScore, sub, color) {
+    var pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+    return '<div style="background:var(--white);border:1px solid var(--slate5);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;">'
+      + '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:' + color + ';border-radius:12px 12px 0 0;"></div>'
+      + '<div style="font-size:22px;margin-bottom:8px;">' + icon + '</div>'
+      + '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--slate2);margin-bottom:4px;">' + label + '</div>'
+      + '<div style="font-family:Cormorant Garamond,serif;font-size:30px;font-weight:600;color:' + color + ';line-height:1;">' + score.toFixed(1) + '<span style="font-size:14px;color:var(--slate2);font-weight:400;">/' + maxScore + '</span></div>'
+      + '<div style="height:4px;background:var(--slate5);border-radius:2px;overflow:hidden;margin:8px 0;">'
+      + '<div style="height:100%;border-radius:2px;background:' + color + ';width:' + Math.min(pct, 100) + '%;transition:width .8s;"></div></div>'
+      + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--slate);letter-spacing:.04em;">' + sub + '</div>'
+      + '</div>';
+  }
+
+  function getColor(score, max) {
+    var p = max > 0 ? score / max : 0;
+    return p >= 0.8 ? 'var(--green)' : p >= 0.5 ? 'var(--amber)' : 'var(--red)';
+  }
+
+  var sfScore  = genCalcTotal(allData,    KPIS,     meses, isAnual);
+  var vypScore = genCalcTotal(vypAllData, VYP_KPIS, meses, isAnual);
+  var sisScore = genCalcTotal(sisAllData, SIS_KPIS, meses, isAnual);
+
+  /* CVA: average of available metrics */
+  var cvaVals = [];
+  var checkMeses = isAnual ? MESES : meses;
+  CVA_GEN_KPIS.forEach(function(cfg) {
+    var allMesesVals = checkMeses.map(function(mes) {
+      var mesU = mes.toUpperCase();
+      if (cfg.key==='robos'||cfg.key==='abusos'||cfg.key==='creditos') {
+        var aliasMap={robos:'rob',abusos:'abu',creditos:'cred'};
+        var alias=aliasMap[cfg.key];
+        var rows=cvaRecData.filter(function(r){return r.mes===mesU;});
+        var agg={};
+        rows.forEach(function(r){if(!agg[r.tipo])agg[r.tipo]={recup:0,noRec:0};agg[r.tipo].recup+=r.recup;agg[r.tipo].noRec+=r.noRec;});
+        var found=null;
+        Object.keys(agg).forEach(function(k){if(found===null&&k.indexOf(alias)!==-1)found=agg[k];});
+        if(!found)return null;
+        var t=found.recup+found.noRec;
+        return t>0?found.recup/t*100:null;
+      }
+      if(cfg.key==='capac'){var rows2=cvaSrvData.filter(function(r){return r.mes===mesU;});if(!rows2.length)return null;var tot=rows2.reduce(function(s,r){return s+r.total;},0);return rows2.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);}
+      if(cfg.key==='con-general'){return cvaGetConPctMes('general',mesU);}
+      return null;
+    }).filter(function(v){return v!==null;});
+    if(allMesesVals.length){
+      var avg=allMesesVals.reduce(function(s,v){return s+v;},0)/allMesesVals.length;
+      var ok=cfg.inverse?avg<=cfg.meta:avg>=cfg.meta;
+      cvaVals.push(ok?1:0);
+    }
+  });
+  var cvaScore = cvaVals.length ? (cvaVals.reduce(function(s,v){return s+v;},0)/cvaVals.length)*100 : 0;
+
+  container.innerHTML =
+    scoreCard('💼', 'Servicios Financieros', sfScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(sfScore,100))
+  + scoreCard('🏷️', 'Venta Postventa',       vypScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(vypScore,100))
+  + scoreCard('🖥️', 'Sistemas',              sisScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(sisScore,100))
+  + scoreCard('🎯', 'Central Monitoreo CVA', cvaScore, 100, cvaVals.length + ' métricas evaluadas', getColor(cvaScore,100));
+}
+
+/* Tab selector */
+function genSelectQ(q, btn) {
+  if (!btn.classList.contains('enabled')) return;
+  genActiveQ = q;
+  document.querySelectorAll('#genTabBar .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  genRenderAll();
+}
+
+function genUpdateTabStates() {
+  var firstQ = null;
+  QUARTERS.forEach(function(qObj) {
+    var btn = document.getElementById('gen-tab-' + qObj.q);
+    if (!btn) return;
+    btn.classList.add('enabled');
+    if (!firstQ) firstQ = qObj.q;
+  });
+  var anualBtn = document.getElementById('gen-tab-anual');
+  if (anualBtn) { anualBtn.classList.add('enabled'); }
+  if (!firstQ) firstQ = 'anual';
+  genActiveQ = firstQ;
+  var activeBtn = document.getElementById('gen-tab-' + firstQ);
+  if (activeBtn) activeBtn.classList.add('active');
+}
+
+function genRenderAll() {
+  var isAnual = genActiveQ === 'anual';
+  var meses = isAnual ? MESES : (QUARTERS.find(function(x) { return x.q === genActiveQ; }) || QUARTERS[0]).meses;
+
+  genBuildTable('gen-table-sf',  'SFyF',   KPIS,     allData,    meses, isAnual);
+  genBuildTable('gen-table-vyp', 'VyP',    VYP_KPIS, vypAllData, meses, isAnual);
+  genBuildTable('gen-table-sis', 'Sistemas',SIS_KPIS, sisAllData, meses, isAnual);
+  genBuildCVATable(meses, isAnual);
+  genRenderScoreCards(meses, isAnual);
+}
+
+/* Load all data needed */
+async function loadGeneral() {
+  document.getElementById('gen-loadingBox').style.display = 'block';
+  document.getElementById('gen-errorBox').style.display   = 'none';
+  document.getElementById('gen-mainContent').style.display = 'none';
+
+  try {
+    /* Load SFyF, VyP, Sistemas in parallel */
+    await Promise.all([
+      loadAllFromSYyF(MESES),
+      loadVypAllData(MESES),
+      loadSisAllData(MESES)
+    ]);
+
+    /* Load CVA if not already loaded */
+    if (!cvaLoaded) await loadCVAData();
+
+    genLoaded = true;
+    genUpdateTabStates();
+    genRenderAll();
+
+    document.getElementById('gen-loadingBox').style.display  = 'none';
+    document.getElementById('gen-mainContent').style.display = 'block';
+    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+  } catch(e) {
+    document.getElementById('gen-loadingBox').style.display = 'none';
+    document.getElementById('gen-errorBox').style.display   = 'block';
+    document.getElementById('gen-errorMsg').textContent     = 'Error al cargar datos: ' + e.message;
   }
 }
 
+/* PDF Export */
+function genExportPDF() {
+  var btn = document.getElementById('genPdfBtn');
+  if (!genLoaded) return;
+  var isAnual = genActiveQ === 'anual';
+  var qLabel  = isAnual ? 'Anual · Ene – Dic' : (QUARTERS.find(function(x){return x.q===genActiveQ;})||{label:''}).label;
+  var titleStr = 'Numaris · Resumen General KPIs — ' + qLabel;
+  btn.classList.add('loading');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generando…';
+  var target = document.getElementById('gen-mainContent');
+  html2canvas(target, { scale:2, useCORS:true, backgroundColor:'#f4f7fb', logging:false }).then(function(canvas) {
+    var {jsPDF} = window.jspdf;
+    var imgData = canvas.toDataURL('image/png');
+    var pageW=297, pageH=210, margin=10, usableW=pageW-margin*2;
+    var ratio = usableW / (canvas.width/2), renderedH = (canvas.height/2) * ratio;
+    var pdf = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    pdf.setFillColor(11,31,58); pdf.rect(0,0,pageW,18,'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(11); pdf.setFont('helvetica','bold');
+    pdf.text(titleStr, margin, 12);
+    pdf.setFontSize(8); pdf.setFont('helvetica','normal'); pdf.setTextColor(180,200,220);
+    pdf.text('Generado: '+new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}), pageW-margin, 12, {align:'right'});
+    var startY=22, availH=pageH-startY-8;
+    if (renderedH <= availH) {
+      pdf.addImage(imgData,'PNG',margin,startY,usableW,renderedH);
+    } else {
+      var chunkH=Math.floor((availH/ratio)*2), pages=Math.ceil(canvas.height/chunkH);
+      for (var p=0;p<pages;p++) {
+        if (p>0) {
+          pdf.addPage([297,210],'landscape');
+          pdf.setFillColor(11,31,58); pdf.rect(0,0,pageW,14,'F');
+          pdf.setTextColor(255,255,255); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+          pdf.text(titleStr+' (cont.)',margin,9);
+          startY=18; availH=pageH-startY-8; chunkH=Math.floor((availH/ratio)*2);
+        }
+        var sc=document.createElement('canvas'), sliceH=Math.min(chunkH,canvas.height-p*chunkH);
+        sc.width=canvas.width; sc.height=sliceH;
+        sc.getContext('2d').drawImage(canvas,0,p*chunkH,canvas.width,sliceH,0,0,canvas.width,sliceH);
+        pdf.addImage(sc.toDataURL('image/png'),'PNG',margin,startY,usableW,(sliceH/2)*ratio);
+      }
+    }
+    var pgCount=pdf.getNumberOfPages();
+    for(var i=1;i<=pgCount;i++){
+      pdf.setPage(i); pdf.setFontSize(7); pdf.setTextColor(150,170,190); pdf.setFont('helvetica','normal');
+      pdf.text('Numaris © 2026 · Tablero Ejecutivo de KPIs · Resumen General', margin, pageH-4);
+      pdf.text('Página '+i+' de '+pgCount, pageW-margin, pageH-4, {align:'right'});
+    }
+    pdf.save('Numaris_Resumen_General_' + (isAnual?'Anual':genActiveQ) + '_' + new Date().getFullYear() + '.pdf');
+    btn.classList.remove('loading');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Exportar PDF';
+  }).catch(function(err) {
+    btn.classList.remove('loading');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Exportar PDF';
+    alert('Error al generar PDF: ' + err.message);
+  });
+}
+/* ── FIN RESUMEN GENERAL ── */
+
 /* INIT */
 buildMonthSelector();
-buildCVAMonthSelector();
+buildCvaMonthSelector();
 buildVypMonthSelector();
 buildSisMonthSelector();
+buildNnMonthSelector();
 loadMensualData();
 </script>
 </body>
