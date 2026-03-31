@@ -2302,6 +2302,14 @@ function loadCvaAllData(mesesFiltro) {
       var obj     = parseVal(rawObj,  matchKey);
       var cfg     = CVA_KPIS[matchKey];
 
+      // Convertir decimales a porcentaje para KPIs con unit:'%'
+      if (cfg.unit === '%') {
+        if (real !== null && real !== 'PENDIENTE' && real > 0 && real <= 1)
+          real = Math.round(real * 10000) / 100;
+        if (obj !== null && obj !== 'PENDIENTE' && obj > 0 && obj <= 1)
+          obj  = Math.round(obj  * 10000) / 100;
+      }
+
       cvaAllData[matchKey][mes] = {
         real:     real,
         objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
