@@ -909,7 +909,7 @@ footer {
         <div style="padding:0 22px;">
           <div class="sum-lbl">En objetivo</div>
           <div class="sum-val" id="nn-sum-ok">—</div>
-          <div class="sum-sub">de 7 KPIs</div>
+          <div class="sum-sub">de 6 KPIs</div>
         </div>
       </div>
     </div>
@@ -921,17 +921,16 @@ footer {
 
         <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
         <div class="grid grid-3">
-          <div class="kpi-card c1" id="nn-card-Ingresos"></div>
-          <div class="kpi-card c2" id="nn-card-Clientes Nuevos"></div>
-          <div class="kpi-card c3" id="nn-card-Clientes Nuevos 5 Estrellas"></div>
+          <div class="kpi-card c1" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
+          <div class="kpi-card c2" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
+          <div class="kpi-card c3" id="nn-card-Demos Activas"></div>
         </div>
 
         <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Proceso</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-4">
-          <div class="kpi-card c1" id="nn-card-Pipeline / Salesstar = Calculadora"></div>
+        <div class="grid grid-3">
+          <div class="kpi-card c1" id="nn-card-Pipline / Salesstar = Calculadora"></div>
           <div class="kpi-card c2" id="nn-card-Proceso Zoho"></div>
-          <div class="kpi-card c3" id="nn-card-Demos Activas"></div>
-          <div class="kpi-card c4" id="nn-card-Conversión Demo - Cierre"></div>
+          <div class="kpi-card c3" id="nn-card-Conversion Demo - Cierre"></div>
         </div>
 
         <!-- LOGROS E IMPEDIMENTOS -->
@@ -1175,6 +1174,7 @@ function fmtVal(val, unit, suffix) {
   if (val===null||val===undefined) return '—';
   if (val==='PENDIENTE') return 'Pendiente';
   var n = val;
+  if (unit==='txt')  return String(n);
   if (unit==='$')    return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (unit==='$USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (unit==='%')    return (typeof n === 'number' ? n.toFixed(2) : n)+'%';
@@ -2460,13 +2460,12 @@ function loadCvaData() {
    ══════════════════════════════════════════════════════ */
 
 var NN_KPIS = {
-  'Ingresos':                         { label:'Ingresos',                      icon:'💹', objective:'Crecimiento de ingresos en nuevos negocios',     weight:25, unit:'$',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
-  'Clientes Nuevos':                  { label:'Clientes Nuevos',               icon:'🏢', objective:'Captación total de nuevos clientes',             weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'clientes',  cuatrimestral:false },
-  'Clientes Nuevos 5 Estrellas':      { label:'Clientes Nuevos 5★',            icon:'⭐', objective:'Captación de clientes de alta calidad (5★)',     weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'clientes',  cuatrimestral:false },
-  'Pipeline / Salesstar = Calculadora':{ label:'Pipeline / Calculadora',       icon:'📊', objective:'Valor del pipeline activo en Salesstar',         weight:15, unit:'$',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
-  'Proceso Zoho':                     { label:'Proceso Zoho',                  icon:'🔵', objective:'Cumplimiento del proceso en Zoho CRM',           weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false },
-  'Demos Activas':                    { label:'Demos Activas',                 icon:'🎯', objective:'Demostraciones activas en el período',           weight:10, unit:'#',  inverse:false, fixedObj:null, objLabel:null,       suffix:'demos',     cuatrimestral:false },
-  'Conversión Demo - Cierre':         { label:'Conversión Demo → Cierre',      icon:'✅', objective:'Tasa de conversión de demos a cierres',          weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:null,       suffix:null,        cuatrimestral:false }
+  'Ingresos Clientes Nuevos (% crecimiento objetivo)': { label:'Ingresos Clientes Nuevos',   icon:'💹', objective:'Generar crecimiento comercial sostenible',                        weight:40, unit:'%',  inverse:false, fixedObj:null, objLabel:null,              suffix:null,       cuatrimestral:true  },
+  'Clientes nuevos 5 estrellas (# objetivo)':          { label:'Clientes Nuevos 5★',         icon:'⭐', objective:'Asegurar predictibilidad de clientes futuros',                    weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,              suffix:'clientes', cuatrimestral:true  },
+  'Pipline / Salesstar = Calculadora':                 { label:'Pipeline / Calculadora',     icon:'📊', objective:'Asegurar predictibilidad de ingresos futuros',                   weight:12, unit:'txt',inverse:false, fixedObj:null, objLabel:'Según Calculadora', suffix:null,       cuatrimestral:true  },
+  'Proceso Zoho':                                      { label:'Proceso Zoho',               icon:'🔵', objective:'Garantizar ejecución profesional, trazabilidad y control comercial',weight:10, unit:'txt',inverse:false, fixedObj:null, objLabel:'Revisión Semanal', suffix:null,       cuatrimestral:true  },
+  'Demos Activas':                                     { label:'Demos Activas',              icon:'🎯', objective:'Mantener tracción comercial constante',                           weight:15, unit:'%',  inverse:false, fixedObj:50,   objLabel:'50% en opor.',    suffix:null,       cuatrimestral:true  },
+  'Conversion Demo - Cierre':                          { label:'Conversión Demo → Cierre',   icon:'✅', objective:'Maximizar la eficiencia comercial',                              weight: 8, unit:'%',  inverse:false, fixedObj:null, objLabel:null,              suffix:null,       cuatrimestral:true  }
 };
 
 var nnRawRows  = [];
@@ -2538,6 +2537,14 @@ function loadNnAllData(mesesFiltro) {
       var real    = parseVal(rawReal, matchKey);
       var obj     = parseVal(rawObj,  matchKey);
       var cfg     = NN_KPIS[matchKey];
+
+      // Convertir decimales a porcentaje para KPIs con unit:'%'
+      if (cfg.unit === '%') {
+        if (real !== null && real !== 'PENDIENTE' && real > 0 && real <= 1)
+          real = Math.round(real * 10000) / 100;
+        if (obj !== null && obj !== 'PENDIENTE' && obj > 0 && obj <= 1)
+          obj  = Math.round(obj  * 10000) / 100;
+      }
 
       nnAllData[matchKey][mes] = {
         real:     real,
@@ -2673,7 +2680,7 @@ function loadNnData() {
     var s  = nnCalcSummary();
     var te = document.getElementById('nn-sum-trend');
     var ok = document.getElementById('nn-sum-ok');
-    if (ok)  ok.textContent = s.ok + ' / 7';
+    if (ok)  ok.textContent = s.ok + ' / 6';
     if (te && s.pct !== null) {
       te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
       te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
