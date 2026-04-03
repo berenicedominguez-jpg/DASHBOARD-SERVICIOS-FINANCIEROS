@@ -574,6 +574,17 @@ footer {
 
   <!-- PAGE: MENSUAL -->
   <div class="page active" id="page-mensual">
+
+    <!-- MODAL COMENTARIOS SFyF -->
+    <div id="sf-modal-overlay" onclick="sfCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
+        <button onclick="sfCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="sf-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
+        <div id="sf-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+
     <div class="month-panel">
       <div>
         <div class="month-panel-title">Período de análisis</div>
@@ -1056,7 +1067,8 @@ function getQMeses(mes) { return QUARTERS[getQBlock(mes)].meses; }
 
 /* ── Carga única: una sola llamada a la hoja SYyF ──
    Construye allData[kpiKey][mes] = { real, objetivo } para todos los KPIs y meses */
-var sfLIData = {}; // { mes: { logros: [], impedimentos: [] } }
+var sfLIData  = {}; // { mes: { logros: [], impedimentos: [] } }
+var sfExtras  = {}; // { kpi: { mes: { comentarios } } }
 var sfDataLoaded = false;
 var sfRawRows = [];
 
@@ -1142,9 +1154,11 @@ function loadAllFromSYyF(mesesFiltro) {
   return fetchSYyF().then(function(rows) {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key) {
-      if (!allData[key]) allData[key] = {};
+      if (!allData[key])   allData[key]   = {};
+      if (!sfExtras[key])  sfExtras[key]  = {};
       mesesFiltro.forEach(function(m) {
-        allData[key][m] = { real: null, objetivo: null };
+        allData[key][m]  = { real: null, objetivo: null };
+        sfExtras[key][m] = { comentarios: '' };
       });
     });
     rows.forEach(function(row) {
@@ -1163,6 +1177,11 @@ function loadAllFromSYyF(mesesFiltro) {
         real:     real,
         objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj
       };
+      // Leer COMENTARIOS por KPI
+      var rkeys = Object.keys(row);
+      var kCom = rkeys.find(function(k) { return k.toUpperCase().trim() === 'COMENTARIOS'; });
+      if (!sfExtras[kpi][mes]) sfExtras[kpi][mes] = { comentarios: '' };
+      if (kCom) sfExtras[kpi][mes].comentarios = String(row[kCom] || '').trim();
     });
     // También capturar filas de logros/impedimentos (sin KPI o KPI no reconocido)
     rows.forEach(function(row) {
@@ -1291,7 +1310,7 @@ function navigate(page) {
 
 function refreshData() {
   genLoaded=false;
-  allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[]; sfLIData={};
+  allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[]; sfLIData={}; sfExtras={};
   vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
   sisAllData={}; sisExtras={}; sisLoaded=false; sisDataLoaded=false; sisRawRows=[];
   cvaAllData={}; cvaExtras2={}; cvaPageLoaded=false; cvaRawRows2=[];
@@ -1325,6 +1344,16 @@ function selectMonth(mes, activeBtn) {
   document.querySelectorAll('.mbtn').forEach(function(b){ b.classList.remove('active'); });
   activeBtn.classList.add('active');
   loadMensualData();
+}
+
+function sfOpenModal(kpi, comentario) {
+  var cfg = KPIS[kpi];
+  document.getElementById('sf-modal-kpi').textContent  = cfg ? cfg.label : kpi;
+  document.getElementById('sf-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  document.getElementById('sf-modal-overlay').style.display = 'flex';
+}
+function sfCloseModal() {
+  document.getElementById('sf-modal-overlay').style.display = 'none';
 }
 
 function renderCard(key) {
@@ -1398,12 +1427,17 @@ function renderCard(key) {
 
   var realColor = realNum===null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
 
+  var ext     = (sfExtras[key] && sfExtras[key][selectedMes]) || {};
+  var com     = ext.comentarios || '';
+  var comHtml = com ? buildCommentBtn('sfOpenModal', key, com) : '';
+
   el.innerHTML=[
     '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
     '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
     '<div class="kpi-objective">'+cfg.objective+'</div>',
     '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
     acumDisplay?'<div class="kpi-acum-val">📦 '+acumDisplay+'</div>':'',
+    comHtml,
     '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
     cumplHtml,
     '<div class="kpi-divider"></div>',
@@ -2090,8 +2124,10 @@ function loadSisAllData(mesesFiltro) {
     var keys = Object.keys(SIS_KPIS);
     keys.forEach(function(key) {
       if (!sisAllData[key]) sisAllData[key] = {};
+      if (!sisExtras[key])  sisExtras[key]  = {};
       mesesFiltro.forEach(function(m) {
         sisAllData[key][m] = { real: null, objetivo: null };
+        sisExtras[key][m]  = { comentarios: '' };
       });
     });
     rows.forEach(function(row) {
@@ -2111,10 +2147,13 @@ function loadSisAllData(mesesFiltro) {
         if (obj  !== null && obj  !== 'PENDIENTE' && obj  > 0 && obj  <= 1) obj  = Math.round(obj  * 10000) / 100;
       }
       sisAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
-      // Columnas extra LOGROS e IMPEDIMENTOS
+      // Columnas COMENTARIOS, LOGROS e IMPEDIMENTOS
       var rkeys = Object.keys(row);
+      var kCom = rkeys.find(function(k){ return k.toUpperCase().trim() === 'COMENTARIOS'; });
       var kLog = rkeys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
       var kImp = rkeys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
+      if (!sisExtras[kpi][mes]) sisExtras[kpi][mes] = { comentarios: '' };
+      if (kCom) sisExtras[kpi][mes].comentarios = String(row[kCom] || '').trim();
       if (!sisExtras['_general']) sisExtras['_general'] = {};
       if (!sisExtras['_general'][mes]) sisExtras['_general'][mes] = { logros:[], impedimentos:[] };
       if (kLog && row[kLog]) sisExtras['_general'][mes].logros.push(String(row[kLog]||'').trim());
@@ -2175,11 +2214,16 @@ function sisRenderCard(key) {
   var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
   var metaHtml = '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
 
+  var ext    = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
+  var com    = ext.comentarios || '';
+  var comHtml = com ? buildCommentBtn('sisOpenModal', key, com) : '';
+
   el.innerHTML = [
     '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
     '<div class="kpi-label">'+cfg.label+'</div>',
     '<div class="kpi-objective">'+cfg.objective+'</div>',
     '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
+    comHtml,
     metaHtml,
     cumplHtml,
     '<div class="kpi-divider"></div>',
