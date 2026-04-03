@@ -276,96 +276,167 @@ body {
   text-transform:uppercase; color: var(--blue); white-space:nowrap;
 }
 
-/* ── GRIDS ── */
-.grid { display:grid; gap:14px; margin-bottom:24px; }
-.grid-4 { grid-template-columns:repeat(4,1fr); }
-.grid-3 { grid-template-columns:repeat(3,1fr); }
-.grid > .kpi-card { height:100%; }
+/* ── GRIDS — ahora columnas de filas ejecutivas ── */
+.grid { display:flex; flex-direction:column; gap:0; margin-bottom:24px;
+  border:1px solid var(--slate5); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); }
+.grid-4, .grid-3 { }
+.grid > .kpi-card { height:auto; }
 
-/* ── KPI CARD ── */
+/* ── KPI CARD — FILA EJECUTIVA ── */
 .kpi-card {
   background: var(--white);
-  border: 1px solid var(--slate5);
-  border-radius: 12px; padding: 22px 20px 18px;
-  position:relative; overflow:hidden;
-  transition: transform 0.18s, box-shadow 0.18s;
-  box-shadow: var(--shadow-sm);
-  display:flex; flex-direction:column; align-items:center; text-align:center;
+  border-bottom: 1px solid var(--slate5);
+  position:relative;
+  display:grid;
+  grid-template-columns: 4px 46px 1fr 160px 160px 120px 1fr;
+  align-items:stretch;
+  min-height: 66px;
+  transition: background 0.14s;
 }
-.kpi-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
-.kpi-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  border-radius:12px 12px 0 0;
-}
-.c1::before { background:linear-gradient(90deg, var(--navy), var(--blue)); }
-.c2::before { background:linear-gradient(90deg, var(--blue), var(--blue2)); }
-.c3::before { background:linear-gradient(90deg, var(--blue2), var(--blue3)); }
-.c4::before { background:linear-gradient(90deg, var(--blue3), var(--blue-light)); }
+.kpi-card:last-child { border-bottom:none; }
+.kpi-card:hover { background: var(--off); }
 
+/* Barra lateral de estado */
+.kpi-status-bar { align-self:stretch; }
+.status-ok   { background: var(--green); }
+.status-near { background: var(--amber); }
+.status-off  { background: var(--red); }
+.status-nd   { background: var(--slate4); }
+
+/* Ícono */
 .kpi-icon-wrap {
-  width:38px; height:38px; border-radius:8px;
-  background:var(--blue-ghost); border:1px solid var(--slate5);
   display:flex; align-items:center; justify-content:center;
-  font-size:18px; margin-bottom:10px;
+  font-size:18px; padding:0 0 0 12px;
 }
 
+/* Nombre + objetivo */
+.kpi-info-col {
+  display:flex; flex-direction:column; justify-content:center;
+  padding: 12px 18px 12px 12px; min-width:0; border-right:1px solid var(--slate5);
+}
 .kpi-label {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; font-weight:700; letter-spacing:0.14em;
-  text-transform:uppercase; color: var(--slate); margin-bottom:2px;
+  font-size: 12px; font-weight:700; letter-spacing:0.1em;
+  text-transform:uppercase; color: var(--navy); margin-bottom:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.kpi-objective {
+  font-size:11px; color:var(--slate2); line-height:1.4;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
-.kpi-objective { font-size:11px; color:var(--slate2); line-height:1.5; margin-bottom:14px; min-height:32px; }
-
+/* Valor real */
+.kpi-val-col {
+  display:flex; flex-direction:column; justify-content:center; align-items:flex-end;
+  padding: 12px 16px; border-right:1px solid var(--slate5);
+}
 .kpi-real-val {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 32px; font-weight:600; color:var(--navy); line-height:1; margin-bottom:4px;
+  font-size: 26px; font-weight:600; line-height:1; margin-bottom:1px;
 }
-
-.kpi-acum-val {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 11px; font-weight:600; letter-spacing:0.04em; color:var(--blue);
-  background:var(--blue-ghost); border:1px solid var(--blue-pale);
-  border-radius:20px; padding:3px 12px; margin-bottom:4px;
-}
-
 .kpi-meta {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 11px; color:var(--slate); margin-bottom:4px; letter-spacing:0.03em;
+  font-size: 10px; color:var(--slate2); letter-spacing:0.03em; text-align:right;
+}
+.kpi-acum-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight:600; color:var(--blue); text-align:right; letter-spacing:0.02em;
 }
 
+/* Barra de progreso + cumplimiento */
+.kpi-bar-col {
+  display:flex; flex-direction:column; justify-content:center;
+  padding: 12px 16px; border-right:1px solid var(--slate5);
+}
 .kpi-cumpl {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 11px; font-weight:700; margin-bottom:12px; letter-spacing:0.04em;
+  font-size: 12px; font-weight:700; margin-bottom:5px; letter-spacing:0.04em;
 }
-
-.kpi-divider { width:100%; height:1px; background:var(--slate5); margin-bottom:10px; margin-top:auto; }
-
-/* ── PROGRESS ── */
-.progress-wrap { width:100%; margin-bottom:12px; align-self:stretch; }
+.progress-wrap { width:100%; }
 .progress-labels {
   display:flex; justify-content:space-between;
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; letter-spacing:0.05em; color:var(--slate2); margin-bottom:5px;
+  font-size: 9px; letter-spacing:0.05em; color:var(--slate3); margin-bottom:4px;
 }
-.progress-pct { font-weight:700; color:var(--navy); }
-.progress-track { height:5px; background:var(--slate5); border-radius:3px; overflow:hidden; }
-.progress-bar { height:100%; border-radius:3px; transition:width .9s ease; }
-.bar-ok   { background:linear-gradient(90deg, var(--navy), var(--blue3)); }
-.bar-near { background:linear-gradient(90deg, var(--amber), #d4900a); }
-.bar-off  { background:linear-gradient(90deg, var(--red), #c43030); }
+.progress-pct { font-weight:700; color:var(--slate); }
+.progress-track { height:4px; background:var(--slate5); border-radius:2px; overflow:hidden; }
+.progress-bar { height:100%; border-radius:2px; transition:width .9s ease; }
+.bar-ok   { background: var(--green); }
+.bar-near { background: var(--amber); }
+.bar-off  { background: var(--red); }
 
-/* ── BADGES ── */
+/* Badge */
+.kpi-badge-col {
+  display:flex; align-items:center; justify-content:center;
+  padding: 12px 14px; border-right:1px solid var(--slate5);
+}
 .kpi-badge {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 14px; border-radius:20px;
+  display:inline-flex; align-items:center; gap:4px;
+  padding:4px 12px; border-radius:20px;
   font-family: 'Barlow Condensed', sans-serif;
   font-size:10px; font-weight:700; letter-spacing:0.06em;
+  white-space:nowrap;
 }
 .badge-ok   { background:var(--green-bg); color:var(--green); border:1px solid var(--green-bd); }
 .badge-near { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-bd); }
 .badge-off  { background:var(--red-bg); color:var(--red); border:1px solid var(--red-bd); }
 .badge-nd   { background:var(--off2); color:var(--slate2); border:1px solid var(--slate4); }
+
+/* Comentario */
+.kpi-comment-col {
+  display:flex; align-items:center;
+  padding: 12px 16px;
+}
+.kpi-comment-inner { font-size:11px; color:var(--slate); line-height:1.5; }
+.kpi-comment-lbl {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--slate3); margin-bottom:2px;
+}
+.kpi-no-comment { font-size:11px; color:var(--slate4); }
+
+/* Cabecera de grupo (dentro del .grid) */
+.kpi-group-header {
+  display:flex; align-items:center; gap:10px;
+  padding: 8px 18px 8px 72px;
+  background: var(--navy);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.kpi-group-header-txt {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:0.22em;
+  text-transform:uppercase; color:rgba(255,255,255,0.45); white-space:nowrap;
+}
+.kpi-group-header-line { flex:1; height:1px; background:rgba(255,255,255,0.07); }
+
+/* Cabecera de columnas de la tabla ejecutiva */
+.kpi-col-header {
+  display:grid;
+  grid-template-columns: 4px 46px 1fr 160px 160px 120px 1fr;
+  background: var(--off);
+  border-bottom: 1px solid var(--slate5);
+  padding: 5px 0;
+}
+.kpi-col-header span {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--slate2);
+  padding:0 16px; display:flex; align-items:center;
+}
+.kpi-col-header span:nth-child(1),
+.kpi-col-header span:nth-child(2) { padding:0; }
+.kpi-col-header span:nth-child(4),
+.kpi-col-header span:nth-child(5),
+.kpi-col-header span:nth-child(6) { justify-content:flex-end; }
+
+/* Badge cuatrimestral inline */
+.badge-cuatri {
+  display:inline-block; font-size:8px; background:var(--amber-bg);
+  color:var(--amber); border:1px solid var(--amber-bd);
+  border-radius:8px; padding:1px 5px; font-weight:700; margin-left:5px;
+  vertical-align:middle; letter-spacing:.04em;
+}
+.kpi-divider { display:none; }
 
 /* ── TAB BAR ── */
 .tab-bar {
@@ -514,7 +585,6 @@ footer {
 ::-webkit-scrollbar-thumb:hover { background:var(--slate3); }
 
 /* ── RESPONSIVE ── */
-@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:960px){
   .sidebar{width:60px;}
   .nav-item span:not(.nav-icon),.nav-group-label{display:none;}
@@ -523,10 +593,15 @@ footer {
   .content{padding:20px 16px;}
   .topbar{padding:0 16px;}
   .month-panel,.tab-bar{padding-left:16px;padding-right:16px;}
+  .kpi-card { grid-template-columns: 4px 0 1fr 120px 140px 100px; }
+  .kpi-icon-wrap { display:none; }
+  .kpi-comment-col { display:none; }
 }
 @media(max-width:620px){
-  .grid-4,.grid-3{grid-template-columns:1fr;}
   .month-panel{flex-direction:column;gap:14px;align-items:flex-start;}
+  .kpi-card { grid-template-columns: 4px 1fr 110px 90px; }
+  .kpi-icon-wrap,.kpi-bar-col,.kpi-comment-col { display:none; }
+  .kpi-badge-col { display:none; }
 }
 </style>
 </head>
@@ -608,22 +683,23 @@ footer {
       <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
       <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
       <div id="m-mainContent" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento Comercial</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-4">
-          <div class="kpi-card c1" id="card-Ingresos"></div>
-          <div class="kpi-card c2" id="card-Churn"></div>
-          <div class="kpi-card c3" id="card-CrossSelling"></div>
-          <div class="kpi-card c4" id="card-ClientesNuevos"></div>
+
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Crecimiento Comercial</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="card-Ingresos"></div>
+          <div class="kpi-card" id="card-Churn"></div>
+          <div class="kpi-card" id="card-CrossSelling"></div>
+          <div class="kpi-card" id="card-ClientesNuevos"></div>
         </div>
-        <div class="section-hdr"><div class="section-hdr-txt">Satisfacción &amp; Rentabilidad</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="card-NPS"></div>
-          <div class="kpi-card c2" id="card-MargenBruto"></div>
-          <div class="kpi-card c3" id="card-SGA"></div>
-        </div>
-        <div class="section-hdr"><div class="section-hdr-txt">Gestión Financiera</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-4">
-          <div class="kpi-card c1" id="card-CxC"></div>
+
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Satisfacción &amp; Rentabilidad</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="card-NPS"></div>
+          <div class="kpi-card" id="card-MargenBruto"></div>
+          <div class="kpi-card" id="card-SGA"></div>
+          <div class="kpi-card" id="card-CxC"></div>
         </div>
 
         <!-- TABLA LOGROS E IMPEDIMENTOS SFyF -->
@@ -631,12 +707,10 @@ footer {
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="background:var(--blue-dark);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
-                </tr>
-              </thead>
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
               <tbody id="sf-li-tbody"></tbody>
             </table>
           </div>
@@ -646,321 +720,215 @@ footer {
     </div>
   </div>
 
-  <!-- PAGE: VyP - KPIs Venta Postventa -->
+  <!-- PAGE: VyP -->
   <div class="page" id="page-vyp">
-
-    <!-- MODAL COMENTARIOS -->
     <div id="vyp-modal-overlay" onclick="vypCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
-        <button onclick="vypCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
-        <div id="vyp-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
-        <div id="vyp-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
+        <button onclick="vypCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="vyp-modal-kpi" style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;"></div>
+        <div id="vyp-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
-
     <div class="month-panel">
-      <div>
-        <div class="month-panel-title">Venta Postventa · Período de análisis</div>
-        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
-      </div>
+      <div><div class="month-panel-title">Venta Postventa · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="vyp-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
-        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
-          <div class="sum-lbl">Tendencia</div>
-          <div class="sum-val" id="vyp-sum-trend">—</div>
-          <div class="sum-sub">Resultado general</div>
-        </div>
-        <div style="padding:0 24px;">
-          <div class="sum-lbl">En objetivo</div>
-          <div class="sum-val" id="vyp-sum-ok">—</div>
-          <div class="sum-sub">de 4 KPIs ponderados</div>
-        </div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate5);">
+        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="vyp-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
+        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="vyp-sum-ok">—</div><div class="sum-sub">de 4 KPIs ponderados</div></div>
       </div>
     </div>
     <div class="content">
-      <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
-      <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="vyp-errorMsg">Error.</p></div>
+      <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="vyp-errorMsg">Error.</p></div>
       <div id="vyp-mainContent" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">Ventas</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="vyp-card-VENTAS"></div>
-          <div class="kpi-card c2" id="vyp-card-UNIDADES"></div>
-          <div class="kpi-card c3" id="vyp-card-CHURN"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Ventas</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="vyp-card-VENTAS"></div>
+          <div class="kpi-card" id="vyp-card-UNIDADES"></div>
+          <div class="kpi-card" id="vyp-card-CHURN"></div>
         </div>
-        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="vyp-card-CROSS-SELLING"></div>
-          <div class="kpi-card c2" id="vyp-card-NPS"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Crecimiento &amp; Satisfacción</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="vyp-card-CROSS-SELLING"></div>
+          <div class="kpi-card" id="vyp-card-NPS"></div>
         </div>
-
-        <!-- TABLA LOGROS E IMPEDIMENTOS -->
         <div id="vyp-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="background:var(--blue-dark);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;width:160px;">KPI</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
-                </tr>
-              </thead>
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
               <tbody id="vyp-li-tbody"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- PAGE: SISTEMAS -->
-  <div class="page" id="page-sis">
-
-    <!-- MODAL COMENTARIOS SISTEMAS -->
+  <div class="page" id="page-sistemas">
     <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
-        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
-        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
-        <div id="sis-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
+        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;"></div>
+        <div id="sis-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
-
     <div class="month-panel">
-      <div>
-        <div class="month-panel-title">Sistemas · Período de análisis</div>
-        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
-      </div>
+      <div><div class="month-panel-title">Sistemas · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="sis-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
-        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
-          <div class="sum-lbl">Tendencia</div>
-          <div class="sum-val" id="sis-sum-trend">—</div>
-          <div class="sum-sub">Resultado general</div>
-        </div>
-        <div style="padding:0 24px;">
-          <div class="sum-lbl">En objetivo</div>
-          <div class="sum-val" id="sis-sum-ok">—</div>
-          <div class="sum-sub">de 5 KPIs ponderados</div>
-        </div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate5);">
+        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="sis-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
+        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="sis-sum-ok">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
-
     <div class="content">
-      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
-      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="sis-errorMsg">Error.</p></div>
+      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
       <div id="sis-mainContent" style="display:none;">
-
-        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="sis-card-Servidores Activos"></div>
-          <div class="kpi-card c2" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
-          <div class="kpi-card c3" id="sis-card-Costo por unidad mensual"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Infraestructura</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="sis-card-Servidores Activos"></div>
+          <div class="kpi-card" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
+          <div class="kpi-card" id="sis-card-Costo por unidad mensual"></div>
         </div>
-
-        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-4">
-          <div class="kpi-card c1" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
-          <div class="kpi-card c2" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
-          <div class="kpi-card c3" id="sis-card-NPS (%)"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">Soporte &amp; Satisfacción</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
+          <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
+          <div class="kpi-card" id="sis-card-NPS (%)"></div>
         </div>
-
-        <!-- TABLA LOGROS E IMPEDIMENTOS SISTEMAS -->
         <div id="sis-am-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="background:var(--blue-dark);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">🏆 Logros</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">⚠️ Impedimentos</th>
-                </tr>
-              </thead>
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
               <tbody id="sis-am-tbody"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- PAGE: RESUMEN -->
-  <div class="page" id="page-resumen">
-    <div class="tab-bar" id="tabBar">
-      <div class="tab-bar-left">
-        <button class="tab-btn" id="tab-1" onclick="selectQ(1,this)">Q1 · Ene – Abr</button>
-        <button class="tab-btn" id="tab-2" onclick="selectQ(2,this)">Q2 · May – Ago</button>
-        <button class="tab-btn" id="tab-3" onclick="selectQ(3,this)">Q3 · Sep – Dic</button>
-        <button class="tab-btn anual" id="tab-anual" onclick="selectQ('anual',this)">📅 Anual · Ene – Dic</button>
-      </div>
-      <button class="pdf-btn" id="pdfBtn" onclick="exportPDF()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="12" y1="18" x2="12" y2="12"/>
-          <line x1="9" y1="15" x2="15" y2="15"/>
-        </svg>
-        Exportar PDF
-      </button>
-    </div>
-    <div class="content" style="padding-top:24px;">
-      <div id="r-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
-      <div id="r-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="r-errorMsg">Error.</p></div>
-      <div id="r-mainContent" style="display:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;" id="r-summary-cards"></div>
-        <div class="table-wrap"><div class="table-scroll"><table id="resumenTable"></table></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAGE: CVA - KPIs Mensual: Central Monitoreo CVA -->
+  <!-- PAGE: CVA MONITOREO -->
   <div class="page" id="page-cva">
-
-    <!-- MODAL COMENTARIOS CVA -->
     <div id="cva-modal-overlay" onclick="cvaCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:var(--white);border-radius:14px;padding:30px 34px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
         <button onclick="cvaCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
         <div id="cva-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
         <div id="cva-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
-
     <div class="month-panel">
-      <div>
-        <div class="month-panel-title">Central de Monitoreo CVA · Período de análisis</div>
-        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
-      </div>
-      <div class="month-btns" id="cva-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate4);">
-        <div style="padding:0 22px;border-right:1px solid var(--slate4);">
-          <div class="sum-lbl">Tendencia</div>
-          <div class="sum-val" id="cva-sum-trend">—</div>
-          <div class="sum-sub">Resultado general</div>
-        </div>
-        <div style="padding:0 22px;">
-          <div class="sum-lbl">En objetivo</div>
-          <div class="sum-val" id="cva-sum-ok">—</div>
-          <div class="sum-sub">de 6 KPIs</div>
-        </div>
+      <div><div class="month-panel-title">Central Monitoreo CVA · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
+      <div class="month-btns" id="cva-monthBtns2"></div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate5);">
+        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="cva-sum-trend2">—</div><div class="sum-sub">Resultado general</div></div>
+        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="cva-sum-ok2">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
-
     <div class="content">
-      <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
-      <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:32px;margin-bottom:12px;opacity:0.4;">⚠</div><p id="cva-errorMsg">Error.</p></div>
+      <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="cva-errorMsg">Error.</p></div>
       <div id="cva-mainContent" style="display:none;">
-
-        <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="cva-card-ROBOS"></div>
-          <div class="kpi-card c2" id="cva-card-ABUSOS DE CONFIANZA"></div>
-          <div class="kpi-card c3" id="cva-card-CREDITOS"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">🔒 Recuperaciones</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="cva-card-ROBOS"></div>
+          <div class="kpi-card" id="cva-card-ABUSOS DE CONFIANZA"></div>
+          <div class="kpi-card" id="cva-card-CREDITOS"></div>
         </div>
-
-        <div class="section-hdr"><div class="section-hdr-txt">🎧 Soporte &amp; Capacitación</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="cva-card-TIEMPO DE PRIMERA RESPUESTA"></div>
-          <div class="kpi-card c2" id="cva-card-SATISFACCIÓN DE CAPACITACIONES"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">🎧 Soporte &amp; Capacitación</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="cva-card-TIEMPO DE PRIMERA RESPUESTA"></div>
+          <div class="kpi-card" id="cva-card-SATISFACCIÓN DE CAPACITACIONES"></div>
         </div>
-
-        <div class="section-hdr"><div class="section-hdr-txt">🌐 Conectividad</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="cva-card-CONECTIVIDAD"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">🌐 Conectividad</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="cva-card-CONECTIVIDAD"></div>
         </div>
-
-        <!-- LOGROS E IMPEDIMENTOS -->
         <div id="cva-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="background:var(--navy);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
-                </tr>
-              </thead>
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
               <tbody id="cva-li-tbody"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
   <!-- PAGE: NUEVOS NEGOCIOS -->
   <div class="page" id="page-nn">
-
-    <!-- MODAL COMENTARIOS NN -->
     <div id="nn-modal-overlay" onclick="nnCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:var(--white);border-radius:14px;padding:30px 34px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
         <button onclick="nnCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
         <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
         <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
-
     <div class="month-panel">
-      <div>
-        <div class="month-panel-title">Nuevos Negocios – Flotillas y Financieras · Período de análisis</div>
-        <div class="month-panel-sub">Selecciona el mes a visualizar</div>
-      </div>
+      <div><div class="month-panel-title">Nuevos Negocios · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="nn-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate4);">
-        <div style="padding:0 22px;border-right:1px solid var(--slate4);">
-          <div class="sum-lbl">Tendencia</div>
-          <div class="sum-val" id="nn-sum-trend">—</div>
-          <div class="sum-sub">Resultado general</div>
-        </div>
-        <div style="padding:0 22px;">
-          <div class="sum-lbl">En objetivo</div>
-          <div class="sum-val" id="nn-sum-ok">—</div>
-          <div class="sum-sub">de 6 KPIs</div>
-        </div>
+      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--slate5);">
+        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="nn-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
+        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="nn-sum-ok">—</div><div class="sum-sub">de 6 KPIs</div></div>
       </div>
     </div>
-
     <div class="content">
-      <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
-      <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:32px;margin-bottom:12px;opacity:0.4;">⚠</div><p id="nn-errorMsg">Error.</p></div>
+      <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
       <div id="nn-mainContent" style="display:none;">
-
-        <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
-          <div class="kpi-card c2" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
-          <div class="kpi-card c3" id="nn-card-Demos Activas"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">💰 Ventas &amp; Captación</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
+          <div class="kpi-card" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
+          <div class="kpi-card" id="nn-card-Demos Activas"></div>
         </div>
-
-        <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Conversión</div><div class="section-hdr-line"></div></div>
-        <div class="grid grid-3">
-          <div class="kpi-card c1" id="nn-card-Pipline / Salesstar = Calculadora"></div>
-          <div class="kpi-card c2" id="nn-card-Proceso Zoho"></div>
-          <div class="kpi-card c3" id="nn-card-Conversion Demo - Cierre"></div>
+        <div class="grid">
+          <div class="kpi-group-header"><div class="kpi-group-header-txt">📊 Pipeline &amp; Conversión</div><div class="kpi-group-header-line"></div></div>
+          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
+          <div class="kpi-card" id="nn-card-Pipline / Salesstar = Calculadora"></div>
+          <div class="kpi-card" id="nn-card-Proceso Zoho"></div>
+          <div class="kpi-card" id="nn-card-Conversion Demo - Cierre"></div>
         </div>
-
-        <!-- LOGROS E IMPEDIMENTOS -->
         <div id="nn-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead>
-                <tr style="background:var(--navy);">
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
-                  <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
-                </tr>
-              </thead>
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
               <tbody id="nn-li-tbody"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -1427,26 +1395,15 @@ function renderCard(key) {
 
   var realColor = realNum===null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
 
-  var ext     = (sfExtras[key] && sfExtras[key][selectedMes]) || {};
-  var com     = ext.comentarios || '';
-  var comHtml = com ? buildCommentBtn('sfOpenModal', key, com) : '';
-
-  el.innerHTML=[
-    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
-    '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
-    '<div class="kpi-objective">'+cfg.objective+'</div>',
-    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
-    acumDisplay?'<div class="kpi-acum-val">📦 '+acumDisplay+'</div>':'',
-    comHtml,
-    '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
-    cumplHtml,
-    '<div class="kpi-divider"></div>',
-    '<div class="progress-wrap">',
-      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw>0?pw+'%':'—')+'</span><span>100%</span></div>',
-      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
-    '</div>',
-    badgeHtml
-  ].join('');
+  var ext = (sfExtras[key] && sfExtras[key][selectedMes]) || {};
+  el.innerHTML = buildKpiRow({
+    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    cuatrimestral: cfg.cuatrimestral, realDisplay: realDisplay,
+    realColor: realColor, acumDisplay: acumDisplay,
+    metaLabel: metaLabel, metaDisplay: metaDisplay,
+    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
+    badgeHtml: badgeHtml, ok: ok, com: ext.comentarios || ''
+  });
 }
 
 function calcSummary() {
@@ -2015,21 +1972,15 @@ function vypRenderCard(key) {
   var metaLabel = cfg.cuatrimestral ? 'Meta cuatrimestral: ' : 'Meta: ';
   var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
 
-  el.innerHTML = [
-    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
-    '<div class="kpi-label">'+cfg.label+(cfg.cuatrimestral?' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span>':'')+'</div>',
-    '<div class="kpi-objective">'+cfg.objective+'</div>',
-    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
-    acumDisplay ? vypBuildAcumClick(key, fmtVal(acum, cfg.unit, cfg.suffix)+' acumulado cuatrimestral') : '',
-    '<div class="kpi-meta">'+metaLabel+metaDisplay+'</div>',
-    cumplHtml,
-    '<div class="kpi-divider"></div>',
-    '<div class="progress-wrap">',
-      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw > 0 ? pw+'%' : '—')+'</span><span>100%</span></div>',
-      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
-    '</div>',
-    badgeHtml
-  ].join('');
+  var ext2 = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
+  el.innerHTML = buildKpiRow({
+    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    cuatrimestral: cfg.cuatrimestral, realDisplay: realDisplay,
+    realColor: realColor, acumDisplay: acumDisplay,
+    metaLabel: metaLabel, metaDisplay: metaDisplay,
+    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
+    badgeHtml: badgeHtml, ok: ok, com: ext2.comentarios || ''
+  });
 }
 
 function vypCalcSummary() {
@@ -2218,21 +2169,14 @@ function sisRenderCard(key) {
   var com    = ext.comentarios || '';
   var comHtml = com ? buildCommentBtn('sisOpenModal', key, com) : '';
 
-  el.innerHTML = [
-    '<div class="kpi-icon-wrap">'+cfg.icon+'</div>',
-    '<div class="kpi-label">'+cfg.label+'</div>',
-    '<div class="kpi-objective">'+cfg.objective+'</div>',
-    '<div class="kpi-real-val" style="color:'+realColor+';">'+realDisplay+'</div>',
-    comHtml,
-    metaHtml,
-    cumplHtml,
-    '<div class="kpi-divider"></div>',
-    '<div class="progress-wrap">',
-      '<div class="progress-labels"><span>0%</span><span class="progress-pct">'+(pw > 0 ? pw+'%' : '—')+'</span><span>100%</span></div>',
-      '<div class="progress-track"><div class="progress-bar '+barCls+'" style="width:'+pw+'%"></div></div>',
-    '</div>',
-    badgeHtml
-  ].join('');
+  el.innerHTML = buildKpiRow({
+    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    cuatrimestral: false, realDisplay: realDisplay,
+    realColor: realColor, acumDisplay: null,
+    metaLabel: 'Meta: ', metaDisplay: metaDisplay,
+    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
+    badgeHtml: badgeHtml, ok: ok, com: com
+  });
 }
 
 function sisCalcSummary() {
@@ -2277,12 +2221,42 @@ function loadSisData() {
 
 
 
-/* Safe comment button builder — avoids quote-escaping issues in innerHTML */
+/* ── FUNCIÓN UNIVERSAL DE FILA EJECUTIVA ── */
 function buildCommentBtn(fnName, key, com) {
-  var safeKey = encodeURIComponent(key);
-  var safeCom = encodeURIComponent(com);
-  return '<div class="kpi-acum-val" style="cursor:pointer;" '
-    + 'onclick="' + fnName + '(decodeURIComponent(\'' + safeKey + '\'),decodeURIComponent(\'' + safeCom + '\'))">💬 Ver comentario</div>';
+  return '';
+}
+
+function buildKpiRow(opts) {
+  var statusCls = opts.ok === null ? 'status-nd'
+    : opts.ok ? 'status-ok'
+    : opts.pw >= 80 ? 'status-near' : 'status-off';
+
+  var cumplHtml = opts.cumpl !== null
+    ? '<div class="kpi-cumpl" style="color:' + opts.cumplColor + ';">' + opts.cumpl + '% cumpl.</div>'
+    : '<div class="kpi-cumpl" style="color:var(--slate3);">—</div>';
+
+  var barHtml = '<div class="progress-wrap">'
+    + '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (opts.pw > 0 ? opts.pw + '%' : '—') + '</span><span>100%</span></div>'
+    + '<div class="progress-track"><div class="progress-bar ' + opts.barCls + '" style="width:' + opts.pw + '%"></div></div>'
+    + '</div>';
+
+  var acumHtml = opts.acumDisplay
+    ? '<div class="kpi-acum-val">📦 ' + opts.acumDisplay + '</div>'
+    : '';
+
+  var commentHtml = opts.com
+    ? '<div class="kpi-comment-col"><div class="kpi-comment-inner"><div class="kpi-comment-lbl">💬 Comentario</div>' + opts.com + '</div></div>'
+    : '<div class="kpi-comment-col"><span class="kpi-no-comment">—</span></div>';
+
+  var cuatriTag = opts.cuatrimestral ? '<span class="badge-cuatri">4M</span>' : '';
+
+  return '<div class="kpi-status-bar ' + statusCls + '"></div>'
+    + '<div class="kpi-icon-wrap">' + opts.icon + '</div>'
+    + '<div class="kpi-info-col"><div class="kpi-label">' + opts.label + cuatriTag + '</div><div class="kpi-objective">' + opts.objective + '</div></div>'
+    + '<div class="kpi-val-col"><div class="kpi-real-val" style="color:' + opts.realColor + ';">' + opts.realDisplay + '</div>' + acumHtml + '<div class="kpi-meta">' + opts.metaLabel + opts.metaDisplay + '</div></div>'
+    + '<div class="kpi-bar-col">' + cumplHtml + barHtml + '</div>'
+    + '<div class="kpi-badge-col">' + opts.badgeHtml + '</div>'
+    + commentHtml;
 }
 /* ══════════════════════════════════════════════════════
    PÁGINA CVA — datos desde hoja MONITOREO
@@ -2441,23 +2415,15 @@ function cvaRenderCard(key) {
 
   var ext  = (cvaExtras2[key] && cvaExtras2[key][cvaSelectedMes2]) || {};
   var com  = ext.comentarios || '';
-  var acumHtml = com ? buildCommentBtn('cvaOpenModal', key, com) : '';
 
-  el.innerHTML = [
-    '<div class="kpi-icon-wrap">' + cfg.icon + '</div>',
-    '<div class="kpi-label">' + cfg.label + '</div>',
-    '<div class="kpi-objective">' + cfg.objective + '</div>',
-    '<div class="kpi-real-val" style="color:' + realColor + ';">' + realDisplay + '</div>',
-    acumHtml,
-    '<div class="kpi-meta">Meta: ' + cfg.objLabel + '</div>',
-    cumpl !== null ? '<div class="kpi-cumpl" style="color:' + cumplColor + ';">' + cumpl + '% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>',
-    '<div class="kpi-divider"></div>',
-    '<div class="progress-wrap">',
-      '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (pw > 0 ? pw + '%' : '—') + '</span><span>100%</span></div>',
-      '<div class="progress-track"><div class="progress-bar ' + barCls + '" style="width:' + pw + '%"></div></div>',
-    '</div>',
-    badgeHtml
-  ].join('');
+  el.innerHTML = buildKpiRow({
+    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    cuatrimestral: false, realDisplay: realDisplay,
+    realColor: realColor, acumDisplay: null,
+    metaLabel: 'Meta: ', metaDisplay: cfg.objLabel,
+    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
+    badgeHtml: badgeHtml, ok: ok, com: com
+  });
 }
 
 function cvaRenderLI() {
@@ -2711,22 +2677,14 @@ function nnRenderCard(key) {
   var metaLabel  = cfg.cuatrimestral ? 'Meta cuatrimestral: ' : 'Meta: ';
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto');
 
-  el.innerHTML = [
-    '<div class="kpi-icon-wrap">' + cfg.icon + '</div>',
-    '<div class="kpi-label">' + cfg.label + ' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span></div>',
-    '<div class="kpi-objective">' + cfg.objective + '</div>',
-    '<div class="kpi-real-val" style="color:' + realColor + ';">' + realDisplay + '</div>',
-    acumDisplay ? '<div class="kpi-acum-val">📦 ' + acumDisplay + '</div>' : '',
-    acumHtml,
-    '<div class="kpi-meta">' + metaLabel + metaDisplay + '</div>',
-    cumpl !== null ? '<div class="kpi-cumpl" style="color:' + cumplColor + ';">' + cumpl + '% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>',
-    '<div class="kpi-divider"></div>',
-    '<div class="progress-wrap">',
-      '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (pw > 0 ? pw + '%' : '—') + '</span><span>100%</span></div>',
-      '<div class="progress-track"><div class="progress-bar ' + barCls + '" style="width:' + pw + '%"></div></div>',
-    '</div>',
-    badgeHtml
-  ].join('');
+  el.innerHTML = buildKpiRow({
+    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    cuatrimestral: true, realDisplay: realDisplay,
+    realColor: realColor, acumDisplay: acumDisplay,
+    metaLabel: metaLabel, metaDisplay: metaDisplay,
+    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
+    badgeHtml: badgeHtml, ok: ok, com: ext.comentarios || ''
+  });
 }
 
 function nnRenderLI() {
