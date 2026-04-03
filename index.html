@@ -1103,6 +1103,10 @@ function parseVal(raw, kpi) {
   // El Apps Script devuelve números directamente (incluyendo 0)
   if (typeof raw === 'number') {
     var vn = raw;
+    // Si es una fracción de día (Google Sheets time serial), convertir a minutos
+    if ((kpi === 'TIEMPO DE PRIMERA RESPUESTA') && vn > 0 && vn < 1) {
+      vn = Math.round(vn * 24 * 60 * 100) / 100;
+    }
     if ((kpi === 'MargenBruto' || kpi === 'NPS') && vn > 0 && vn <= 1) {
       vn = Math.round(vn * 10000) / 100;
     }
@@ -1112,6 +1116,14 @@ function parseVal(raw, kpi) {
   if (s === '') return null;
   if (s.toUpperCase() === 'PENDIENTE') return 'PENDIENTE';
   if (s.toUpperCase() === 'NO APLICA' || s.toUpperCase() === 'N/A') return null;
+  // Manejar formato HH:MM:SS o HH:MM:SS MIN (Tiempo de Primera Respuesta)
+  var timeMatch = s.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(?:MIN)?$/i);
+  if (timeMatch) {
+    var hh = parseInt(timeMatch[1], 10);
+    var mm = parseInt(timeMatch[2], 10);
+    var ss = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
+    return Math.round((hh * 60 + mm + ss / 60) * 100) / 100;
+  }
   // Handle >=23%, >=50%, <=95% style objectives — strip operator prefix
   s = s.replace(/^[><=]+/, '');
   var esPct = s.indexOf('%') !== -1;
@@ -1181,6 +1193,14 @@ function fmtVal(val, unit, suffix) {
   if (unit==='$USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   if (unit==='%')    return (typeof n === 'number' ? n.toFixed(2) : n)+'%';
   if (unit==='días') return n+' días';
+  if (unit==='min' && typeof n === 'number') {
+    var hh = Math.floor(n / 60);
+    var mm = Math.floor(n % 60);
+    var ss = Math.round((n - Math.floor(n)) * 60);
+    if (hh > 0) return hh+'h '+String(mm).padStart(2,'0')+'m';
+    if (mm > 0) return mm + (ss > 0 ? ':'+String(ss).padStart(2,'0') : '') + ' min';
+    return ss + ' seg';
+  }
   return n+(suffix?' '+suffix:'');
 }
 
