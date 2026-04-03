@@ -386,11 +386,17 @@ body {
 
 /* ── EXEC SCORE STRIP ── */
 .exec-score-strip {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+  position:sticky; top:118px; z-index:80;
+  padding:12px 28px; margin-bottom:0;
+  background:#0b1f3a;
+  box-shadow:0 2px 12px rgba(11,31,58,.25);
 }
 .exec-score-card {
-  background:#0b1f3a; border-radius:10px; padding:14px 16px;
+  background:transparent; padding:10px 20px;
+  border-right:1px solid rgba(255,255,255,.08);
 }
+.exec-score-card:last-child { border-right:none; }
 .exec-score-lbl {
   font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
   letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:6px;
@@ -649,11 +655,11 @@ footer {
         </div>
       </div>
     </div>
+    <div class="exec-score-strip" id="sf-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
       <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
       <div id="m-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="sf-score-strip"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Crecimiento Comercial</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="card-Ingresos"></div>
@@ -705,11 +711,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="vyp-sum-ok">—</div><div class="sum-sub">de 4 KPIs ponderados</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="vyp-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="vyp-errorMsg">Error.</p></div>
       <div id="vyp-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="vyp-score-strip"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Ventas</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="vyp-card-VENTAS"></div>
@@ -740,7 +746,7 @@ footer {
   </div>
 
   <!-- PAGE: SISTEMAS -->
-  <div class="page" id="page-sistemas">
+  <div class="page" id="page-sis">
     <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
         <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
@@ -757,11 +763,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="sis-sum-ok">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
       <div id="sis-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="sis-score-strip"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="sis-card-Servidores Activos"></div>
@@ -809,11 +815,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="cva-sum-ok2">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="cva-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="cva-errorMsg">Error.</p></div>
       <div id="cva-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="cva-score-strip"></div>
         <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="cva-card-ROBOS"></div>
@@ -864,11 +870,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="nn-sum-ok">—</div><div class="sum-sub">de 6 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
       <div id="nn-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="nn-score-strip"></div>
         <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
@@ -1397,6 +1403,7 @@ function getQLabel(mes) {
 function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
   var el = document.getElementById(stripId);
   if (!el) return;
+  el.style.display = 'grid';
   var s = summaryFn();
   var pct = s.pct !== null ? s.pct : 0;
   var trend = pct >= 75 ? '↑ Positiva' : pct >= 50 ? '→ Estable' : '↓ Atención';
@@ -1434,6 +1441,7 @@ function loadMensualData() {
   document.getElementById('m-loadingBox').style.display='block';
   document.getElementById('m-errorBox').style.display='none';
   document.getElementById('m-mainContent').style.display='none';
+  var _ss=document.getElementById('sf-score-strip'); if(_ss) _ss.style.display='none';
 
   var qMeses = getQMeses(selectedMes);
 
@@ -1994,6 +2002,7 @@ function loadVypData() {
   document.getElementById('vyp-loadingBox').style.display = 'block';
   document.getElementById('vyp-errorBox').style.display = 'none';
   document.getElementById('vyp-mainContent').style.display = 'none';
+  var _ss=document.getElementById('vyp-score-strip'); if(_ss) _ss.style.display='none';
 
   var qMeses = vypGetQMeses(vypSelectedMes);
 
@@ -2190,6 +2199,7 @@ function loadSisData() {
   document.getElementById('sis-loadingBox').style.display = 'block';
   document.getElementById('sis-errorBox').style.display = 'none';
   document.getElementById('sis-mainContent').style.display = 'none';
+  var _ss=document.getElementById('sis-score-strip'); if(_ss) _ss.style.display='none';
 
   loadSisAllData([sisSelectedMes]).then(function() {
     sisLoaded = true;
@@ -2497,6 +2507,7 @@ function loadCvaData() {
   document.getElementById('cva-loadingBox').style.display  = 'block';
   document.getElementById('cva-errorBox').style.display    = 'none';
   document.getElementById('cva-mainContent').style.display = 'none';
+  var _ss=document.getElementById('cva-score-strip'); if(_ss) _ss.style.display='none';
 
   var qMeses = getQMeses(cvaSelectedMes2);
 
@@ -2772,6 +2783,7 @@ function loadNnData() {
   document.getElementById('nn-loadingBox').style.display  = 'block';
   document.getElementById('nn-errorBox').style.display    = 'none';
   document.getElementById('nn-mainContent').style.display = 'none';
+  var _ss=document.getElementById('nn-score-strip'); if(_ss) _ss.style.display='none';
 
   loadNnAllData(getQMeses(nnSelectedMes)).then(function() {
     Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
@@ -3072,7 +3084,8 @@ async function loadGeneral() {
   document.getElementById('gen-mainContent').style.display = 'none';
 
   try {
-    /* Load SFyF, VyP, Sistemas in parallel */
+    /* Force reload with all 12 months (monthly pages only load 4) */
+    sfDataLoaded = false; vypDataLoaded = false; sisDataLoaded = false;
     await Promise.all([
       loadAllFromSYyF(MESES),
       loadVypAllData(MESES),
