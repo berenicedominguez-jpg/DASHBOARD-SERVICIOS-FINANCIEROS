@@ -378,7 +378,7 @@ body {
   letter-spacing:.1em; text-transform:uppercase; color:#4a6180;
   display:block; margin-bottom:3px;
 }
-.kpi-comment-txt { font-size:11px; color:#2d4a6a; line-height:1.5; }
+.kpi-comment-txt { font-size:11px; color:#2d4a6a; line-height:1.5; white-space:pre-wrap; }
 .kpi-no-comment  { font-size:10px; color:#c4d6e6; }
 
 .badge-cuatri {
@@ -852,7 +852,7 @@ footer {
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
         <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
         <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
-      
+      </div>
     </div>
     <div class="page-header">
     <div class="month-panel">
@@ -893,7 +893,7 @@ footer {
         </div>
       </div>
     </div>
-  </div>
+  
 
   <!-- PAGE: RESUMEN GENERAL -->
   <div class="page" id="page-general">
@@ -976,6 +976,10 @@ var KPIS = {
 };
 
 var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+/* Meses en que aplica NPS (2 veces al año) */
+var NPS_MESES = ['Mayo', 'Octubre'];
+function npsAplica(mes) { return NPS_MESES.indexOf(mes) !== -1; }
+
 var QUARTERS = [
   { q:1, label:'Q1 · Ene – Abr', meses:['Enero','Febrero','Marzo','Abril'] },
   { q:2, label:'Q2 · May – Ago', meses:['Mayo','Junio','Julio','Agosto'] },
@@ -1290,6 +1294,19 @@ function renderCard(key) {
   var el=document.getElementById('card-'+key);
   if (!el||!allData[key]||!allData[key][selectedMes]) return;
 
+  /* NPS solo aplica en Mayo y Octubre */
+  if (key==='NPS' && !npsAplica(selectedMes)) {
+    el.innerHTML = buildKpiRow({
+      key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
+      cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
+      badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
+      ok:null, com:''
+    });
+    return;
+  }
+
   var d=allData[key][selectedMes];
   var real=d.real, obj=d.objetivo;
   var isPendiente=real==='PENDIENTE';
@@ -1372,6 +1389,7 @@ function calcSummary() {
   Object.keys(KPIS).forEach(function(key){
     var cfg=KPIS[key];
     if (cfg.weight===0||!allData[key]||!allData[key][selectedMes]) return;
+    if (key==='NPS' && !npsAplica(selectedMes)) return;
     var d=allData[key][selectedMes];
     if (d.real===null||d.real==='PENDIENTE'||d.objetivo===null) return;
     var evalObj=cfg.cuatrimestral?d.objetivo/4:d.objetivo;
@@ -1437,7 +1455,7 @@ function loadMensualData() {
   loadAllFromSYyF(qMeses).then(function() {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key){ renderCard(key); });
-    renderExecScoreStrip('sf-score-strip', calcSummary, 7, selectedMes, getQLabel(selectedMes));
+    renderExecScoreStrip('sf-score-strip', calcSummary, npsAplica(selectedMes)?8:7, selectedMes, getQLabel(selectedMes));
     renderSfLI(selectedMes);
     var s = calcSummary();
     var _gsum_ok=document.getElementById('sum-ok'); if(_gsum_ok) _gsum_ok.textContent = s.ok + ' / 7';
@@ -1910,6 +1928,18 @@ function vypRenderCard(key) {
   var el = document.getElementById('vyp-card-' + key);
   if (!el || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
 
+  if (key==='NPS' && !npsAplica(vypSelectedMes)) {
+    el.innerHTML = buildKpiRow({
+      key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
+      cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
+      badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
+      ok:null, com:''
+    });
+    return;
+  }
+
   var d = vypAllData[key][vypSelectedMes];
   var real = d.real, obj = d.objetivo;
   var isPendiente = real === 'PENDIENTE';
@@ -1976,6 +2006,7 @@ function vypCalcSummary() {
   Object.keys(VYP_KPIS).forEach(function(key) {
     var cfg = VYP_KPIS[key];
     if (cfg.weight === 0 || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
+    if (key==='NPS' && !npsAplica(vypSelectedMes)) return;
     var d = vypAllData[key][vypSelectedMes];
     if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
     var evalObj = cfg.cuatrimestral ? d.objetivo/4 : d.objetivo;
@@ -1998,7 +2029,7 @@ function loadVypData() {
   loadVypAllData(qMeses).then(function() {
     vypLoaded = true;
     Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
-    renderExecScoreStrip('vyp-score-strip', vypCalcSummary, 4, vypSelectedMes, getQLabel(vypSelectedMes));
+    renderExecScoreStrip('vyp-score-strip', vypCalcSummary, npsAplica(vypSelectedMes)?5:4, vypSelectedMes, getQLabel(vypSelectedMes));
     renderVypLI();
     var s = vypCalcSummary();
     var _gvyp_sum_ok=document.getElementById('vyp-sum-ok'); if(_gvyp_sum_ok) _gvyp_sum_ok.textContent = s.ok + ' / 4';
@@ -2124,6 +2155,18 @@ function sisRenderCard(key) {
   var el = document.getElementById(elId);
   if (!el || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
 
+  if (key==='NPS (%)' && !npsAplica(sisSelectedMes)) {
+    el.innerHTML = buildKpiRow({
+      key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
+      cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
+      badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
+      ok:null, com:''
+    });
+    return;
+  }
+
   var d = sisAllData[key][sisSelectedMes];
   var real = d.real, obj = d.objetivo;
   var isPendiente = real === 'PENDIENTE';
@@ -2174,6 +2217,7 @@ function sisCalcSummary() {
   Object.keys(SIS_KPIS).forEach(function(key) {
     var cfg = SIS_KPIS[key];
     if (cfg.weight === 0 || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
+    if (key==='NPS (%)' && !npsAplica(sisSelectedMes)) return;
     var d = sisAllData[key][sisSelectedMes];
     if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
     score += Math.min(cfg.inverse ? (d.objetivo/Math.max(d.real,0.01)) : (d.real/d.objetivo), 1) * cfg.weight;
@@ -2193,7 +2237,7 @@ function loadSisData() {
   loadSisAllData([sisSelectedMes]).then(function() {
     sisLoaded = true;
     Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
-    renderExecScoreStrip('sis-score-strip', sisCalcSummary, 5, sisSelectedMes, getQLabel(sisSelectedMes));
+    renderExecScoreStrip('sis-score-strip', sisCalcSummary, npsAplica(sisSelectedMes)?6:5, sisSelectedMes, getQLabel(sisSelectedMes));
     renderSisAM();
     var s = sisCalcSummary();
     var _gsis_sum_ok=document.getElementById('sis-sum-ok'); if(_gsis_sum_ok) _gsis_sum_ok.textContent = s.ok + ' / 5';
@@ -2261,7 +2305,7 @@ function buildKpiRow(opts) {
     ? '<div class="kpi-cumpl" style="color:' + opts.cumplColor + ';">' + opts.cumpl + '% cumpl.</div>'
     : '';
   var footerHtml = opts.com
-    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">Nota</span><span class="kpi-comment-txt">' + opts.com + '</span></div>'
+    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">Nota</span><span class="kpi-comment-txt">' + opts.com.replace(/\n/g,'<br>') + '</span></div>'
     : '';
   return '<div class="kpi-card-bar ' + barCls2 + '"></div>'
     + '<div class="kpi-card-body">'
@@ -2479,7 +2523,7 @@ function cvaCalcSummary2() {
 function cvaRenderPage() {
   if (!cvaSelectedMes2) return;
   Object.keys(CVA_KPIS).forEach(function(key) { cvaRenderCard(key); });
-    renderExecScoreStrip('cva-score-strip', cvaCalcSummary2, 5, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
+    renderExecScoreStrip('cva-score-strip', cvaCalcSummary2, 6, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
   cvaRenderLI();
   var s  = cvaCalcSummary2();
   var te = document.getElementById('cva-sum-trend2');
