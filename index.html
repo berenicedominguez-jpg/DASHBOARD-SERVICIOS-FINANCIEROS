@@ -284,7 +284,7 @@ body {
 }
 
 /* ── GRIDS ── */
-.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; align-items:stretch; }
 
 /* ── KPI CARD — estilo reporte ejecutivo ── */
 .kpi-card {
@@ -294,6 +294,7 @@ body {
   box-shadow:0 1px 6px rgba(11,31,58,.07);
   display:flex; flex-direction:column;
   transition:box-shadow .18s;
+  height:100%;
 }
 .kpi-card:hover { box-shadow:0 4px 16px rgba(11,31,58,.12); }
 
@@ -305,7 +306,7 @@ body {
 
 .kpi-card-body { padding:14px 16px 10px; flex:1; display:flex; flex-direction:column; }
 
-.kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
+.kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; min-height:34px; }
 .kpi-label {
   font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700;
   letter-spacing:.1em; text-transform:uppercase; color:#4a6180; flex:1; min-width:0;
@@ -326,13 +327,14 @@ body {
 .kpi-real-val {
   font-size:26px; font-weight:800; color:#0b1f3a;
   line-height:1; margin-bottom:3px; letter-spacing:-.01em;
+  min-height:32px; display:flex; align-items:center;
 }
 .kpi-real-val.ok   { color:#27500A; }
 .kpi-real-val.off  { color:#791F1F; }
 .kpi-real-val.near { color:#633806; }
 .kpi-real-val.nd   { color:#0b1f3a; }
 
-.kpi-objective { font-size:11px; color:#4a6180; line-height:1.4; margin-bottom:8px; }
+.kpi-objective { font-size:11px; color:#4a6180; line-height:1.4; margin-bottom:8px; min-height:20px; }
 
 .kpi-badge {
   display:inline-flex; align-items:center; gap:3px;
@@ -348,10 +350,10 @@ body {
 
 .kpi-acum-val {
   font-family:'Barlow Condensed',sans-serif; font-size:11px;
-  font-weight:600; color:#1a5cb0; margin-bottom:6px;
+  font-weight:600; color:#1a5cb0; margin-bottom:6px; min-height:20px; display:block;
 }
 
-.progress-wrap { margin-top:auto; }
+.progress-wrap { margin-top:auto; padding-top:8px; }
 .progress-track { height:4px; background:#e2edf6; border-radius:2px; overflow:hidden; margin-bottom:5px; }
 .progress-bar   { height:100%; border-radius:2px; transition:width .9s ease; }
 .progress-labels {
@@ -362,7 +364,7 @@ body {
 
 .kpi-cumpl {
   font-family:'Barlow Condensed',sans-serif; font-size:12px;
-  font-weight:700; margin-bottom:6px;
+  font-weight:700; margin-bottom:6px; min-height:18px; display:block;
 }
 .kpi-meta {
   font-family:'Barlow Condensed',sans-serif; font-size:11px;
@@ -371,14 +373,14 @@ body {
 
 .kpi-card-footer {
   border-top:1px solid #e8f0f7; padding:7px 16px;
-  background:#f8fafc;
+  background:#f8fafc; flex-shrink:0;
 }
 .kpi-comment-lbl {
   font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
   letter-spacing:.1em; text-transform:uppercase; color:#4a6180;
-  display:block; margin-bottom:3px;
+  display:block; margin-bottom:2px;
 }
-.kpi-comment-txt { font-size:11px; color:#2d4a6a; line-height:1.5; white-space:pre-wrap; }
+.kpi-comment-txt { font-size:11px; color:#2d4a6a; line-height:1.4; white-space:pre-wrap; }
 .kpi-no-comment  { font-size:10px; color:#c4d6e6; }
 
 .badge-cuatri {
@@ -2300,13 +2302,14 @@ function buildKpiRow(opts) {
   var icon = getKpiIcon(opts.key || opts.label);
   var iconColor = getKpiIconColor(icon);
   var acumHtml = opts.acumDisplay
-    ? '<div class="kpi-acum-val">&#128230; ' + opts.acumDisplay + '</div>' : '';
+    ? '<div class="kpi-acum-val">&#128230; ' + opts.acumDisplay + '</div>'
+    : '<div class="kpi-acum-val" style="visibility:hidden;">&nbsp;</div>';
   var cumplHtml = opts.cumpl !== null
     ? '<div class="kpi-cumpl" style="color:' + opts.cumplColor + ';">' + opts.cumpl + '% cumpl.</div>'
-    : '';
-  var footerHtml = opts.com
-    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">Nota</span><span class="kpi-comment-txt">' + opts.com.replace(/\n/g,'<br>') + '</span></div>'
-    : '';
+    : '<div class="kpi-cumpl" style="visibility:hidden;">&nbsp;</div>';
+  var footerHtml = '<div class="kpi-card-footer">' + (opts.com
+    ? '<span class="kpi-comment-txt">' + opts.com.replace(/\n/g,'<br>') + '</span>'
+    : '<span class="kpi-no-comment">&nbsp;</span>') + '</div>';
   return '<div class="kpi-card-bar ' + barCls2 + '"></div>'
     + '<div class="kpi-card-body">'
     + '<div class="kpi-card-top">'
