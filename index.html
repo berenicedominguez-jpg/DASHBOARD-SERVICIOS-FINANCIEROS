@@ -216,19 +216,28 @@ body {
   color: var(--slate2); text-transform:uppercase;
 }
 
+/* ── PAGE HEADER (sticky wrapper) ── */
+.page-header {
+  position: sticky;
+  top: 62px;
+  z-index: 90;
+  background: var(--navy);
+  box-shadow: 0 3px 16px rgba(11,31,58,.3);
+}
+
 /* ── MONTH PANEL ── */
 .month-panel {
   background: var(--navy);
   border-bottom: none;
   padding: 13px 36px;
   display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:62px; z-index:90; gap:16px;
+  gap:16px;
 }
 
 .month-panel-title {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 13px; font-weight:700; letter-spacing:0.1em;
-  text-transform:uppercase; color: #fff;
+  text-transform:uppercase; color: #fff; white-space:nowrap;
 }
 
 .month-panel-sub {
@@ -386,29 +395,27 @@ body {
 
 /* ── EXEC SCORE STRIP ── */
 .exec-score-strip {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:0;
-  padding:12px 28px; margin-bottom:0;
-  background:var(--navy);
-  border-radius:0;
-  position:sticky; top:119px; z-index:80;
-  box-shadow:0 3px 12px rgba(11,31,58,.2);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:10px 28px;
+  display:flex; align-items:center; gap:32px;
 }
 .exec-score-card {
-  background:transparent; padding:10px 20px;
-  border-right:1px solid rgba(255,255,255,.08);
+  display:flex; align-items:baseline; gap:6px; flex-shrink:0;
 }
-.exec-score-card:last-child { border-right:none; }
+.exec-score-sep {
+  width:1px; height:20px; background:rgba(255,255,255,.1); flex-shrink:0;
+}
 .exec-score-lbl {
-  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
-  letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.65); margin-bottom:6px;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  letter-spacing:.06em; text-transform:uppercase; color:rgba(255,255,255,.4);
 }
 .exec-score-val {
-  font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:800;
+  font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800;
   color:#fff; line-height:1;
 }
 .exec-score-sub {
-  font-family:'Barlow Condensed',sans-serif; font-size:11px;
-  color:rgba(255,255,255,.55); margin-top:4px;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  color:rgba(255,255,255,.4);
 }
 
 @media(max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr);} .exec-score-strip{grid-template-columns:repeat(2,1fr);} }
@@ -637,26 +644,17 @@ footer {
       </div>
     </div>
 
+    <div class="page-header">
     <div class="month-panel">
       <div>
         <div class="month-panel-title">Período de análisis</div>
         <div class="month-panel-sub">Selecciona el mes a visualizar</div>
       </div>
       <div class="month-btns" id="monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid var(--gray-200);">
-        <div style="padding:0 24px;border-right:1px solid var(--gray-200);">
-          <div class="sum-lbl">Tendencia</div>
-          <div class="sum-val" id="sum-trend">—</div>
-          <div class="sum-sub">Resultado general</div>
-        </div>
-        <div style="padding:0 24px;">
-          <div class="sum-lbl">En objetivo</div>
-          <div class="sum-val" id="sum-ok">—</div>
-          <div class="sum-sub">de 7 KPIs ponderados</div>
-        </div>
-      </div>
+
     </div>
     <div class="exec-score-strip" id="sf-score-strip" style="display:none;"></div>
+    </div>
     <div class="content">
       <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
       <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
@@ -704,15 +702,13 @@ footer {
         <div id="vyp-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
+    <div class="page-header">
     <div class="month-panel">
       <div><div class="month-panel-title">Venta Postventa · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="vyp-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid rgba(255,255,255,.12);">
-        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="vyp-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
-        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="vyp-sum-ok">—</div><div class="sum-sub">de 4 KPIs ponderados</div></div>
-      </div>
     </div>
     <div class="exec-score-strip" id="vyp-score-strip" style="display:none;"></div>
+    </div>
     <div class="content">
       <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="vyp-errorMsg">Error.</p></div>
@@ -756,15 +752,13 @@ footer {
         <div id="sis-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
+    <div class="page-header">
     <div class="month-panel">
       <div><div class="month-panel-title">Sistemas · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="sis-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid rgba(255,255,255,.12);">
-        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="sis-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
-        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="sis-sum-ok">—</div><div class="sum-sub">de 5 KPIs</div></div>
-      </div>
     </div>
     <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
+    </div>
     <div class="content">
       <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
@@ -808,15 +802,13 @@ footer {
         <div id="cva-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
+    <div class="page-header">
     <div class="month-panel">
       <div><div class="month-panel-title">Central Monitoreo CVA · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="cva-monthBtns2"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid rgba(255,255,255,.12);">
-        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="cva-sum-trend2">—</div><div class="sum-sub">Resultado general</div></div>
-        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="cva-sum-ok2">—</div><div class="sum-sub">de 5 KPIs</div></div>
-      </div>
     </div>
     <div class="exec-score-strip" id="cva-score-strip" style="display:none;"></div>
+    </div>
     <div class="content">
       <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="cva-errorMsg">Error.</p></div>
@@ -861,17 +853,15 @@ footer {
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
         <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
         <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
-      </div>
+      
     </div>
+    <div class="page-header">
     <div class="month-panel">
       <div><div class="month-panel-title">Nuevos Negocios · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="nn-monthBtns"></div>
-      <div style="display:flex;align-items:center;gap:0;border-left:1px solid rgba(255,255,255,.12);">
-        <div style="padding:0 24px;border-right:1px solid var(--slate5);"><div class="sum-lbl">Tendencia</div><div class="sum-val" id="nn-sum-trend">—</div><div class="sum-sub">Resultado general</div></div>
-        <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="nn-sum-ok">—</div><div class="sum-sub">de 6 KPIs</div></div>
-      </div>
     </div>
     <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
+    </div>
     <div class="content">
       <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
@@ -995,8 +985,7 @@ var QUARTERS = [
 
 var allData={}, selectedMes='', activeQ=1, resumenLoaded=false, currentPage='mensual';
 
-document.getElementById('topbar-date').textContent =
-  new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+var _gtopbar_date=document.getElementById('topbar-date'); if(_gtopbar_date) _gtopbar_date.textContent = new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 /* ── UTILS ── */
 function getQBlock(mes) {
@@ -1220,31 +1209,31 @@ function navigate(page) {
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('nav-'+page).classList.add('active');
   if (page==='mensual') {
-    document.getElementById('topbar-title').textContent='KPIs Mensual: Servicios Financieros y Flotas';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Mensual: Servicios Financieros y Flotas';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Mensual: Servicios Financieros y Flotas';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Mensual: Servicios Financieros y Flotas';
   } else if (page==='vyp') {
-    document.getElementById('topbar-title').textContent='KPIs: Venta Postventa';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Venta Postventa';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Venta Postventa';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Venta Postventa';
     loadVypData();
   } else if (page==='sis') {
-    document.getElementById('topbar-title').textContent='KPIs: Sistemas';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Sistemas';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Sistemas';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Sistemas';
     loadSisData();
   } else if (page==='cva') {
-    document.getElementById('topbar-title').textContent='KPIs: Central Monitoreo CVA';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Central Monitoreo CVA';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Central Monitoreo CVA';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Central Monitoreo CVA';
     loadCvaData();
   } else if (page==='nn') {
-    document.getElementById('topbar-title').textContent='KPIs: Nuevos Negocios – Flotillas y Financieras';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs: Nuevos Negocios';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Nuevos Negocios – Flotillas y Financieras';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Nuevos Negocios';
     loadNnData();
   } else if (page==='general') {
-    document.getElementById('topbar-title').textContent='Resumen General · Todas las Áreas';
-    document.getElementById('topbar-crumb').textContent='Reportes · Resumen General';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'Resumen General · Todas las Áreas';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · Resumen General';
     if (!genLoaded) loadGeneral();
   } else {
-    document.getElementById('topbar-title').textContent='KPIs Resumen';
-    document.getElementById('topbar-crumb').textContent='Reportes · KPIs Resumen';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Resumen';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Resumen';
     /* resumen page removed — skip */
   }
 }
@@ -1289,8 +1278,8 @@ function selectMonth(mes, activeBtn) {
 
 function sfOpenModal(kpi, comentario) {
   var cfg = KPIS[kpi];
-  document.getElementById('sf-modal-kpi').textContent  = cfg ? cfg.label : kpi;
-  document.getElementById('sf-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var _gsf_modal_kpi=document.getElementById('sf-modal-kpi'); if(_gsf_modal_kpi) _gsf_modal_kpi.textContent = cfg ? cfg.label : kpi;
+  var _gsf_modal_body=document.getElementById('sf-modal-body'); if(_gsf_modal_body) _gsf_modal_body.textContent = comentario || 'Sin comentarios para este período.';
   document.getElementById('sf-modal-overlay').style.display = 'flex';
 }
 function sfCloseModal() {
@@ -1404,36 +1393,36 @@ function getQLabel(mes) {
 function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
   var el = document.getElementById(stripId);
   if (!el) return;
-  el.style.display = 'grid';
+  el.style.display = 'flex';
   var s = summaryFn();
   var pct = s.pct !== null ? s.pct : 0;
   var trend = pct >= 75 ? '↑ Positiva' : pct >= 50 ? '→ Estable' : '↓ Atención';
-  var trendColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
-  var resultColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
-  var okColor = s.ok >= totalKpis ? 'var(--green)' : s.ok > 0 ? 'var(--amber)' : 'var(--red)';
+  var trendColor = pct >= 75 ? '#97C459' : pct >= 50 ? '#EF9F27' : '#F09595';
+  var resultColor = pct >= 75 ? '#97C459' : pct >= 50 ? '#EF9F27' : '#F09595';
+  var okColor = s.ok >= totalKpis ? '#97C459' : s.ok > 0 ? '#EF9F27' : '#F09595';
   var riesgo = totalKpis - s.ok;
-  var riesgoColor = riesgo === 0 ? 'var(--green)' : riesgo <= 2 ? 'var(--amber)' : 'var(--red)';
+  var riesgoColor = riesgo === 0 ? '#97C459' : riesgo <= 2 ? '#EF9F27' : '#F09595';
+  var sep = '<div class="exec-score-sep"></div>';
 
   el.innerHTML =
     '<div class="exec-score-card">'
-      + '<div class="exec-score-lbl">Resultado general</div>'
-      + '<div class="exec-score-val" style="color:' + resultColor + ';">' + (s.pct !== null ? pct + '%' : '—') + '</div>'
-      + '<div class="exec-score-sub" style="color:' + trendColor + ';">' + trend + ' &middot; ' + mes + '</div>'
+      + '<span class="exec-score-val" style="color:' + resultColor + ';">' + (s.pct !== null ? pct + '%' : '—') + '</span>'
+      + '<span class="exec-score-lbl" style="color:' + trendColor + ';">' + trend + ' &middot; Resultado general</span>'
     + '</div>'
+    + sep
     + '<div class="exec-score-card">'
-      + '<div class="exec-score-lbl">KPIs en objetivo</div>'
-      + '<div class="exec-score-val" style="color:' + okColor + ';">' + s.ok + ' <span style="font-size:16px;font-weight:400;color:rgba(255,255,255,.3);">/ ' + totalKpis + '</span></div>'
-      + '<div class="exec-score-sub">Ponderados</div>'
+      + '<span class="exec-score-val" style="color:' + okColor + ';">' + s.ok + '<span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.25);">/' + totalKpis + '</span></span>'
+      + '<span class="exec-score-lbl">KPIs en objetivo</span>'
     + '</div>'
+    + sep
     + '<div class="exec-score-card">'
-      + '<div class="exec-score-lbl">KPIs en riesgo</div>'
-      + '<div class="exec-score-val" style="color:' + riesgoColor + ';">' + riesgo + '</div>'
-      + '<div class="exec-score-sub">Requieren atención</div>'
+      + '<span class="exec-score-val" style="color:' + riesgoColor + ';">' + riesgo + '</span>'
+      + '<span class="exec-score-lbl">En riesgo</span>'
     + '</div>'
+    + sep
     + '<div class="exec-score-card">'
-      + '<div class="exec-score-lbl">Período activo</div>'
-      + '<div class="exec-score-val" style="font-size:16px;color:#6aaaf0;">' + cuatrLabel + '</div>'
-      + '<div class="exec-score-sub">Mes: ' + mes + '</div>'
+      + '<span class="exec-score-val" style="font-size:14px;color:#6aaaf0;">' + cuatrLabel + '</span>'
+      + '<span class="exec-score-lbl">&middot; Mes: ' + mes + '</span>'
     + '</div>';
 }
 
@@ -1452,19 +1441,19 @@ function loadMensualData() {
     renderExecScoreStrip('sf-score-strip', calcSummary, 7, selectedMes, getQLabel(selectedMes));
     renderSfLI(selectedMes);
     var s = calcSummary();
-    document.getElementById('sum-ok').textContent = s.ok + ' / 7';
+    var _gsum_ok=document.getElementById('sum-ok'); if(_gsum_ok) _gsum_ok.textContent = s.ok + ' / 7';
     var te = document.getElementById('sum-trend');
-    if (s.pct !== null) {
+    if (te && s.pct !== null) {
       te.textContent = s.pct>=75 ? '↑ Positiva' : s.pct>=50 ? '→ Estable' : '↓ Atención';
       te.style.color = s.pct>=75 ? 'var(--green)' : s.pct>=60 ? 'var(--amber)' : 'var(--red)';
     }
-    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    var _gfooter_ts=document.getElementById('footer-ts'); if(_gfooter_ts) _gfooter_ts.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
     document.getElementById('m-loadingBox').style.display='none';
     document.getElementById('m-mainContent').style.display='block';
   }).catch(function(e) {
     document.getElementById('m-loadingBox').style.display='none';
     document.getElementById('m-errorBox').style.display='block';
-    document.getElementById('m-errorMsg').textContent = 'Error: ' + e.message;
+    var _gm_errorMsg=document.getElementById('m-errorMsg'); if(_gm_errorMsg) _gm_errorMsg.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -1862,8 +1851,8 @@ function loadVypAllData(mesesFiltro) {
 
 function vypOpenModal(kpi, comentario) {
   var cfg = VYP_KPIS[kpi];
-  document.getElementById('vyp-modal-kpi').textContent = cfg ? cfg.label : kpi;
-  document.getElementById('vyp-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var _gvyp_modal_kpi=document.getElementById('vyp-modal-kpi'); if(_gvyp_modal_kpi) _gvyp_modal_kpi.textContent = cfg ? cfg.label : kpi;
+  var _gvyp_modal_body=document.getElementById('vyp-modal-body'); if(_gvyp_modal_body) _gvyp_modal_body.textContent = comentario || 'Sin comentarios para este período.';
   var overlay = document.getElementById('vyp-modal-overlay');
   overlay.style.display = 'flex';
 }
@@ -2013,9 +2002,9 @@ function loadVypData() {
     renderExecScoreStrip('vyp-score-strip', vypCalcSummary, 4, vypSelectedMes, getQLabel(vypSelectedMes));
     renderVypLI();
     var s = vypCalcSummary();
-    document.getElementById('vyp-sum-ok').textContent = s.ok + ' / 4';
+    var _gvyp_sum_ok=document.getElementById('vyp-sum-ok'); if(_gvyp_sum_ok) _gvyp_sum_ok.textContent = s.ok + ' / 4';
     var te = document.getElementById('vyp-sum-trend');
-    if (s.pct !== null) {
+    if (te && s.pct !== null) {
       te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
       te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
     }
@@ -2024,7 +2013,7 @@ function loadVypData() {
   }).catch(function(e) {
     document.getElementById('vyp-loadingBox').style.display = 'none';
     document.getElementById('vyp-errorBox').style.display = 'block';
-    document.getElementById('vyp-errorMsg').textContent = 'Error: ' + e.message;
+    var _gvyp_errorMsg=document.getElementById('vyp-errorMsg'); if(_gvyp_errorMsg) _gvyp_errorMsg.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -2117,8 +2106,8 @@ function loadSisAllData(mesesFiltro) {
 
 function sisOpenModal(kpi, comentario) {
   var cfg = SIS_KPIS[kpi];
-  document.getElementById('sis-modal-kpi').textContent = cfg ? cfg.label : kpi;
-  document.getElementById('sis-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var _gsis_modal_kpi=document.getElementById('sis-modal-kpi'); if(_gsis_modal_kpi) _gsis_modal_kpi.textContent = cfg ? cfg.label : kpi;
+  var _gsis_modal_body=document.getElementById('sis-modal-body'); if(_gsis_modal_body) _gsis_modal_body.textContent = comentario || 'Sin comentarios para este período.';
   document.getElementById('sis-modal-overlay').style.display = 'flex';
 }
 function sisCloseModal() {
@@ -2208,9 +2197,9 @@ function loadSisData() {
     renderExecScoreStrip('sis-score-strip', sisCalcSummary, 5, sisSelectedMes, getQLabel(sisSelectedMes));
     renderSisAM();
     var s = sisCalcSummary();
-    document.getElementById('sis-sum-ok').textContent = s.ok + ' / 5';
+    var _gsis_sum_ok=document.getElementById('sis-sum-ok'); if(_gsis_sum_ok) _gsis_sum_ok.textContent = s.ok + ' / 5';
     var te = document.getElementById('sis-sum-trend');
-    if (s.pct !== null) {
+    if (te && s.pct !== null) {
       te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
       te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
     }
@@ -2219,7 +2208,7 @@ function loadSisData() {
   }).catch(function(e) {
     document.getElementById('sis-loadingBox').style.display = 'none';
     document.getElementById('sis-errorBox').style.display = 'block';
-    document.getElementById('sis-errorMsg').textContent = 'Error: ' + e.message;
+    var _gsis_errorMsg=document.getElementById('sis-errorMsg'); if(_gsis_errorMsg) _gsis_errorMsg.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -2404,8 +2393,8 @@ function loadCvaAllData(mesesFiltro) {
 
 function cvaOpenModal(kpi, comentario) {
   var cfg = CVA_KPIS[kpi];
-  document.getElementById('cva-modal-kpi').textContent  = cfg ? cfg.label : kpi;
-  document.getElementById('cva-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var _gcva_modal_kpi=document.getElementById('cva-modal-kpi'); if(_gcva_modal_kpi) _gcva_modal_kpi.textContent = cfg ? cfg.label : kpi;
+  var _gcva_modal_body=document.getElementById('cva-modal-body'); if(_gcva_modal_body) _gcva_modal_body.textContent = comentario || 'Sin comentarios para este período.';
   document.getElementById('cva-modal-overlay').style.display = 'flex';
 }
 function cvaCloseModal() {
@@ -2496,7 +2485,7 @@ function cvaRenderPage() {
   var s  = cvaCalcSummary2();
   var te = document.getElementById('cva-sum-trend2');
   var ok = document.getElementById('cva-sum-ok2');
-  if (ok)  ok.textContent = s.ok + ' / 6';
+  if (ok)  if(ok) ok.textContent = s.ok + ' / 6';
   if (te && s.pct !== null) {
     te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
     te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
@@ -2514,13 +2503,13 @@ function loadCvaData() {
 
   loadCvaAllData(qMeses).then(function() {
     cvaRenderPage();
-    document.getElementById('footer-ts').textContent     = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    var _gfooter_ts=document.getElementById('footer-ts'); if(_gfooter_ts) _gfooter_ts.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
     document.getElementById('cva-loadingBox').style.display  = 'none';
     document.getElementById('cva-mainContent').style.display = 'block';
   }).catch(function(e) {
     document.getElementById('cva-loadingBox').style.display = 'none';
     document.getElementById('cva-errorBox').style.display   = 'block';
-    document.getElementById('cva-errorMsg').textContent     = 'Error: ' + e.message;
+    var _gcva_errorMsg=document.getElementById('cva-errorMsg'); if(_gcva_errorMsg) _gcva_errorMsg.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -2634,8 +2623,8 @@ function loadNnAllData(mesesFiltro) {
 
 function nnOpenModal(kpi, comentario) {
   var cfg = NN_KPIS[kpi];
-  document.getElementById('nn-modal-kpi').textContent  = cfg ? cfg.label : kpi;
-  document.getElementById('nn-modal-body').textContent = comentario || 'Sin comentarios para este período.';
+  var _gnn_modal_kpi=document.getElementById('nn-modal-kpi'); if(_gnn_modal_kpi) _gnn_modal_kpi.textContent = cfg ? cfg.label : kpi;
+  var _gnn_modal_body=document.getElementById('nn-modal-body'); if(_gnn_modal_body) _gnn_modal_body.textContent = comentario || 'Sin comentarios para este período.';
   document.getElementById('nn-modal-overlay').style.display = 'flex';
 }
 function nnCloseModal() {
@@ -2792,19 +2781,17 @@ function loadNnData() {
     nnRenderLI();
     var s  = nnCalcSummary();
     var te = document.getElementById('nn-sum-trend');
-    var ok = document.getElementById('nn-sum-ok');
-    if (ok)  ok.textContent = s.ok + ' / 6';
     if (te && s.pct !== null) {
       te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
       te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
     }
-    document.getElementById('footer-ts').textContent    = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    var _gfooter_ts=document.getElementById('footer-ts'); if(_gfooter_ts) _gfooter_ts.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
     document.getElementById('nn-loadingBox').style.display  = 'none';
     document.getElementById('nn-mainContent').style.display = 'block';
   }).catch(function(e) {
     document.getElementById('nn-loadingBox').style.display = 'none';
     document.getElementById('nn-errorBox').style.display   = 'block';
-    document.getElementById('nn-errorMsg').textContent     = 'Error: ' + e.message;
+    var _gnn_errorMsg=document.getElementById('nn-errorMsg'); if(_gnn_errorMsg) _gnn_errorMsg.textContent = 'Error: ' + e.message;
   });
 }
 
@@ -3102,11 +3089,11 @@ async function loadGeneral() {
 
     document.getElementById('gen-loadingBox').style.display  = 'none';
     document.getElementById('gen-mainContent').style.display = 'block';
-    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+    var _gfooter_ts=document.getElementById('footer-ts'); if(_gfooter_ts) _gfooter_ts.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
   } catch(e) {
     document.getElementById('gen-loadingBox').style.display = 'none';
     document.getElementById('gen-errorBox').style.display   = 'block';
-    document.getElementById('gen-errorMsg').textContent     = 'Error al cargar datos: ' + e.message;
+    var _ggen_errorMsg=document.getElementById('gen-errorMsg'); if(_ggen_errorMsg) _ggen_errorMsg.textContent = 'Error al cargar datos: ' + e.message;
   }
 }
 
