@@ -2482,12 +2482,12 @@ function loadCvaData() {
    ══════════════════════════════════════════════════════ */
 
 var NN_KPIS = {
-  'Ingresos Clientes Nuevos (% crecimiento objetivo)': { label:'Ingresos Clientes Nuevos',  icon:'💹', objective:'Generar crecimiento comercial sostenible',                         weight:40, unit:'#',  inverse:false, fixedObj:null, objLabel:'≥ 23%',  suffix:null,       cuatrimestral:true  },
+  'Ingresos Clientes Nuevos (% crecimiento objetivo)': { label:'Ingresos Clientes Nuevos',  icon:'💹', objective:'Generar crecimiento comercial sostenible',                         weight:40, unit:'%',  inverse:false, fixedObj:23,   objLabel:'≥ 23%',  suffix:null,       cuatrimestral:true  },
   'Clientes nuevos 5 estrellas (# objetivo)':          { label:'Clientes Nuevos 5★',        icon:'⭐', objective:'Asegurar predictibilidad de clientes futuros',                     weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:'clientes', cuatrimestral:true  },
   'Demos Activas':                                     { label:'Demos Activas',             icon:'🎯', objective:'Mantener tracción comercial constante',                            weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:'demos',    cuatrimestral:true  },
   'Pipline / Salesstar = Calculadora':                 { label:'Pipline / Calculadora',     icon:'📊', objective:'Asegurar predictibilidad de ingresos futuros',                    weight:12, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:null,       cuatrimestral:true  },
-  'Proceso Zoho':                                      { label:'Proceso Zoho',              icon:'🔵', objective:'Garantizar ejecución profesional, trazabilidad y control comercial',weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:'≥ 50%',  suffix:null,       cuatrimestral:true  },
-  'Conversion Demo - Cierre':                          { label:'Conversión Demo → Cierre',  icon:'✅', objective:'Maximizar la eficiencia comercial',                               weight: 8, unit:'%',  inverse:false, fixedObj:null, objLabel:'≥ 95%',  suffix:null,       cuatrimestral:true  }
+  'Proceso Zoho':                                      { label:'Proceso Zoho',              icon:'🔵', objective:'Garantizar ejecución profesional, trazabilidad y control comercial',weight:10, unit:'%',  inverse:false, fixedObj:50,   objLabel:'≥ 50%',  suffix:null,       cuatrimestral:true  },
+  'Conversion Demo - Cierre':                          { label:'Conversión Demo → Cierre',  icon:'✅', objective:'Maximizar la eficiencia comercial',                               weight: 8, unit:'%',  inverse:false, fixedObj:95,   objLabel:'≥ 95%',  suffix:null,       cuatrimestral:true  }
 };
 
 var nnRawRows  = [];
