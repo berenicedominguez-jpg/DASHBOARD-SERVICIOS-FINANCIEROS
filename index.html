@@ -429,7 +429,7 @@ body {
   display:flex; gap:6px; align-items:center;
   background:var(--white); border-bottom:1px solid var(--slate5);
   padding:13px 36px; box-shadow:var(--shadow-sm);
-  width:100%; position:sticky; top:62px; z-index:90;
+  width:100%; flex-shrink:0;
 }
 .tab-bar-left { display:flex; gap:5px; align-items:center; flex:1; }
 
@@ -1239,7 +1239,8 @@ function navigate(page) {
   } else if (page==='general') {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'Resumen General · Todas las Áreas';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · Resumen General';
-    if (!genLoaded) loadGeneral(); else genRenderAll();
+    genLoaded = false;
+    loadGeneral();
   } else {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Resumen';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Resumen';
