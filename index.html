@@ -2595,6 +2595,17 @@ function nnCloseModal() {
   document.getElementById('nn-modal-overlay').style.display = 'none';
 }
 
+function nnGetBlockAccum(key, meses) {
+  var total = 0, hasAny = false;
+  meses.forEach(function(m) {
+    if (!nnAllData[key] || !nnAllData[key][m]) return;
+    var v = nnAllData[key][m].real;
+    if (v === null || v === 'PENDIENTE') return;
+    total += v; hasAny = true;
+  });
+  return hasAny ? total : null;
+}
+
 function nnRenderCard(key) {
   var cfg = NN_KPIS[key];
   var el  = document.getElementById('nn-card-' + key);
@@ -2606,15 +2617,35 @@ function nnRenderCard(key) {
   var realNum     = isPendiente ? null : real;
   var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
 
-  var evalObj = obj;
+  // Para cuatrimestral: meta mensual proporcional para badge inicial
+  var evalObj = (cfg.cuatrimestral && obj !== null) ? obj / 4 : obj;
   var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
   var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
     ? Math.round((cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) * 10) / 10 : 0;
   var pw      = Math.min(pct, 100);
   var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
 
-  var cumpl = null;
-  if (!isPendiente && realNum !== null && evalObj !== null) {
+  var cumpl      = null;
+  var acumDisplay = null;
+
+  if (cfg.cuatrimestral && !isPendiente && realNum !== null) {
+    var qMeses  = getQMeses(nnSelectedMes);
+    var idxMes  = qMeses.indexOf(nnSelectedMes);
+    var mesesAc = qMeses.slice(0, idxMes + 1);
+    var acum    = nnGetBlockAccum(key, mesesAc);
+    if (acum !== null) {
+      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
+      if (obj !== null) {
+        var metaProp = obj * (idxMes + 1) / 4;
+        ok     = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+        cumpl  = cfg.inverse
+          ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
+          : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
+        pw     = Math.min(Math.round(cfg.inverse ? (metaProp / Math.max(acum, 0.01)) * 100 : (acum / metaProp) * 100), 100);
+        barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+      }
+    }
+  } else if (!isPendiente && realNum !== null && evalObj !== null) {
     cumpl = cfg.inverse
       ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
       : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
@@ -2627,22 +2658,23 @@ function nnRenderCard(key) {
   if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
   else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
   else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
-  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
   else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
-  var ext     = (nnExtras[key] && nnExtras[key][nnSelectedMes]) || {};
-  var com     = ext.comentarios || '';
-  var acumHtml = com ? buildCommentBtn('nnOpenModal', key, com) : '';
-
+  var ext        = (nnExtras[key] && nnExtras[key][nnSelectedMes]) || {};
+  var com        = ext.comentarios || '';
+  var acumHtml   = com ? buildCommentBtn('nnOpenModal', key, com) : '';
+  var metaLabel  = cfg.cuatrimestral ? 'Meta cuatrimestral: ' : 'Meta: ';
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto');
 
   el.innerHTML = [
     '<div class="kpi-icon-wrap">' + cfg.icon + '</div>',
-    '<div class="kpi-label">' + cfg.label + '</div>',
+    '<div class="kpi-label">' + cfg.label + ' <span style="font-size:9px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);border-radius:8px;padding:1px 6px;font-weight:700;">Cuatrimestral</span></div>',
     '<div class="kpi-objective">' + cfg.objective + '</div>',
     '<div class="kpi-real-val" style="color:' + realColor + ';">' + realDisplay + '</div>',
+    acumDisplay ? '<div class="kpi-acum-val">📦 ' + acumDisplay + '</div>' : '',
     acumHtml,
-    '<div class="kpi-meta">Meta: ' + metaDisplay + '</div>',
+    '<div class="kpi-meta">' + metaLabel + metaDisplay + '</div>',
     cumpl !== null ? '<div class="kpi-cumpl" style="color:' + cumplColor + ';">' + cumpl + '% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>',
     '<div class="kpi-divider"></div>',
     '<div class="progress-wrap">',
@@ -2678,14 +2710,32 @@ function nnRenderLI() {
 
 function nnCalcSummary() {
   var score = 0, totalW = 0, ok = 0;
+  var qMeses = getQMeses(nnSelectedMes);
+  var idxMes = qMeses.indexOf(nnSelectedMes);
+
   Object.keys(NN_KPIS).forEach(function(key) {
     var cfg = NN_KPIS[key];
     if (cfg.weight === 0 || !nnAllData[key] || !nnAllData[key][nnSelectedMes]) return;
     var d = nnAllData[key][nnSelectedMes];
-    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
-    score  += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * cfg.weight;
+    if (d.objetivo === null) return;
+
+    var ratio;
+    if (cfg.cuatrimestral) {
+      var mesesAc = qMeses.slice(0, idxMes + 1);
+      var acum = nnGetBlockAccum(key, mesesAc);
+      if (acum === null) return;
+      var metaProp = d.objetivo * (idxMes + 1) / 4;
+      if (metaProp <= 0) return;
+      ratio = cfg.inverse ? metaProp / Math.max(acum, 0.01) : acum / metaProp;
+      if (cfg.inverse ? acum <= metaProp : acum >= metaProp) ok++;
+    } else {
+      if (d.real === null || d.real === 'PENDIENTE') return;
+      ratio = cfg.inverse ? d.objetivo / Math.max(d.real, 0.01) : d.real / d.objetivo;
+      if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+    }
+
+    score  += Math.min(ratio, 1) * cfg.weight;
     totalW += cfg.weight;
-    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
   });
   return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
 }
@@ -2696,7 +2746,7 @@ function loadNnData() {
   document.getElementById('nn-errorBox').style.display    = 'none';
   document.getElementById('nn-mainContent').style.display = 'none';
 
-  loadNnAllData([nnSelectedMes]).then(function() {
+  loadNnAllData(getQMeses(nnSelectedMes)).then(function() {
     Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
     nnRenderLI();
     var s  = nnCalcSummary();
