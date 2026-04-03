@@ -860,6 +860,10 @@ footer {
     <div class="month-panel">
       <div><div class="month-panel-title">Nuevos Negocios · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
       <div class="month-btns" id="nn-monthBtns"></div>
+      <a href="https://dashboard-nn-flotillas-y-financieras.replit.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(106,170,240,.18);border:1px solid rgba(106,170,240,.35);border-radius:8px;color:#6aaaf0;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:background .15s;" onmouseover="this.style.background='rgba(106,170,240,.3)'" onmouseout="this.style.background='rgba(106,170,240,.18)'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Dashboard Comercial
+      </a>
     </div>
     <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
     </div>
@@ -1235,7 +1239,7 @@ function navigate(page) {
   } else if (page==='general') {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'Resumen General · Todas las Áreas';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · Resumen General';
-    if (!genLoaded) loadGeneral();
+    if (!genLoaded) loadGeneral(); else genRenderAll();
   } else {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Resumen';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Resumen';
