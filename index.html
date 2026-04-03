@@ -59,6 +59,8 @@
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+.main { height:100vh; overflow:hidden; }
 
 body {
   font-family: 'Barlow', 'Segoe UI', sans-serif;
@@ -67,6 +69,7 @@ body {
   color: var(--navy);
   min-height: 100vh;
   display: flex;
+  scroll-padding-top: 180px;
 }
 
 /* ── SIDEBAR ── */
@@ -186,7 +189,7 @@ body {
 /* ── PAGES ── */
 .page { display:none; flex:1; flex-direction:column; }
 .page.active { display:flex; }
-.content { padding:22px 28px; flex:1; }
+.content { padding:22px 28px; flex:1; overflow-y:auto; }
 
 /* ── STATE BOX ── */
 .state-box {
@@ -226,14 +229,14 @@ body {
 
 .month-panel-title {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight:700; letter-spacing:0.12em;
+  font-size: 13px; font-weight:700; letter-spacing:0.1em;
   text-transform:uppercase; color: var(--navy);
 }
 
 .month-panel-sub {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; letter-spacing:0.07em;
-  color: var(--slate2); margin-top:2px;
+  font-size: 11px; letter-spacing:0.05em;
+  color: var(--slate); margin-top:2px;
 }
 
 .month-btns { display:flex; gap:4px; flex-wrap:nowrap; }
@@ -252,8 +255,8 @@ body {
 
 .sum-lbl {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 9px; font-weight:700; letter-spacing:0.18em;
-  text-transform:uppercase; color: var(--slate2); margin-bottom:4px;
+  font-size: 10px; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color: var(--slate); margin-bottom:4px;
 }
 
 .sum-val {
@@ -263,7 +266,7 @@ body {
 
 .sum-sub {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; color: var(--slate2); margin-top:2px;
+  font-size: 11px; color: var(--slate); margin-top:2px;
 }
 
 /* ── SECTION HEADER ── */
@@ -271,8 +274,8 @@ body {
 .section-hdr-line { flex:1; height:1px; background:#e2edf6; }
 .section-hdr-txt {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 9px; font-weight:700; letter-spacing:0.2em;
-  text-transform:uppercase; color:#8aaac8; white-space:nowrap;
+  font-size: 11px; font-weight:700; letter-spacing:0.16em;
+  text-transform:uppercase; color:#4a6180; white-space:nowrap;
 }
 
 /* ── GRIDS ── */
@@ -299,8 +302,8 @@ body {
 
 .kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
 .kpi-label {
-  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
-  letter-spacing:.15em; text-transform:uppercase; color:#8aaac8; flex:1; min-width:0;
+  font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:#4a6180; flex:1; min-width:0;
   padding-right:6px; line-height:1.4;
 }
 .kpi-card-icon {
@@ -324,7 +327,7 @@ body {
 .kpi-real-val.near { color:#633806; }
 .kpi-real-val.nd   { color:#0b1f3a; }
 
-.kpi-objective { font-size:10px; color:#8aaac8; line-height:1.4; margin-bottom:8px; }
+.kpi-objective { font-size:11px; color:#4a6180; line-height:1.4; margin-bottom:8px; }
 
 .kpi-badge {
   display:inline-flex; align-items:center; gap:3px;
@@ -339,7 +342,7 @@ body {
 .badge-nd   { background:#f0f4f8; color:#8aaac8; border:1px solid #c4d6e6; }
 
 .kpi-acum-val {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  font-family:'Barlow Condensed',sans-serif; font-size:11px;
   font-weight:600; color:#1a5cb0; margin-bottom:6px;
 }
 
@@ -348,17 +351,17 @@ body {
 .progress-bar   { height:100%; border-radius:2px; transition:width .9s ease; }
 .progress-labels {
   display:flex; justify-content:space-between;
-  font-family:'Barlow Condensed',sans-serif; font-size:9px; color:#8aaac8;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; color:#6e88a2;
 }
-.progress-pct { font-weight:700; color:#4a6180; }
+.progress-pct { font-weight:700; color:#0b1f3a; font-size:11px; }
 
 .kpi-cumpl {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  font-family:'Barlow Condensed',sans-serif; font-size:12px;
   font-weight:700; margin-bottom:6px;
 }
 .kpi-meta {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px;
-  color:#8aaac8; margin-bottom:3px;
+  font-family:'Barlow Condensed',sans-serif; font-size:11px;
+  color:#4a6180; margin-bottom:3px;
 }
 
 .kpi-card-footer {
@@ -366,11 +369,11 @@ body {
   background:#f8fafc;
 }
 .kpi-comment-lbl {
-  font-family:'Barlow Condensed',sans-serif; font-size:8px; font-weight:700;
-  letter-spacing:.14em; text-transform:uppercase; color:#9cb4cb;
-  display:block; margin-bottom:2px;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:#4a6180;
+  display:block; margin-bottom:3px;
 }
-.kpi-comment-txt { font-size:10px; color:#6e88a2; line-height:1.5; }
+.kpi-comment-txt { font-size:11px; color:#2d4a6a; line-height:1.5; }
 .kpi-no-comment  { font-size:10px; color:#c4d6e6; }
 
 .badge-cuatri {
@@ -388,8 +391,10 @@ body {
   display:grid; grid-template-columns:repeat(4,1fr); gap:0;
   padding:10px 28px; margin-bottom:20px;
   background:var(--navy);
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(11,31,58,.18);
+  position:sticky; top:119px; z-index:80;
+  border-bottom:1px solid rgba(106,170,240,.12);
+  margin-left:-28px; margin-right:-28px;
+  padding-left:28px; padding-right:28px;
 }
 .exec-score-card {
   background:transparent; padding:10px 20px;
@@ -398,15 +403,15 @@ body {
 .exec-score-card:last-child { border-right:none; }
 .exec-score-lbl {
   font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
-  letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:6px;
+  letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.65); margin-bottom:6px;
 }
 .exec-score-val {
-  font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800;
+  font-family:'Barlow Condensed',sans-serif; font-size:28px; font-weight:800;
   color:#fff; line-height:1;
 }
 .exec-score-sub {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px;
-  color:rgba(255,255,255,.35); margin-top:4px;
+  font-family:'Barlow Condensed',sans-serif; font-size:11px;
+  color:rgba(255,255,255,.55); margin-top:4px;
 }
 
 @media(max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr);} .exec-score-strip{grid-template-columns:repeat(2,1fr);} }
@@ -654,11 +659,11 @@ footer {
         </div>
       </div>
     </div>
+    <div class="exec-score-strip" id="sf-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
       <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
       <div id="m-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="sf-score-strip" style="display:none;"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Crecimiento Comercial</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="card-Ingresos"></div>
@@ -710,11 +715,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="vyp-sum-ok">—</div><div class="sum-sub">de 4 KPIs ponderados</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="vyp-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="vyp-errorMsg">Error.</p></div>
       <div id="vyp-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="vyp-score-strip" style="display:none;"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Ventas</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="vyp-card-VENTAS"></div>
@@ -762,11 +767,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="sis-sum-ok">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
       <div id="sis-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
         <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="sis-card-Servidores Activos"></div>
@@ -814,11 +819,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="cva-sum-ok2">—</div><div class="sum-sub">de 5 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="cva-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="cva-errorMsg">Error.</p></div>
       <div id="cva-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="cva-score-strip" style="display:none;"></div>
         <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="cva-card-ROBOS"></div>
@@ -869,11 +874,11 @@ footer {
         <div style="padding:0 24px;"><div class="sum-lbl">En objetivo</div><div class="sum-val" id="nn-sum-ok">—</div><div class="sum-sub">de 6 KPIs</div></div>
       </div>
     </div>
+    <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
     <div class="content">
       <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
       <div id="nn-mainContent" style="display:none;">
-        <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
         <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
         <div class="grid">
           <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
