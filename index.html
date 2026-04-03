@@ -276,160 +276,106 @@ body {
   text-transform:uppercase; color: var(--blue); white-space:nowrap;
 }
 
-/* ── GRIDS — ahora columnas de filas ejecutivas ── */
-.grid { display:flex; flex-direction:column; gap:0; margin-bottom:24px;
-  border:1px solid var(--slate5); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); }
+/* ── GRIDS — layout ejecutivo 2 columnas ── */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
 .grid-4, .grid-3 { }
-.grid > .kpi-card { height:auto; }
 
-/* ── KPI CARD — FILA EJECUTIVA ── */
+/* ── SCORE STRIP ── */
+.exec-score-strip {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px;
+}
+.exec-score-card {
+  background:var(--white); border:1px solid var(--slate5);
+  border-radius:12px; padding:16px 18px;
+  box-shadow:var(--shadow-sm);
+}
+.exec-score-lbl {
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--slate2); margin-bottom:6px;
+}
+.exec-score-val {
+  font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:600;
+  line-height:1; margin-bottom:3px;
+}
+.exec-score-sub {
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; color:var(--slate2); margin-top:4px;
+}
+
+/* ── KPI CARD EJECUTIVA ── */
 .kpi-card {
-  background: var(--white);
-  border-bottom: 1px solid var(--slate5);
-  position:relative;
-  display:grid;
-  grid-template-columns: 4px 46px 1fr 160px 160px 120px 1fr;
-  align-items:stretch;
-  min-height: 66px;
-  transition: background 0.14s;
+  background:var(--white); border:1px solid var(--slate5);
+  border-radius:12px; overflow:hidden;
+  box-shadow:var(--shadow-sm); transition:box-shadow .18s;
+  display:flex; flex-direction:column;
 }
-.kpi-card:last-child { border-bottom:none; }
-.kpi-card:hover { background: var(--off); }
+.kpi-card:hover { box-shadow:var(--shadow-md); }
 
-/* Barra lateral de estado */
-.kpi-status-bar { align-self:stretch; }
-.status-ok   { background: var(--green); }
-.status-near { background: var(--amber); }
-.status-off  { background: var(--red); }
-.status-nd   { background: var(--slate4); }
+.kpi-card-accent { height:3px; }
+.accent-ok   { background:var(--green); }
+.accent-near { background:var(--amber); }
+.accent-off  { background:var(--red); }
+.accent-nd   { background:var(--slate4); }
 
-/* Ícono */
-.kpi-icon-wrap {
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; padding:0 0 0 12px;
-}
+.kpi-card-body { padding:18px 20px 14px; flex:1; display:flex; flex-direction:column; }
 
-/* Nombre + objetivo */
-.kpi-info-col {
-  display:flex; flex-direction:column; justify-content:center;
-  padding: 12px 18px 12px 12px; min-width:0; border-right:1px solid var(--slate5);
-}
+.kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
 .kpi-label {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight:700; letter-spacing:0.1em;
-  text-transform:uppercase; color: var(--navy); margin-bottom:2px;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--slate); flex:1; min-width:0;
 }
-.kpi-objective {
-  font-size:11px; color:var(--slate2); line-height:1.4;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
+.kpi-status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:2px; }
+.dot-ok2   { background:var(--green); }
+.dot-near2 { background:var(--amber); }
+.dot-off2  { background:var(--red); }
+.dot-nd2   { background:var(--slate4); }
 
-/* Valor real */
-.kpi-val-col {
-  display:flex; flex-direction:column; justify-content:center; align-items:flex-end;
-  padding: 12px 16px; border-right:1px solid var(--slate5);
-}
 .kpi-real-val {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 26px; font-weight:600; line-height:1; margin-bottom:1px;
+  font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:600;
+  line-height:1; margin-bottom:3px;
 }
-.kpi-meta {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; color:var(--slate2); letter-spacing:0.03em; text-align:right;
-}
+.kpi-objective { font-size:11px; color:var(--slate2); line-height:1.4; margin-bottom:10px; }
+
+.kpi-meta-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.kpi-meta { font-family:'Barlow Condensed',sans-serif; font-size:10px; color:var(--slate2); }
+.kpi-cumpl { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; }
 .kpi-acum-val {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; font-weight:600; color:var(--blue); text-align:right; letter-spacing:0.02em;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:600;
+  color:var(--blue); margin-bottom:6px;
 }
 
-/* Barra de progreso + cumplimiento */
-.kpi-bar-col {
-  display:flex; flex-direction:column; justify-content:center;
-  padding: 12px 16px; border-right:1px solid var(--slate5);
-}
-.kpi-cumpl {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px; font-weight:700; margin-bottom:5px; letter-spacing:0.04em;
-}
-.progress-wrap { width:100%; }
+.progress-wrap { margin-top:auto; }
+.progress-track { height:4px; background:var(--slate5); border-radius:2px; overflow:hidden; margin-bottom:8px; }
+.progress-bar { height:100%; border-radius:2px; transition:width .9s ease; }
+.bar-ok   { background:var(--green); }
+.bar-near { background:var(--amber); }
+.bar-off  { background:var(--red); }
 .progress-labels {
   display:flex; justify-content:space-between;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 9px; letter-spacing:0.05em; color:var(--slate3); margin-bottom:4px;
+  font-family:'Barlow Condensed',sans-serif; font-size:9px; color:var(--slate3); margin-bottom:0;
 }
 .progress-pct { font-weight:700; color:var(--slate); }
-.progress-track { height:4px; background:var(--slate5); border-radius:2px; overflow:hidden; }
-.progress-bar { height:100%; border-radius:2px; transition:width .9s ease; }
-.bar-ok   { background: var(--green); }
-.bar-near { background: var(--amber); }
-.bar-off  { background: var(--red); }
 
-/* Badge */
-.kpi-badge-col {
-  display:flex; align-items:center; justify-content:center;
-  padding: 12px 14px; border-right:1px solid var(--slate5);
-}
 .kpi-badge {
   display:inline-flex; align-items:center; gap:4px;
   padding:4px 12px; border-radius:20px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size:10px; font-weight:700; letter-spacing:0.06em;
-  white-space:nowrap;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:.06em;
 }
 .badge-ok   { background:var(--green-bg); color:var(--green); border:1px solid var(--green-bd); }
 .badge-near { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-bd); }
 .badge-off  { background:var(--red-bg); color:var(--red); border:1px solid var(--red-bd); }
 .badge-nd   { background:var(--off2); color:var(--slate2); border:1px solid var(--slate4); }
 
-/* Comentario */
-.kpi-comment-col {
-  display:flex; align-items:center;
-  padding: 12px 16px;
+.kpi-card-footer {
+  border-top:1px solid var(--slate5); padding:9px 20px;
+  background:var(--off); min-height:36px;
 }
-.kpi-comment-inner { font-size:11px; color:var(--slate); line-height:1.5; }
 .kpi-comment-lbl {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:9px; font-weight:700; letter-spacing:0.1em;
-  text-transform:uppercase; color:var(--slate3); margin-bottom:2px;
+  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--slate3); display:block; margin-bottom:2px;
 }
+.kpi-comment-txt { font-size:11px; color:var(--slate); line-height:1.5; }
 .kpi-no-comment { font-size:11px; color:var(--slate4); }
 
-/* Cabecera de grupo (dentro del .grid) */
-.kpi-group-header {
-  display:flex; align-items:center; gap:10px;
-  padding: 8px 18px 8px 72px;
-  background: var(--navy);
-  border-bottom:1px solid rgba(255,255,255,0.07);
-}
-.kpi-group-header-txt {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:9px; font-weight:700; letter-spacing:0.22em;
-  text-transform:uppercase; color:rgba(255,255,255,0.45); white-space:nowrap;
-}
-.kpi-group-header-line { flex:1; height:1px; background:rgba(255,255,255,0.07); }
-
-/* Cabecera de columnas de la tabla ejecutiva */
-.kpi-col-header {
-  display:grid;
-  grid-template-columns: 4px 46px 1fr 160px 160px 120px 1fr;
-  background: var(--off);
-  border-bottom: 1px solid var(--slate5);
-  padding: 5px 0;
-}
-.kpi-col-header span {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:9px; font-weight:700; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--slate2);
-  padding:0 16px; display:flex; align-items:center;
-}
-.kpi-col-header span:nth-child(1),
-.kpi-col-header span:nth-child(2) { padding:0; }
-.kpi-col-header span:nth-child(4),
-.kpi-col-header span:nth-child(5),
-.kpi-col-header span:nth-child(6) { justify-content:flex-end; }
-
-/* Badge cuatrimestral inline */
 .badge-cuatri {
   display:inline-block; font-size:8px; background:var(--amber-bg);
   color:var(--amber); border:1px solid var(--amber-bd);
@@ -437,6 +383,12 @@ body {
   vertical-align:middle; letter-spacing:.04em;
 }
 .kpi-divider { display:none; }
+.kpi-icon-wrap { display:none; }
+.kpi-info-col,.kpi-val-col,.kpi-bar-col,.kpi-badge-col,.kpi-comment-col,
+.kpi-status-bar,.kpi-group-header,.kpi-col-header { display:none; }
+
+@media(max-width:960px){.exec-score-strip{grid-template-columns:repeat(2,1fr);}.grid{grid-template-columns:1fr;}}
+@media(max-width:620px){.exec-score-strip{grid-template-columns:1fr;}}
 
 /* ── TAB BAR ── */
 .tab-bar {
@@ -683,40 +635,23 @@ footer {
       <div id="m-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos desde Google Sheets…</p></div>
       <div id="m-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">&#9888;</div><p id="m-errorMsg">Error.</p></div>
       <div id="m-mainContent" style="display:none;">
-
+        <div class="exec-score-strip" id="sf-score-strip"></div>
+        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento Comercial</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Crecimiento Comercial</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="card-Ingresos"></div>
           <div class="kpi-card" id="card-Churn"></div>
           <div class="kpi-card" id="card-CrossSelling"></div>
           <div class="kpi-card" id="card-ClientesNuevos"></div>
         </div>
-
+        <div class="section-hdr"><div class="section-hdr-txt">Satisfacción & Rentabilidad</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Satisfacción &amp; Rentabilidad</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="card-NPS"></div>
           <div class="kpi-card" id="card-MargenBruto"></div>
           <div class="kpi-card" id="card-SGA"></div>
           <div class="kpi-card" id="card-CxC"></div>
         </div>
 
-        <!-- TABLA LOGROS E IMPEDIMENTOS SFyF -->
-        <div id="sf-li-section" style="display:none;">
-          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
-          <div class="table-wrap" style="margin-bottom:26px;">
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="background:var(--navy);">
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
-              </tr></thead>
-              <tbody id="sf-li-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
+              </div>
     </div>
   </div>
 
@@ -742,19 +677,19 @@ footer {
       <div id="vyp-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="vyp-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="vyp-errorMsg">Error.</p></div>
       <div id="vyp-mainContent" style="display:none;">
+        <div class="exec-score-strip" id="vyp-score-strip"></div>
+        <div class="section-hdr"><div class="section-hdr-txt">Ventas</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Ventas</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="vyp-card-VENTAS"></div>
           <div class="kpi-card" id="vyp-card-UNIDADES"></div>
           <div class="kpi-card" id="vyp-card-CHURN"></div>
         </div>
+        <div class="section-hdr"><div class="section-hdr-txt">Crecimiento &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Crecimiento &amp; Satisfacción</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="vyp-card-CROSS-SELLING"></div>
           <div class="kpi-card" id="vyp-card-NPS"></div>
         </div>
+
         <div id="vyp-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
@@ -794,20 +729,20 @@ footer {
       <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
       <div id="sis-mainContent" style="display:none;">
+        <div class="exec-score-strip" id="sis-score-strip"></div>
+        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Infraestructura</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="sis-card-Servidores Activos"></div>
           <div class="kpi-card" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
           <div class="kpi-card" id="sis-card-Costo por unidad mensual"></div>
         </div>
+        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">Soporte &amp; Satisfacción</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
           <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
           <div class="kpi-card" id="sis-card-NPS (%)"></div>
         </div>
+
         <div id="sis-am-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
@@ -846,24 +781,23 @@ footer {
       <div id="cva-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="cva-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="cva-errorMsg">Error.</p></div>
       <div id="cva-mainContent" style="display:none;">
+        <div class="exec-score-strip" id="cva-score-strip"></div>
+        <div class="section-hdr"><div class="section-hdr-txt">🔒 Recuperaciones</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">🔒 Recuperaciones</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="cva-card-ROBOS"></div>
           <div class="kpi-card" id="cva-card-ABUSOS DE CONFIANZA"></div>
           <div class="kpi-card" id="cva-card-CREDITOS"></div>
         </div>
+        <div class="section-hdr"><div class="section-hdr-txt">🎧 Soporte &amp; Capacitación</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">🎧 Soporte &amp; Capacitación</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="cva-card-TIEMPO DE PRIMERA RESPUESTA"></div>
           <div class="kpi-card" id="cva-card-SATISFACCIÓN DE CAPACITACIONES"></div>
         </div>
+        <div class="section-hdr"><div class="section-hdr-txt">🌐 Conectividad</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">🌐 Conectividad</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="cva-card-CONECTIVIDAD"></div>
         </div>
+
         <div id="cva-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
@@ -902,20 +836,20 @@ footer {
       <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
       <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
       <div id="nn-mainContent" style="display:none;">
+        <div class="exec-score-strip" id="nn-score-strip"></div>
+        <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">💰 Ventas &amp; Captación</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
           <div class="kpi-card" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
           <div class="kpi-card" id="nn-card-Demos Activas"></div>
         </div>
+        <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Conversión</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-group-header"><div class="kpi-group-header-txt">📊 Pipeline &amp; Conversión</div><div class="kpi-group-header-line"></div></div>
-          <div class="kpi-col-header"><span></span><span></span><span>KPI · Objetivo</span><span>Valor Real</span><span>Avance</span><span>Estado</span><span>Comentario</span></div>
           <div class="kpi-card" id="nn-card-Pipline / Salesstar = Calculadora"></div>
           <div class="kpi-card" id="nn-card-Proceso Zoho"></div>
           <div class="kpi-card" id="nn-card-Conversion Demo - Cierre"></div>
         </div>
+
         <div id="nn-li-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
@@ -1422,6 +1356,47 @@ function calcSummary() {
   return { pct:totalW>0?Math.round((score/totalW)*100):null, ok:ok };
 }
 
+function getQLabel(mes) {
+  var q = QUARTERS.find(function(x) { return x.meses.indexOf(mes) !== -1; });
+  return q ? q.label : '';
+}
+
+/* ── SCORE STRIP EJECUTIVO — universal para todas las páginas ── */
+function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
+  var el = document.getElementById(stripId);
+  if (!el) return;
+  var s = summaryFn();
+  var pct = s.pct !== null ? s.pct : 0;
+  var trend = pct >= 75 ? '↑ Positiva' : pct >= 50 ? '→ Estable' : '↓ Atención';
+  var trendColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  var resultColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  var okColor = s.ok >= totalKpis ? 'var(--green)' : s.ok > 0 ? 'var(--amber)' : 'var(--red)';
+  var riesgo = totalKpis - s.ok;
+  var riesgoColor = riesgo === 0 ? 'var(--green)' : riesgo <= 2 ? 'var(--amber)' : 'var(--red)';
+
+  el.innerHTML =
+    '<div class="exec-score-card">'
+      + '<div class="exec-score-lbl">Resultado general</div>'
+      + '<div class="exec-score-val" style="color:' + resultColor + ';">' + (s.pct !== null ? pct + '%' : '—') + '</div>'
+      + '<div class="exec-score-sub" style="color:' + trendColor + ';">' + trend + ' · ' + mes + '</div>'
+    + '</div>'
+    + '<div class="exec-score-card">'
+      + '<div class="exec-score-lbl">KPIs en objetivo</div>'
+      + '<div class="exec-score-val" style="color:' + okColor + ';">' + s.ok + ' <span style="font-size:18px;font-weight:400;color:var(--slate2);">/ ' + totalKpis + '</span></div>'
+      + '<div class="exec-score-sub">Ponderados</div>'
+    + '</div>'
+    + '<div class="exec-score-card">'
+      + '<div class="exec-score-lbl">KPIs en riesgo</div>'
+      + '<div class="exec-score-val" style="color:' + riesgoColor + ';">' + riesgo + '</div>'
+      + '<div class="exec-score-sub">Requieren atención</div>'
+    + '</div>'
+    + '<div class="exec-score-card">'
+      + '<div class="exec-score-lbl">Período</div>'
+      + '<div class="exec-score-val" style="font-size:20px;color:var(--navy);">' + mes + '</div>'
+      + '<div class="exec-score-sub">' + cuatrLabel + '</div>'
+    + '</div>';
+}
+
 function loadMensualData() {
   if (!selectedMes) return;
   document.getElementById('m-loadingBox').style.display='block';
@@ -1433,6 +1408,7 @@ function loadMensualData() {
   loadAllFromSYyF(qMeses).then(function() {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key){ renderCard(key); });
+    renderExecScoreStrip('sf-score-strip', calcSummary, 7, selectedMes, getQLabel(selectedMes));
     renderSfLI(selectedMes);
     var s = calcSummary();
     document.getElementById('sum-ok').textContent = s.ok + ' / 7';
@@ -2009,6 +1985,7 @@ function loadVypData() {
   loadVypAllData(qMeses).then(function() {
     vypLoaded = true;
     Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
+    renderExecScoreStrip('vyp-score-strip', vypCalcSummary, 4, vypSelectedMes, getQLabel(vypSelectedMes));
     renderVypLI();
     var s = vypCalcSummary();
     document.getElementById('vyp-sum-ok').textContent = s.ok + ' / 4';
@@ -2202,6 +2179,7 @@ function loadSisData() {
   loadSisAllData([sisSelectedMes]).then(function() {
     sisLoaded = true;
     Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
+    renderExecScoreStrip('sis-score-strip', sisCalcSummary, 5, sisSelectedMes, getQLabel(sisSelectedMes));
     renderSisAM();
     var s = sisCalcSummary();
     document.getElementById('sis-sum-ok').textContent = s.ok + ' / 5';
@@ -2221,42 +2199,37 @@ function loadSisData() {
 
 
 
-/* ── FUNCIÓN UNIVERSAL DE FILA EJECUTIVA ── */
-function buildCommentBtn(fnName, key, com) {
-  return '';
-}
+/* ── FUNCIÓN UNIVERSAL DE TARJETA EJECUTIVA ── */
+function buildCommentBtn(fnName, key, com) { return ''; }
 
 function buildKpiRow(opts) {
-  var statusCls = opts.ok === null ? 'status-nd'
-    : opts.ok ? 'status-ok'
-    : opts.pw >= 80 ? 'status-near' : 'status-off';
-
+  var accentCls = opts.ok === null ? 'accent-nd'
+    : opts.ok ? 'accent-ok'
+    : opts.pw >= 80 ? 'accent-near' : 'accent-off';
+  var dotCls = opts.ok === null ? 'dot-nd2'
+    : opts.ok ? 'dot-ok2'
+    : opts.pw >= 80 ? 'dot-near2' : 'dot-off2';
+  var cuatriTag = opts.cuatrimestral ? '<span class="badge-cuatri">4M</span>' : '';
+  var acumHtml = opts.acumDisplay ? '<div class="kpi-acum-val">📦 ' + opts.acumDisplay + '</div>' : '';
   var cumplHtml = opts.cumpl !== null
     ? '<div class="kpi-cumpl" style="color:' + opts.cumplColor + ';">' + opts.cumpl + '% cumpl.</div>'
-    : '<div class="kpi-cumpl" style="color:var(--slate3);">—</div>';
-
-  var barHtml = '<div class="progress-wrap">'
-    + '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (opts.pw > 0 ? opts.pw + '%' : '—') + '</span><span>100%</span></div>'
-    + '<div class="progress-track"><div class="progress-bar ' + opts.barCls + '" style="width:' + opts.pw + '%"></div></div>'
-    + '</div>';
-
-  var acumHtml = opts.acumDisplay
-    ? '<div class="kpi-acum-val">📦 ' + opts.acumDisplay + '</div>'
     : '';
-
-  var commentHtml = opts.com
-    ? '<div class="kpi-comment-col"><div class="kpi-comment-inner"><div class="kpi-comment-lbl">💬 Comentario</div>' + opts.com + '</div></div>'
-    : '<div class="kpi-comment-col"><span class="kpi-no-comment">—</span></div>';
-
-  var cuatriTag = opts.cuatrimestral ? '<span class="badge-cuatri">4M</span>' : '';
-
-  return '<div class="kpi-status-bar ' + statusCls + '"></div>'
-    + '<div class="kpi-icon-wrap">' + opts.icon + '</div>'
-    + '<div class="kpi-info-col"><div class="kpi-label">' + opts.label + cuatriTag + '</div><div class="kpi-objective">' + opts.objective + '</div></div>'
-    + '<div class="kpi-val-col"><div class="kpi-real-val" style="color:' + opts.realColor + ';">' + opts.realDisplay + '</div>' + acumHtml + '<div class="kpi-meta">' + opts.metaLabel + opts.metaDisplay + '</div></div>'
-    + '<div class="kpi-bar-col">' + cumplHtml + barHtml + '</div>'
-    + '<div class="kpi-badge-col">' + opts.badgeHtml + '</div>'
-    + commentHtml;
+  var footerHtml = opts.com
+    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">💬 Comentario</span><span class="kpi-comment-txt">' + opts.com + '</span></div>'
+    : '<div class="kpi-card-footer"><span class="kpi-no-comment">—</span></div>';
+  return '<div class="kpi-card-accent ' + accentCls + '"></div>'
+    + '<div class="kpi-card-body">'
+    + '<div class="kpi-card-top"><div class="kpi-label">' + opts.label + cuatriTag + '</div><div class="kpi-status-dot ' + dotCls + '"></div></div>'
+    + '<div class="kpi-real-val" style="color:' + opts.realColor + ';">' + opts.realDisplay + '</div>'
+    + '<div class="kpi-objective">' + opts.objective + '</div>'
+    + acumHtml
+    + '<div class="kpi-meta-row"><span class="kpi-meta">' + opts.metaLabel + opts.metaDisplay + '</span>' + opts.badgeHtml + '</div>'
+    + cumplHtml
+    + '<div class="progress-wrap"><div class="progress-track"><div class="progress-bar ' + opts.barCls + '" style="width:' + opts.pw + '%"></div></div>'
+    + '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (opts.pw > 0 ? opts.pw + '%' : '—') + '</span><span>100%</span></div>'
+    + '</div>'
+    + '</div>'
+    + footerHtml;
 }
 /* ══════════════════════════════════════════════════════
    PÁGINA CVA — datos desde hoja MONITOREO
@@ -2456,6 +2429,7 @@ function cvaCalcSummary2() {
 function cvaRenderPage() {
   if (!cvaSelectedMes2) return;
   Object.keys(CVA_KPIS).forEach(function(key) { cvaRenderCard(key); });
+    renderExecScoreStrip('cva-score-strip', cvaCalcSummary2, 5, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
   cvaRenderLI();
   var s  = cvaCalcSummary2();
   var te = document.getElementById('cva-sum-trend');
@@ -2750,6 +2724,7 @@ function loadNnData() {
 
   loadNnAllData(getQMeses(nnSelectedMes)).then(function() {
     Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
+    renderExecScoreStrip('nn-score-strip', nnCalcSummary, 6, nnSelectedMes, getQLabel(nnSelectedMes));
     nnRenderLI();
     var s  = nnCalcSummary();
     var te = document.getElementById('nn-sum-trend');
@@ -2809,7 +2784,12 @@ function genCalcEstatus(data, kpis, key, meses) {
   if (cfg.cuatrimestral) {
     acum = genGetBlockAccum(data, key, validMeses);
     if (acum === null) return null;
-    obj  = cfg.fixedObj;
+    obj = cfg.fixedObj;
+    if (obj === null) {
+      var firstMesWithObj = validMeses.find(function(m) { return data[key][m] && data[key][m].objetivo !== null; });
+      if (firstMesWithObj) obj = data[key][firstMesWithObj].objetivo;
+    }
+    if (obj === null || obj === 0) return null;
     var cumpl = Math.min(cfg.inverse ? (obj / Math.max(acum, 0.01)) : (acum / obj), 1);
     score  = cumpl * cfg.weight;
     barPct = Math.round(cumpl * 100);
@@ -2956,120 +2936,9 @@ function genBuildTable(tableId, areaLabel, kpisObj, dataObj, meses, isAnual) {
   tbl.innerHTML = html;
 }
 
-/* CVA table — usa cvaRecData / cvaSrvData / cvaConectividadData por mes */
+/* CVA table — usa cvaAllData + CVA_KPIS (mismo origen que página Monitoreo) */
 function genBuildCVATable(meses, isAnual) {
-  var tbl = document.getElementById('gen-table-cva');
-  if (!tbl) return;
-
-  function getCvaVal(key, mes) {
-    var mesU = mes.toUpperCase();
-    if (key === 'robos' || key === 'abusos' || key === 'creditos') {
-      var aliasMap = { robos:'rob', abusos:'abu', creditos:'cred' };
-      var alias = aliasMap[key];
-      var rows = cvaRecData.filter(function(r) { return r.mes === mesU; });
-      var agg = {};
-      rows.forEach(function(r) { if (!agg[r.tipo]) agg[r.tipo] = {recup:0,noRec:0}; agg[r.tipo].recup += r.recup; agg[r.tipo].noRec += r.noRec; });
-      var found = null;
-      Object.keys(agg).forEach(function(k) { if (found === null && k.indexOf(alias) !== -1) found = agg[k]; });
-      if (!found) return null;
-      var t = found.recup + found.noRec;
-      return t > 0 ? parseFloat((found.recup / t * 100).toFixed(2)) : null;
-    }
-    if (key === 'capac') {
-      var rows2 = cvaSrvData.filter(function(r) { return r.mes === mesU; });
-      if (!rows2.length) return null;
-      var tot = rows2.reduce(function(s, r) { return s + r.total; }, 0);
-      var avg = rows2.reduce(function(s, r) { return s + r.calif * r.total; }, 0) / (tot || 1);
-      return parseFloat(avg.toFixed(2));
-    }
-    if (key === 'con-general') {
-      var pct = cvaGetConPctMes('general', mesU);
-      return pct !== null ? parseFloat(pct.toFixed(2)) : null;
-    }
-    return null;
-  }
-
-  var html = '<thead><tr class="q-header">';
-  html += '<th rowspan="2" style="text-align:left;min-width:200px;">KPI</th>';
-  html += '<th rowspan="2" class="sticky-2" style="text-align:center;min-width:70px;">Meta</th>';
-  if (isAnual) {
-    QUARTERS.forEach(function(qObj, qi) {
-      html += '<th colspan="' + qObj.meses.length + '"' + (qi > 0 ? ' class="q-sep-header"' : '') + '>' + qObj.label + '</th>';
-    });
-    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Promedio</th>';
-  } else {
-    var q = QUARTERS.find(function(x) { return x.q === genActiveQ; });
-    html += '<th colspan="' + meses.length + '">' + (q ? q.label : '') + '</th>';
-    html += '<th rowspan="2" style="text-align:center;min-width:160px;">Promedio</th>';
-  }
-  html += '</tr><tr class="m-header">';
-  if (isAnual) {
-    QUARTERS.forEach(function(qObj, qi) {
-      qObj.meses.forEach(function(mes, mi) {
-        html += '<th' + (qi > 0 && mi === 0 ? ' class="q-sep-header"' : '') + '>' + mes.toUpperCase().substring(0, 3) + '</th>';
-      });
-    });
-  } else {
-    meses.forEach(function(mes) { html += '<th>' + mes.toUpperCase().substring(0, 3) + '</th>'; });
-  }
-  html += '</tr></thead><tbody>';
-
-  var allMeses = isAnual ? MESES : meses;
-
-  CVA_GEN_KPIS.forEach(function(cfg) {
-    var vals = allMeses.map(function(mes) { return getCvaVal(cfg.key, mes); });
-    var validVals = vals.filter(function(v) { return v !== null; });
-    var avg = validVals.length ? validVals.reduce(function(s, v) { return s + v; }, 0) / validVals.length : null;
-
-    html += '<tr>';
-    html += '<td><span class="t-icon">' + cfg.icon + '</span><span class="kpi-name">' + cfg.label + '</span><div class="kpi-sub">Meta: ' + cfg.metaLabel + '</div></td>';
-    html += '<td class="sticky-2" style="text-align:center;font-weight:700;font-size:12px;color:var(--navy);">' + cfg.metaLabel + '</td>';
-
-    if (isAnual) {
-      QUARTERS.forEach(function(qObj, qi) {
-        qObj.meses.forEach(function(mes, mi) {
-          var isSep = qi > 0 && mi === 0;
-          var v = getCvaVal(cfg.key, mes);
-          var ok = v !== null ? (cfg.inverse ? v <= cfg.meta : v >= cfg.meta) : false;
-          var status = v === null ? 'nd' : ok ? 'ok' : 'off';
-          var display = v !== null ? (cfg.isTime ? cvaFmtMin(v) : v.toFixed(1) + '%') : '—';
-          html += '<td' + (isSep ? ' class="q-sep-col"' : '') + '><div class="cell-inner">'
-            + '<span class="cell-val"><span class="dot dot-' + status + '"></span>' + display + '</span>'
-            + '<span class="tbadge tbadge-' + status + '">' + (status === 'ok' ? '✓ OK' : status === 'off' ? '↓ Fuera' : 'S/D') + '</span>'
-            + '</div></td>';
-        });
-      });
-    } else {
-      meses.forEach(function(mes) {
-        var v = getCvaVal(cfg.key, mes);
-        var ok = v !== null ? (cfg.inverse ? v <= cfg.meta : v >= cfg.meta) : false;
-        var status = v === null ? 'nd' : ok ? 'ok' : 'off';
-        var display = v !== null ? (cfg.isTime ? cvaFmtMin(v) : v.toFixed(1) + '%') : '—';
-        html += '<td><div class="cell-inner">'
-          + '<span class="cell-val"><span class="dot dot-' + status + '"></span>' + display + '</span>'
-          + '<span class="tbadge tbadge-' + status + '">' + (status === 'ok' ? '✓ OK' : status === 'off' ? '↓ Fuera' : 'S/D') + '</span>'
-          + '</div></td>';
-      });
-    }
-
-    /* Promedio */
-    if (avg !== null) {
-      var avgOk = cfg.inverse ? avg <= cfg.meta : avg >= cfg.meta;
-      var avgDisplay = cfg.isTime ? cvaFmtMin(avg) : avg.toFixed(1) + '%';
-      var avgColor = avgOk ? 'var(--green)' : 'var(--red)';
-      html += '<td style="padding:10px 14px;text-align:center;">'
-        + '<div style="font-family:Cormorant Garamond,serif;font-size:14px;font-weight:600;color:' + avgColor + ';">' + avgDisplay + '</div>'
-        + '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--slate);margin-top:2px;">' + validVals.length + ' meses con datos</div>'
-        + '</td>';
-    } else {
-      html += '<td style="text-align:center;"><span style="font-family:Barlow Condensed,sans-serif;font-size:10px;color:var(--slate2);">Sin datos</span></td>';
-    }
-
-    html += '</tr>';
-  });
-
-  html += '</tbody>';
-  tbl.innerHTML = html;
+  genBuildTable('gen-table-cva', 'CVA', CVA_KPIS, cvaAllData, meses, isAnual);
 }
 
 /* Score cards — una por área */
@@ -3099,35 +2968,8 @@ function genRenderScoreCards(meses, isAnual) {
   var vypScore = genCalcTotal(vypAllData, VYP_KPIS, meses, isAnual);
   var sisScore = genCalcTotal(sisAllData, SIS_KPIS, meses, isAnual);
 
-  /* CVA: average of available metrics */
-  var cvaVals = [];
-  var checkMeses = isAnual ? MESES : meses;
-  CVA_GEN_KPIS.forEach(function(cfg) {
-    var allMesesVals = checkMeses.map(function(mes) {
-      var mesU = mes.toUpperCase();
-      if (cfg.key==='robos'||cfg.key==='abusos'||cfg.key==='creditos') {
-        var aliasMap={robos:'rob',abusos:'abu',creditos:'cred'};
-        var alias=aliasMap[cfg.key];
-        var rows=cvaRecData.filter(function(r){return r.mes===mesU;});
-        var agg={};
-        rows.forEach(function(r){if(!agg[r.tipo])agg[r.tipo]={recup:0,noRec:0};agg[r.tipo].recup+=r.recup;agg[r.tipo].noRec+=r.noRec;});
-        var found=null;
-        Object.keys(agg).forEach(function(k){if(found===null&&k.indexOf(alias)!==-1)found=agg[k];});
-        if(!found)return null;
-        var t=found.recup+found.noRec;
-        return t>0?found.recup/t*100:null;
-      }
-      if(cfg.key==='capac'){var rows2=cvaSrvData.filter(function(r){return r.mes===mesU;});if(!rows2.length)return null;var tot=rows2.reduce(function(s,r){return s+r.total;},0);return rows2.reduce(function(s,r){return s+r.calif*r.total;},0)/(tot||1);}
-      if(cfg.key==='con-general'){return cvaGetConPctMes('general',mesU);}
-      return null;
-    }).filter(function(v){return v!==null;});
-    if(allMesesVals.length){
-      var avg=allMesesVals.reduce(function(s,v){return s+v;},0)/allMesesVals.length;
-      var ok=cfg.inverse?avg<=cfg.meta:avg>=cfg.meta;
-      cvaVals.push(ok?1:0);
-    }
-  });
-  var cvaScore = cvaVals.length ? (cvaVals.reduce(function(s,v){return s+v;},0)/cvaVals.length)*100 : 0;
+  /* CVA: usa cvaAllData + CVA_KPIS igual que las otras áreas */
+  var cvaScore = genCalcTotal(cvaAllData, CVA_KPIS, meses, isAnual);
 
   container.innerHTML =
     scoreCard('💼', 'Servicios Financieros', sfScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(sfScore,100))
@@ -3186,8 +3028,8 @@ async function loadGeneral() {
       loadSisAllData(MESES)
     ]);
 
-    /* Load CVA if not already loaded */
-    if (!cvaLoaded) await loadCVAData();
+    /* Load CVA with all months */
+    await loadCvaAllData(MESES);
 
     genLoaded = true;
     genUpdateTabStates();
