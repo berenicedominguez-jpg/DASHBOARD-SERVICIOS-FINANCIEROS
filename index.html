@@ -59,6 +59,7 @@
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; }
 
 
 body {
@@ -66,9 +67,9 @@ body {
   font-size: 13px;
   background: #f0f4f8;
   color: var(--navy);
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
-  scroll-padding-top: 180px;
+  overflow: hidden;
 }
 
 /* ── SIDEBAR ── */
@@ -137,15 +138,15 @@ body {
 .nav-icon { font-size:14px; width:18px; text-align:center; flex-shrink:0; }
 
 /* ── MAIN ── */
-.main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; position:relative; }
+.main { margin-left:240px; flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
 
 /* ── TOPBAR ── */
 .topbar {
   background: var(--navy);
   padding: 0 36px; height: 62px;
   display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:300;
-  position: relative;
+  position: relative; z-index:300;
+  flex-shrink: 0;
 }
 
 .topbar::after {
@@ -186,7 +187,7 @@ body {
 .refresh-btn:hover { background: rgba(106,170,240,0.28); }
 
 /* ── PAGES ── */
-.page { display:none; flex-direction:column; position:absolute; top:62px; left:0; right:0; bottom:0; }
+.page { display:none; flex:1; flex-direction:column; overflow:hidden; }
 .page.active { display:flex; }
 .content { padding:22px 28px; flex:1; overflow-y:auto; }
 
@@ -899,7 +900,7 @@ footer {
         </div>
       </div>
     </div>
-  
+  </div>
 
   <!-- PAGE: RESUMEN GENERAL -->
   <div class="page" id="page-general">
@@ -1240,6 +1241,8 @@ function navigate(page) {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'Resumen General · Todas las Áreas';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · Resumen General';
     genLoaded = false;
+    document.getElementById('gen-loadingBox').style.display = 'block';
+    document.getElementById('gen-mainContent').style.display = 'none';
     loadGeneral();
   } else {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Resumen';
@@ -3124,11 +3127,12 @@ async function loadGeneral() {
 
   try {
     /* Force reload with all 12 months (monthly pages only load 4) */
-    sfDataLoaded = false; vypDataLoaded = false; sisDataLoaded = false;
+    sfDataLoaded = false; vypDataLoaded = false; sisDataLoaded = false; nnLoaded = false;
     await Promise.all([
       loadAllFromSYyF(MESES),
       loadVypAllData(MESES),
-      loadSisAllData(MESES)
+      loadSisAllData(MESES),
+      loadNnAllData(MESES)
     ]);
 
     /* Load CVA with all months */
@@ -3144,7 +3148,8 @@ async function loadGeneral() {
   } catch(e) {
     document.getElementById('gen-loadingBox').style.display = 'none';
     document.getElementById('gen-errorBox').style.display   = 'block';
-    var _ggen_errorMsg=document.getElementById('gen-errorMsg'); if(_ggen_errorMsg) _ggen_errorMsg.textContent = 'Error al cargar datos: ' + e.message;
+    document.getElementById('gen-errorBox').style.padding   = '40px';
+    var _ggen_errorMsg=document.getElementById('gen-errorMsg'); if(_ggen_errorMsg) _ggen_errorMsg.textContent = 'Error: ' + e.message + ' | ' + e.stack;
   }
 }
 
