@@ -63,7 +63,7 @@
 body {
   font-family: 'Barlow', 'Segoe UI', sans-serif;
   font-size: 13px;
-  background: var(--off);
+  background: #f0f4f8;
   color: var(--navy);
   min-height: 100vh;
   display: flex;
@@ -187,7 +187,7 @@ body {
 /* ── PAGES ── */
 .page { display:none; flex:1; flex-direction:column; }
 .page.active { display:flex; }
-.content { padding:28px 36px; flex:1; }
+.content { padding:22px 28px; flex:1; }
 
 /* ── STATE BOX ── */
 .state-box {
@@ -268,124 +268,144 @@ body {
 }
 
 /* ── SECTION HEADER ── */
-.section-hdr { display:flex; align-items:center; gap:14px; margin-bottom:14px; margin-top:6px; }
-.section-hdr-line { flex:1; height:1px; background:var(--slate5); }
+.section-hdr { display:flex; align-items:center; gap:12px; margin-bottom:12px; margin-top:4px; }
+.section-hdr-line { flex:1; height:1px; background:#e2edf6; }
 .section-hdr-txt {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 10px; font-weight:700; letter-spacing:0.2em;
-  text-transform:uppercase; color: var(--blue); white-space:nowrap;
+  font-size: 9px; font-weight:700; letter-spacing:0.2em;
+  text-transform:uppercase; color:#8aaac8; white-space:nowrap;
 }
 
-/* ── GRIDS — layout ejecutivo 2 columnas ── */
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
-.grid-4, .grid-3 { }
+/* ── GRIDS ── */
+.grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
 
-/* ── SCORE STRIP ── */
-.exec-score-strip {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px;
-}
-.exec-score-card {
-  background:var(--white); border:1px solid var(--slate5);
-  border-radius:12px; padding:16px 18px;
-  box-shadow:var(--shadow-sm);
-}
-.exec-score-lbl {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--slate2); margin-bottom:6px;
-}
-.exec-score-val {
-  font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:600;
-  line-height:1; margin-bottom:3px;
-}
-.exec-score-sub {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px; color:var(--slate2); margin-top:4px;
-}
-
-/* ── KPI CARD EJECUTIVA ── */
+/* ── KPI CARD — estilo reporte ejecutivo ── */
 .kpi-card {
-  background:var(--white); border:1px solid var(--slate5);
+  background:#fff;
   border-radius:12px; overflow:hidden;
-  box-shadow:var(--shadow-sm); transition:box-shadow .18s;
+  border:1px solid #e2edf6;
+  box-shadow:0 1px 6px rgba(11,31,58,.07);
   display:flex; flex-direction:column;
+  transition:box-shadow .18s;
 }
-.kpi-card:hover { box-shadow:var(--shadow-md); }
+.kpi-card:hover { box-shadow:0 4px 16px rgba(11,31,58,.12); }
 
-.kpi-card-accent { height:3px; }
-.accent-ok   { background:var(--green); }
-.accent-near { background:var(--amber); }
-.accent-off  { background:var(--red); }
-.accent-nd   { background:var(--slate4); }
+.kpi-card-bar { height:3px; }
+.bar-ok   { background:#639922; }
+.bar-near { background:#BA7517; }
+.bar-off  { background:#E24B4A; }
+.bar-nd   { background:#c4d6e6; }
 
-.kpi-card-body { padding:18px 20px 14px; flex:1; display:flex; flex-direction:column; }
+.kpi-card-body { padding:14px 16px 10px; flex:1; display:flex; flex-direction:column; }
 
-.kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.kpi-card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
 .kpi-label {
-  font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--slate); flex:1; min-width:0;
+  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:.15em; text-transform:uppercase; color:#8aaac8; flex:1; min-width:0;
+  padding-right:6px; line-height:1.4;
 }
-.kpi-status-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:2px; }
-.dot-ok2   { background:var(--green); }
-.dot-near2 { background:var(--amber); }
-.dot-off2  { background:var(--red); }
-.dot-nd2   { background:var(--slate4); }
+.kpi-card-icon {
+  width:26px; height:26px; border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; flex-shrink:0;
+}
+.icon-blue   { background:#e6f1fb; }
+.icon-green  { background:#eaf3de; }
+.icon-amber  { background:#faeeda; }
+.icon-red    { background:#fcebeb; }
+.icon-purple { background:#eeedfe; }
+.icon-teal   { background:#e1f5ee; }
 
 .kpi-real-val {
-  font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:600;
-  line-height:1; margin-bottom:3px;
+  font-size:26px; font-weight:800; color:#0b1f3a;
+  line-height:1; margin-bottom:3px; letter-spacing:-.01em;
 }
-.kpi-objective { font-size:11px; color:var(--slate2); line-height:1.4; margin-bottom:10px; }
+.kpi-real-val.ok   { color:#27500A; }
+.kpi-real-val.off  { color:#791F1F; }
+.kpi-real-val.near { color:#633806; }
+.kpi-real-val.nd   { color:#0b1f3a; }
 
-.kpi-meta-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.kpi-meta { font-family:'Barlow Condensed',sans-serif; font-size:10px; color:var(--slate2); }
-.kpi-cumpl { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; }
+.kpi-objective { font-size:10px; color:#8aaac8; line-height:1.4; margin-bottom:8px; }
+
+.kpi-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  padding:3px 9px; border-radius:20px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:9px; font-weight:700; letter-spacing:.05em;
+  margin-bottom:10px;
+}
+.badge-ok   { background:#eaf3de; color:#3B6D11; border:1px solid #97C459; }
+.badge-near { background:#faeeda; color:#854F0B; border:1px solid #EF9F27; }
+.badge-off  { background:#fcebeb; color:#A32D2D; border:1px solid #F09595; }
+.badge-nd   { background:#f0f4f8; color:#8aaac8; border:1px solid #c4d6e6; }
+
 .kpi-acum-val {
-  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:600;
-  color:var(--blue); margin-bottom:6px;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  font-weight:600; color:#1a5cb0; margin-bottom:6px;
 }
 
 .progress-wrap { margin-top:auto; }
-.progress-track { height:4px; background:var(--slate5); border-radius:2px; overflow:hidden; margin-bottom:8px; }
-.progress-bar { height:100%; border-radius:2px; transition:width .9s ease; }
-.bar-ok   { background:var(--green); }
-.bar-near { background:var(--amber); }
-.bar-off  { background:var(--red); }
+.progress-track { height:4px; background:#e2edf6; border-radius:2px; overflow:hidden; margin-bottom:5px; }
+.progress-bar   { height:100%; border-radius:2px; transition:width .9s ease; }
 .progress-labels {
   display:flex; justify-content:space-between;
-  font-family:'Barlow Condensed',sans-serif; font-size:9px; color:var(--slate3); margin-bottom:0;
+  font-family:'Barlow Condensed',sans-serif; font-size:9px; color:#8aaac8;
 }
-.progress-pct { font-weight:700; color:var(--slate); }
+.progress-pct { font-weight:700; color:#4a6180; }
 
-.kpi-badge {
-  display:inline-flex; align-items:center; gap:4px;
-  padding:4px 12px; border-radius:20px;
-  font-family:'Barlow Condensed',sans-serif; font-size:10px; font-weight:700; letter-spacing:.06em;
+.kpi-cumpl {
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  font-weight:700; margin-bottom:6px;
 }
-.badge-ok   { background:var(--green-bg); color:var(--green); border:1px solid var(--green-bd); }
-.badge-near { background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-bd); }
-.badge-off  { background:var(--red-bg); color:var(--red); border:1px solid var(--red-bd); }
-.badge-nd   { background:var(--off2); color:var(--slate2); border:1px solid var(--slate4); }
+.kpi-meta {
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  color:#8aaac8; margin-bottom:3px;
+}
 
 .kpi-card-footer {
-  border-top:1px solid var(--slate5); padding:9px 20px;
-  background:var(--off); min-height:36px;
+  border-top:1px solid #e8f0f7; padding:7px 16px;
+  background:#f8fafc;
 }
 .kpi-comment-lbl {
-  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--slate3); display:block; margin-bottom:2px;
+  font-family:'Barlow Condensed',sans-serif; font-size:8px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; color:#9cb4cb;
+  display:block; margin-bottom:2px;
 }
-.kpi-comment-txt { font-size:11px; color:var(--slate); line-height:1.5; }
-.kpi-no-comment { font-size:11px; color:var(--slate4); }
+.kpi-comment-txt { font-size:10px; color:#6e88a2; line-height:1.5; }
+.kpi-no-comment  { font-size:10px; color:#c4d6e6; }
 
 .badge-cuatri {
-  display:inline-block; font-size:8px; background:var(--amber-bg);
-  color:var(--amber); border:1px solid var(--amber-bd);
-  border-radius:8px; padding:1px 5px; font-weight:700; margin-left:5px;
+  display:inline-block; font-size:7px; background:#faeeda;
+  color:#854F0B; border:1px solid #EF9F27;
+  border-radius:6px; padding:1px 4px; font-weight:700; margin-left:4px;
   vertical-align:middle; letter-spacing:.04em;
 }
-.kpi-divider { display:none; }
-.kpi-icon-wrap { display:none; }
-.kpi-info-col,.kpi-val-col,.kpi-bar-col,.kpi-badge-col,.kpi-comment-col,
-.kpi-status-bar,.kpi-group-header,.kpi-col-header { display:none; }
+.kpi-divider,.kpi-icon-wrap,.kpi-info-col,.kpi-val-col,.kpi-bar-col,
+.kpi-badge-col,.kpi-comment-col,.kpi-status-bar,.kpi-group-header,
+.kpi-col-header,.kpi-card-accent,.kpi-status-dot { display:none; }
+
+/* ── EXEC SCORE STRIP ── */
+.exec-score-strip {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px;
+}
+.exec-score-card {
+  background:#0b1f3a; border-radius:10px; padding:14px 16px;
+}
+.exec-score-lbl {
+  font-family:'Barlow Condensed',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:6px;
+}
+.exec-score-val {
+  font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:800;
+  color:#fff; line-height:1;
+}
+.exec-score-sub {
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  color:rgba(255,255,255,.35); margin-top:4px;
+}
+
+@media(max-width:1100px){ .grid{grid-template-columns:repeat(2,1fr);} .exec-score-strip{grid-template-columns:repeat(2,1fr);} }
+@media(max-width:620px) { .grid{grid-template-columns:1fr;} .exec-score-strip{grid-template-columns:1fr;} }
 
 @media(max-width:960px){.exec-score-strip{grid-template-columns:repeat(2,1fr);}.grid{grid-template-columns:1fr;}}
 @media(max-width:620px){.exec-score-strip{grid-template-columns:1fr;}}
@@ -579,9 +599,7 @@ footer {
     <a class="nav-item" id="nav-nn" onclick="navigate('nn')" href="#">
       <span class="nav-icon">🚀</span><span>KPIs: Nuevos Negocios</span>
     </a>
-    <a class="nav-item" id="nav-resumen" onclick="navigate('resumen')" href="#">
-      <span class="nav-icon">📋</span><span>KPIs Resumen: Servicios Financieros y Flotas</span>
-    </a>
+
     <a class="nav-item" id="nav-general" onclick="navigate('general')" href="#">
       <span class="nav-icon">🗂️</span><span>Resumen General</span>
     </a>
@@ -651,7 +669,21 @@ footer {
           <div class="kpi-card" id="card-CxC"></div>
         </div>
 
-              </div>
+        <!-- TABLA LOGROS E IMPEDIMENTOS SFyF -->
+        <div id="sf-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
+              <tbody id="sf-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -1206,7 +1238,7 @@ function navigate(page) {
   } else {
     document.getElementById('topbar-title').textContent='KPIs Resumen';
     document.getElementById('topbar-crumb').textContent='Reportes · KPIs Resumen';
-    if (!resumenLoaded) loadResumenData();
+    /* resumen page removed — skip */
   }
 }
 
@@ -1223,7 +1255,7 @@ function refreshData() {
   else if (currentPage==='cva')      loadCvaData();
   else if (currentPage==='nn')       loadNnData();
   else if (currentPage==='general')  loadGeneral();
-  else                               loadResumenData();
+  // else resumen: removed
 }
 
 /* ── MENSUAL PAGE ── */
@@ -1331,7 +1363,7 @@ function renderCard(key) {
 
   var ext = (sfExtras[key] && sfExtras[key][selectedMes]) || {};
   el.innerHTML = buildKpiRow({
-    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
     cuatrimestral: cfg.cuatrimestral, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: acumDisplay,
     metaLabel: metaLabel, metaDisplay: metaDisplay,
@@ -1378,11 +1410,11 @@ function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
     '<div class="exec-score-card">'
       + '<div class="exec-score-lbl">Resultado general</div>'
       + '<div class="exec-score-val" style="color:' + resultColor + ';">' + (s.pct !== null ? pct + '%' : '—') + '</div>'
-      + '<div class="exec-score-sub" style="color:' + trendColor + ';">' + trend + ' · ' + mes + '</div>'
+      + '<div class="exec-score-sub" style="color:' + trendColor + ';">' + trend + ' &middot; ' + mes + '</div>'
     + '</div>'
     + '<div class="exec-score-card">'
       + '<div class="exec-score-lbl">KPIs en objetivo</div>'
-      + '<div class="exec-score-val" style="color:' + okColor + ';">' + s.ok + ' <span style="font-size:18px;font-weight:400;color:var(--slate2);">/ ' + totalKpis + '</span></div>'
+      + '<div class="exec-score-val" style="color:' + okColor + ';">' + s.ok + ' <span style="font-size:16px;font-weight:400;color:rgba(255,255,255,.3);">/ ' + totalKpis + '</span></div>'
       + '<div class="exec-score-sub">Ponderados</div>'
     + '</div>'
     + '<div class="exec-score-card">'
@@ -1391,9 +1423,9 @@ function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
       + '<div class="exec-score-sub">Requieren atención</div>'
     + '</div>'
     + '<div class="exec-score-card">'
-      + '<div class="exec-score-lbl">Período</div>'
-      + '<div class="exec-score-val" style="font-size:20px;color:var(--navy);">' + mes + '</div>'
-      + '<div class="exec-score-sub">' + cuatrLabel + '</div>'
+      + '<div class="exec-score-lbl">Período activo</div>'
+      + '<div class="exec-score-val" style="font-size:16px;color:#6aaaf0;">' + cuatrLabel + '</div>'
+      + '<div class="exec-score-sub">Mes: ' + mes + '</div>'
     + '</div>';
 }
 
@@ -1428,24 +1460,7 @@ function loadMensualData() {
 }
 
 /* ── RESUMEN PAGE ── */
-function loadResumenData() {
-  document.getElementById('r-loadingBox').style.display='block';
-  document.getElementById('r-errorBox').style.display='none';
-  document.getElementById('r-mainContent').style.display='none';
-
-  loadAllFromSYyF(MESES).then(function() {
-    resumenLoaded = true;
-    updateTabStates();
-    document.getElementById('footer-ts').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
-    document.getElementById('r-loadingBox').style.display='none';
-    document.getElementById('r-mainContent').style.display='block';
-    renderTable();
-  }).catch(function(e) {
-    document.getElementById('r-loadingBox').style.display='none';
-    document.getElementById('r-errorBox').style.display='block';
-    document.getElementById('r-errorMsg').textContent = 'Error: ' + e.message;
-  });
-}
+function loadResumenData() { /* página eliminada — no-op */ }
 
 function hasDataForQ(q) {
   if (q==='anual') return QUARTERS.some(function(qObj){ return hasDataForQ(qObj.q); });
@@ -1468,7 +1483,7 @@ function updateTabStates() {
     else btn.classList.remove('enabled','active');
   });
   var anualBtn=document.getElementById('tab-anual');
-  if (hasDataForQ('anual')){ anualBtn.classList.add('enabled'); if (!firstQ) firstQ='anual'; }
+  if (anualBtn && hasDataForQ('anual')){ anualBtn.classList.add('enabled'); if (!firstQ) firstQ='anual'; }
   if (firstQ){
     activeQ=firstQ;
     var btn=document.getElementById('tab-'+firstQ);
@@ -1534,7 +1549,7 @@ function renderTable() {
   else { var q=QUARTERS.find(function(x){ return x.q===activeQ; }); meses=q.meses; qLabel=q.label; }
 
   var keys=Object.keys(KPIS);
-  var tbl=document.getElementById('resumenTable');
+  var tbl=document.getElementById('resumenTable'); if(!tbl) return;
   var html='<thead><tr class="q-header">';
   html+='<th rowspan="2">KPI</th>';
   html+='<th rowspan="2" class="sticky-2" style="text-align:center;min-width:80px;">Peso</th>';
@@ -1690,7 +1705,7 @@ function renderSummaryCards(meses, isAnual) {
       +'</div></div>';
   }
 
-  document.getElementById('r-summary-cards').innerHTML=
+  var _rsc=document.getElementById('r-summary-cards'); if(!_rsc) return; _rsc.innerHTML=
     miniCard('📊','Score Acumulado',totalScore.toFixed(2)+'%',isAnual?'de 100% anual':'de 100% cuatrimestral',scoreColor)
     +miniCard('🎯','Proyección Cierre',proyeccion!==null?proyeccion.toFixed(2)+'%':'—',isAnual?'al finalizar el año':'al finalizar el cuatrimestre',proyColor);
 }
@@ -1698,12 +1713,12 @@ function renderSummaryCards(meses, isAnual) {
 /* ── PDF EXPORT ── */
 function exportPDF() {
   var btn=document.getElementById('pdfBtn');
-  if (!resumenLoaded) return;
+  if (!btn || !resumenLoaded) return;
   var isAnual=activeQ==='anual';
   var titleStr=isAnual?'Numaris · KPIs Resumen — Anual · Ene – Dic':'Numaris · KPIs Resumen — '+(QUARTERS.find(function(x){return x.q===activeQ;})||{label:''}).label;
   btn.classList.add('loading');
   btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generando…';
-  var target=document.getElementById('r-mainContent');
+  var target=document.getElementById('r-mainContent'); if(!target) return;
   var stickyEls=target.querySelectorAll('td:first-child,td.sticky-2,td.sticky-3');
   stickyEls.forEach(function(el){ el.style.position='static'; });
   html2canvas(target,{scale:2,useCORS:true,backgroundColor:'#f5f8fc',logging:false}).then(function(canvas){
@@ -1950,7 +1965,7 @@ function vypRenderCard(key) {
 
   var ext2 = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
   el.innerHTML = buildKpiRow({
-    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
     cuatrimestral: cfg.cuatrimestral, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: acumDisplay,
     metaLabel: metaLabel, metaDisplay: metaDisplay,
@@ -2147,7 +2162,7 @@ function sisRenderCard(key) {
   var comHtml = com ? buildCommentBtn('sisOpenModal', key, com) : '';
 
   el.innerHTML = buildKpiRow({
-    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
     cuatrimestral: false, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: null,
     metaLabel: 'Meta: ', metaDisplay: metaDisplay,
@@ -2199,34 +2214,70 @@ function loadSisData() {
 
 
 
+var KPI_ICONS = {
+  'Ingresos':'💹','icon-blue':true,
+  'Churn':'🔄','CrossSelling':'🔀','ClientesNuevos':'⭐',
+  'NPS':'😊','MargenBruto':'💰','SGA':'📊','CxC':'📅',
+  'VENTAS':'💼','UNIDADES':'📦','CHURN':'🔄','CROSS-SELLING':'🔀',
+  'Servidores Activos':'🖥️','Intermitencias Plataforma Tecnometrics':'📡',
+  'Costo por unidad mensual':'💲',
+  'Ticketes Internos (Áreas Internas)':'🎫','Ticketes Externos (Clientes Activos / PV)':'📬','NPS (%)':'😊',
+  'ROBOS':'🚨','ABUSOS DE CONFIANZA':'⚠️','CREDITOS':'💳',
+  'TIEMPO DE PRIMERA RESPUESTA':'⏱️','SATISFACCIÓN DE CAPACITACIONES':'📚','CONECTIVIDAD':'📡',
+  'Ingresos Clientes Nuevos (% crecimiento objetivo)':'💹',
+  'Clientes nuevos 5 estrellas (# objetivo)':'⭐','Demos Activas':'🎯',
+  'Pipline / Salesstar = Calculadora':'📊','Proceso Zoho':'🔵','Conversion Demo - Cierre':'✅'
+};
+var KPI_ICON_COLORS = {
+  '💹':'icon-blue','🔄':'icon-amber','🔀':'icon-blue','⭐':'icon-amber',
+  '😊':'icon-purple','💰':'icon-green','📊':'icon-blue','📅':'icon-amber',
+  '💼':'icon-blue','📦':'icon-teal','🎫':'icon-blue','📬':'icon-blue',
+  '🖥️':'icon-blue','📡':'icon-teal','💲':'icon-green',
+  '🚨':'icon-red','⚠️':'icon-amber','💳':'icon-blue',
+  '⏱️':'icon-blue','📚':'icon-purple','🎯':'icon-green',
+  '🔵':'icon-blue','✅':'icon-green','⭐':'icon-amber'
+};
+function getKpiIcon(key) {
+  return KPI_ICONS[key] || '📌';
+}
+function getKpiIconColor(icon) {
+  return KPI_ICON_COLORS[icon] || 'icon-blue';
+}
 /* ── FUNCIÓN UNIVERSAL DE TARJETA EJECUTIVA ── */
 function buildCommentBtn(fnName, key, com) { return ''; }
 
 function buildKpiRow(opts) {
-  var accentCls = opts.ok === null ? 'accent-nd'
-    : opts.ok ? 'accent-ok'
-    : opts.pw >= 80 ? 'accent-near' : 'accent-off';
-  var dotCls = opts.ok === null ? 'dot-nd2'
-    : opts.ok ? 'dot-ok2'
-    : opts.pw >= 80 ? 'dot-near2' : 'dot-off2';
+  var barCls2 = opts.ok === null ? 'bar-nd'
+    : opts.ok ? 'bar-ok'
+    : opts.pw >= 80 ? 'bar-near' : 'bar-off';
+  var valCls = opts.ok === null ? 'nd'
+    : opts.ok ? 'ok'
+    : opts.pw >= 80 ? 'near' : 'off';
   var cuatriTag = opts.cuatrimestral ? '<span class="badge-cuatri">4M</span>' : '';
-  var acumHtml = opts.acumDisplay ? '<div class="kpi-acum-val">📦 ' + opts.acumDisplay + '</div>' : '';
+  var icon = getKpiIcon(opts.key || opts.label);
+  var iconColor = getKpiIconColor(icon);
+  var acumHtml = opts.acumDisplay
+    ? '<div class="kpi-acum-val">&#128230; ' + opts.acumDisplay + '</div>' : '';
   var cumplHtml = opts.cumpl !== null
     ? '<div class="kpi-cumpl" style="color:' + opts.cumplColor + ';">' + opts.cumpl + '% cumpl.</div>'
     : '';
   var footerHtml = opts.com
-    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">💬 Comentario</span><span class="kpi-comment-txt">' + opts.com + '</span></div>'
-    : '<div class="kpi-card-footer"><span class="kpi-no-comment">—</span></div>';
-  return '<div class="kpi-card-accent ' + accentCls + '"></div>'
+    ? '<div class="kpi-card-footer"><span class="kpi-comment-lbl">Nota</span><span class="kpi-comment-txt">' + opts.com + '</span></div>'
+    : '';
+  return '<div class="kpi-card-bar ' + barCls2 + '"></div>'
     + '<div class="kpi-card-body">'
-    + '<div class="kpi-card-top"><div class="kpi-label">' + opts.label + cuatriTag + '</div><div class="kpi-status-dot ' + dotCls + '"></div></div>'
-    + '<div class="kpi-real-val" style="color:' + opts.realColor + ';">' + opts.realDisplay + '</div>'
-    + '<div class="kpi-objective">' + opts.objective + '</div>'
+    + '<div class="kpi-card-top">'
+    + '<div class="kpi-label">' + opts.label + cuatriTag + '</div>'
+    + '<div class="kpi-card-icon ' + iconColor + '">' + icon + '</div>'
+    + '</div>'
+    + '<div class="kpi-real-val ' + valCls + '">' + opts.realDisplay + '</div>'
+    + '<div class="kpi-objective">' + opts.metaLabel + opts.metaDisplay + '</div>'
     + acumHtml
-    + '<div class="kpi-meta-row"><span class="kpi-meta">' + opts.metaLabel + opts.metaDisplay + '</span>' + opts.badgeHtml + '</div>'
+    + opts.badgeHtml
     + cumplHtml
-    + '<div class="progress-wrap"><div class="progress-track"><div class="progress-bar ' + opts.barCls + '" style="width:' + opts.pw + '%"></div></div>'
-    + '<div class="progress-labels"><span>0%</span><span class="progress-pct">' + (opts.pw > 0 ? opts.pw + '%' : '—') + '</span><span>100%</span></div>'
+    + '<div class="progress-wrap">'
+    + '<div class="progress-track"><div class="progress-bar ' + opts.barCls + '" style="width:' + opts.pw + '%"></div></div>'
+    + '<div class="progress-labels"><span>0</span><span class="progress-pct">' + (opts.pw > 0 ? opts.pw + '%' : '—') + '</span><span>100%</span></div>'
     + '</div>'
     + '</div>'
     + footerHtml;
@@ -2252,7 +2303,7 @@ var cvaExtras2     = {};
 var cvaSelectedMes2 = '';
 
 function buildCvaMonthSelector() {
-  var container = document.getElementById('cva-monthBtns');
+  var container = document.getElementById('cva-monthBtns2');
   if (!container) return;
   var currentMonth = new Date().getMonth();
   var defaultIdx   = Math.max(currentMonth - 1, 0);
@@ -2270,7 +2321,7 @@ function buildCvaMonthSelector() {
 
 function cvaSelectMonth2(mes, activeBtn) {
   cvaSelectedMes2 = mes;
-  document.querySelectorAll('#cva-monthBtns .mbtn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#cva-monthBtns2 .mbtn').forEach(function(b) { b.classList.remove('active'); });
   activeBtn.classList.add('active');
   cvaRenderPage();
 }
@@ -2390,7 +2441,7 @@ function cvaRenderCard(key) {
   var com  = ext.comentarios || '';
 
   el.innerHTML = buildKpiRow({
-    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
     cuatrimestral: false, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: null,
     metaLabel: 'Meta: ', metaDisplay: cfg.objLabel,
@@ -2432,8 +2483,8 @@ function cvaRenderPage() {
     renderExecScoreStrip('cva-score-strip', cvaCalcSummary2, 5, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
   cvaRenderLI();
   var s  = cvaCalcSummary2();
-  var te = document.getElementById('cva-sum-trend');
-  var ok = document.getElementById('cva-sum-ok');
+  var te = document.getElementById('cva-sum-trend2');
+  var ok = document.getElementById('cva-sum-ok2');
   if (ok)  ok.textContent = s.ok + ' / 6';
   if (te && s.pct !== null) {
     te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
@@ -2652,7 +2703,7 @@ function nnRenderCard(key) {
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto');
 
   el.innerHTML = buildKpiRow({
-    icon: cfg.icon, label: cfg.label, objective: cfg.objective,
+    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
     cuatrimestral: true, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: acumDisplay,
     metaLabel: metaLabel, metaDisplay: metaDisplay,
