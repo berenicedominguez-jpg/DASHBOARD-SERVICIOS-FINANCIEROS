@@ -2572,12 +2572,12 @@ function loadCvaData() {
    ══════════════════════════════════════════════════════ */
 
 var NN_KPIS = {
-  'Ingresos Clientes Nuevos (% crecimiento objetivo)': { label:'Ingresos Clientes Nuevos',  icon:'💹', objective:'Generar crecimiento comercial sostenible',                         weight:40, unit:'%',  inverse:false, fixedObj:23,   objLabel:'≥ 23%',  suffix:null,       cuatrimestral:true  },
-  'Clientes nuevos 5 estrellas (# objetivo)':          { label:'Clientes Nuevos 5★',        icon:'⭐', objective:'Asegurar predictibilidad de clientes futuros',                     weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:'clientes', cuatrimestral:true  },
-  'Demos Activas':                                     { label:'Demos Activas',             icon:'🎯', objective:'Mantener tracción comercial constante',                            weight:15, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:'demos',    cuatrimestral:true  },
-  'Pipline / Salesstar = Calculadora':                 { label:'Pipline / Calculadora',     icon:'📊', objective:'Asegurar predictibilidad de ingresos futuros',                    weight:12, unit:'#',  inverse:false, fixedObj:null, objLabel:null,     suffix:null,       cuatrimestral:true  },
-  'Proceso Zoho':                                      { label:'Proceso Zoho',              icon:'🔵', objective:'Garantizar ejecución profesional, trazabilidad y control comercial',weight:10, unit:'%',  inverse:false, fixedObj:50,   objLabel:'≥ 50%',  suffix:null,       cuatrimestral:true  },
-  'Conversion Demo - Cierre':                          { label:'Conversión Demo → Cierre',  icon:'✅', objective:'Maximizar la eficiencia comercial',                               weight: 8, unit:'%',  inverse:false, fixedObj:95,   objLabel:'≥ 95%',  suffix:null,       cuatrimestral:true  }
+  'Ingresos Clientes Nuevos (% crecimiento objetivo)': { label:'Ingresos Clientes Nuevos',  icon:'💹', objective:'Generar crecimiento comercial sostenible',                         weight:40, unit:'%',  inverse:false, fixedObj:0.23, objLabel:'≥ 23%',   suffix:null, cuatrimestral:true },
+  'Clientes nuevos 5 estrellas (# objetivo)':          { label:'Clientes Nuevos 5★',        icon:'⭐', objective:'Asegurar predictibilidad de clientes futuros',                     weight:15, unit:'#',  inverse:false, fixedObj:3,    objLabel:'3 clientes', suffix:'clientes', cuatrimestral:true },
+  'Demos Activas':                                     { label:'Demos Activas',             icon:'🎯', objective:'Mantener tracción comercial constante',                            weight:15, unit:'%',  inverse:false, fixedObj:0.5,  objLabel:'≥ 50%',   suffix:null, cuatrimestral:true },
+  'Pipline / Salesstar = Calculadora':                 { label:'Pipline / Calculadora',     icon:'📊', objective:'Asegurar predictibilidad de ingresos futuros',                    weight:12, unit:'%',  inverse:false, fixedObj:null, objLabel:'100%',    suffix:null, cuatrimestral:true },
+  'Proceso Zoho':                                      { label:'Proceso Zoho',              icon:'🔵', objective:'Garantizar ejecución profesional, trazabilidad y control comercial',weight:10, unit:'%',  inverse:false, fixedObj:null, objLabel:'100%',    suffix:null, cuatrimestral:true },
+  'Conversion Demo - Cierre':                          { label:'Conversión Demo → Cierre',  icon:'✅', objective:'Maximizar la eficiencia comercial',                               weight: 8, unit:'%',  inverse:false, fixedObj:0.95, objLabel:'≥ 95%',   suffix:null, cuatrimestral:true }
 };
 
 var nnRawRows  = [];
@@ -2702,16 +2702,15 @@ function nnRenderCard(key) {
   if (!el || !nnAllData[key] || !nnAllData[key][nnSelectedMes]) return;
 
   var d           = nnAllData[key][nnSelectedMes];
-  var real        = d.real, obj = d.objetivo;
+  var real        = d.real, obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
   var isPendiente = real === 'PENDIENTE';
   var realNum     = isPendiente ? null : real;
   var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
 
-  // Para cuatrimestral: meta mensual proporcional para badge inicial
-  var evalObj = (cfg.cuatrimestral && obj !== null) ? obj / 4 : obj;
-  var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
-  var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
-    ? Math.round((cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) * 10) / 10 : 0;
+  // Badge: compara real vs meta mensual directa
+  var ok      = (realNum !== null && obj !== null) ? (cfg.inverse ? realNum <= obj : realNum >= obj) : false;
+  var pct     = (realNum !== null && obj !== null && obj > 0)
+    ? Math.round((cfg.inverse ? (obj / Math.max(realNum, 0.01)) * 100 : (realNum / obj) * 100) * 10) / 10 : 0;
   var pw      = Math.min(pct, 100);
   var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
 
@@ -2744,18 +2743,18 @@ function nnRenderCard(key) {
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
     }
-  } else if (!isPendiente && realNum !== null && evalObj !== null) {
+  } else if (!isPendiente && realNum !== null && obj !== null) {
     cumpl = cfg.inverse
-      ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
-      : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
+      ? (realNum <= obj ? 100 : Math.round((obj / Math.max(realNum, 0.01)) * 1000) / 10)
+      : obj > 0 ? Math.round((realNum / obj) * 1000) / 10 : null;
   }
 
   var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
   var realColor  = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
   var badgeHtml;
-  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
-  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  if (isPendiente)                           badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || obj === null)  badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
   else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
   else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
   else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
