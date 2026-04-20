@@ -601,7 +601,7 @@ footer {
   <div class="sidebar-nav">
     <div class="nav-group-label">KPIs</div>
     <a class="nav-item active" id="nav-mensual" onclick="navigate('mensual')" href="#">
-      <span class="nav-icon">📊</span><span>KPIs: Servicios Financieros y Flotas</span>
+      <span class="nav-icon">📊</span><span>KPIs: Servicios Financieros y Movilidad</span>
     </a>
     <a class="nav-item" id="nav-vyp" onclick="navigate('vyp')" href="#">
       <span class="nav-icon">🏷️</span><span>KPIs: Venta Postventa</span>
@@ -624,8 +624,8 @@ footer {
 <div class="main">
   <div class="topbar">
     <div>
-      <div class="page-title" id="topbar-title">KPIs: Servicios Financieros y Flotas</div>
-      <div class="page-crumb" id="topbar-crumb">Reportes · KPIs Mensual: Servicios Financieros y Flotas</div>
+      <div class="page-title" id="topbar-title">KPIs: Servicios Financieros y Movilidad</div>
+      <div class="page-crumb" id="topbar-crumb">Reportes · KPIs Mensual: Servicios Financieros y Movilidad</div>
     </div>
     <div class="topbar-right">
       <div class="topbar-date" id="topbar-date"></div>
@@ -930,7 +930,7 @@ footer {
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
 
         <!-- SFyF -->
-        <div class="section-hdr"><div class="section-hdr-txt">💼 Servicios Financieros y Flotas</div><div class="section-hdr-line"></div></div>
+        <div class="section-hdr"><div class="section-hdr-txt">💼 Servicios Financieros y Movilidad</div><div class="section-hdr-line"></div></div>
         <div class="table-wrap" style="margin-bottom:28px;">
           <div class="table-scroll"><table id="gen-table-sf"></table></div>
         </div>
@@ -1219,8 +1219,8 @@ function navigate(page) {
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('nav-'+page).classList.add('active');
   if (page==='mensual') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Mensual: Servicios Financieros y Flotas';
-    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Mensual: Servicios Financieros y Flotas';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Mensual: Servicios Financieros y Movilidad';
+    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Mensual: Servicios Financieros y Movilidad';
   } else if (page==='vyp') {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Venta Postventa';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Venta Postventa';
