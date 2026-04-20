@@ -2726,12 +2726,21 @@ function nnRenderCard(key) {
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
-        var metaProp = obj * (idxMes + 1) / 4;
-        ok     = cfg.inverse ? acum <= metaProp : acum >= metaProp;
-        cumpl  = cfg.inverse
-          ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
-          : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
-        pw     = Math.min(Math.round(cfg.inverse ? (metaProp / Math.max(acum, 0.01)) * 100 : (acum / metaProp) * 100), 100);
+        // Per-month score: sum of min(real/meta,1) × (peso/4)
+        var kpiScore = 0;
+        mesesAc.forEach(function(m) {
+          if (!nnAllData[key] || !nnAllData[key][m]) return;
+          var r = nnAllData[key][m].real;
+          if (r === null || r === 'PENDIENTE') return;
+          var ratio = cfg.inverse
+            ? Math.min(obj / Math.max(r, 0.01), 1)
+            : Math.min(r / obj, 1);
+          kpiScore += ratio * (cfg.weight / 4);
+        });
+        var maxScore = (idxMes + 1) * (cfg.weight / 4);
+        cumpl  = maxScore > 0 ? Math.round((kpiScore / maxScore) * 1000) / 10 : null;
+        ok     = cfg.inverse ? realNum <= obj : realNum >= obj;
+        pw     = Math.min(Math.round(cumpl !== null ? cumpl : 0), 100);
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
     }
@@ -2797,26 +2806,38 @@ function nnCalcSummary() {
 
   Object.keys(NN_KPIS).forEach(function(key) {
     var cfg = NN_KPIS[key];
-    if (cfg.weight === 0 || !nnAllData[key] || !nnAllData[key][nnSelectedMes]) return;
-    var d = nnAllData[key][nnSelectedMes];
-    if (d.objetivo === null) return;
+    if (cfg.weight === 0) return;
 
-    var ratio;
-    if (cfg.cuatrimestral) {
-      var mesesAc = qMeses.slice(0, idxMes + 1);
-      var acum = nnGetBlockAccum(key, mesesAc);
-      if (acum === null) return;
-      var metaProp = d.objetivo * (idxMes + 1) / 4;
-      if (metaProp <= 0) return;
-      ratio = cfg.inverse ? metaProp / Math.max(acum, 0.01) : acum / metaProp;
-      if (cfg.inverse ? acum <= metaProp : acum >= metaProp) ok++;
-    } else {
-      if (d.real === null || d.real === 'PENDIENTE') return;
-      ratio = cfg.inverse ? d.objetivo / Math.max(d.real, 0.01) : d.real / d.objetivo;
-      if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+    var obj = cfg.fixedObj;
+    if (obj === null && nnAllData[key] && nnAllData[key][nnSelectedMes]) {
+      obj = nnAllData[key][nnSelectedMes].objetivo;
+    }
+    if (obj === null || obj === undefined) return;
+
+    // Sum per-month points: min(real/meta, 1) × (peso/4) for each month
+    var kpiScore = 0, hasAny = false;
+    var mesesAc = qMeses.slice(0, idxMes + 1);
+    mesesAc.forEach(function(m) {
+      if (!nnAllData[key] || !nnAllData[key][m]) return;
+      var real = nnAllData[key][m].real;
+      if (real === null || real === 'PENDIENTE') return;
+      var ratio = cfg.inverse
+        ? Math.min(obj / Math.max(real, 0.01), 1)
+        : Math.min(real / obj, 1);
+      kpiScore += ratio * (cfg.weight / 4);
+      hasAny = true;
+    });
+    if (!hasAny) return;
+
+    // Check if current month meets goal
+    if (nnAllData[key] && nnAllData[key][nnSelectedMes]) {
+      var realNow = nnAllData[key][nnSelectedMes].real;
+      if (realNow !== null && realNow !== 'PENDIENTE') {
+        if (cfg.inverse ? realNow <= obj : realNow >= obj) ok++;
+      }
     }
 
-    score  += Math.min(ratio, 1) * cfg.weight;
+    score  += kpiScore;
     totalW += cfg.weight;
   });
   return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
