@@ -927,12 +927,18 @@ footer {
       <div id="gen-mainContent" style="display:none;">
 
         <!-- Score cards -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
 
         <!-- SFyF -->
         <div class="section-hdr"><div class="section-hdr-txt">💼 Servicios Financieros y Movilidad</div><div class="section-hdr-line"></div></div>
         <div class="table-wrap" style="margin-bottom:28px;">
           <div class="table-scroll"><table id="gen-table-sf"></table></div>
+        </div>
+
+        <!-- Comercial / Nuevos Negocios -->
+        <div class="section-hdr"><div class="section-hdr-txt">🚀 Nuevos Negocios (Comercial)</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-nn"></table></div>
         </div>
 
         <!-- VyP -->
@@ -941,16 +947,16 @@ footer {
           <div class="table-scroll"><table id="gen-table-vyp"></table></div>
         </div>
 
-        <!-- Sistemas -->
-        <div class="section-hdr"><div class="section-hdr-txt">🖥️ Sistemas</div><div class="section-hdr-line"></div></div>
-        <div class="table-wrap" style="margin-bottom:28px;">
-          <div class="table-scroll"><table id="gen-table-sis"></table></div>
-        </div>
-
         <!-- CVA -->
         <div class="section-hdr"><div class="section-hdr-txt">🎯 Central de Monitoreo CVA</div><div class="section-hdr-line"></div></div>
         <div class="table-wrap" style="margin-bottom:28px;">
           <div class="table-scroll"><table id="gen-table-cva"></table></div>
+        </div>
+
+        <!-- Sistemas -->
+        <div class="section-hdr"><div class="section-hdr-txt">🖥️ Sistemas</div><div class="section-hdr-line"></div></div>
+        <div class="table-wrap" style="margin-bottom:28px;">
+          <div class="table-scroll"><table id="gen-table-sis"></table></div>
         </div>
 
       </div>
@@ -3090,6 +3096,7 @@ function genRenderScoreCards(meses, isAnual) {
   }
 
   var sfScore  = genCalcTotal(allData,    KPIS,     meses, isAnual);
+  var nnScore  = genCalcTotal(nnAllData,  NN_KPIS,  meses, isAnual);
   var vypScore = genCalcTotal(vypAllData, VYP_KPIS, meses, isAnual);
   var sisScore = genCalcTotal(sisAllData, SIS_KPIS, meses, isAnual);
 
@@ -3098,9 +3105,10 @@ function genRenderScoreCards(meses, isAnual) {
 
   container.innerHTML =
     scoreCard('💼', 'Servicios Financieros', sfScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(sfScore,100))
+  + scoreCard('🚀', 'Nuevos Negocios',       nnScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(nnScore,100))
   + scoreCard('🏷️', 'Venta Postventa',       vypScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(vypScore,100))
-  + scoreCard('🖥️', 'Sistemas',              sisScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(sisScore,100))
-  + scoreCard('🎯', 'Central Monitoreo CVA', cvaScore, 100, 'Score cuatrimestral', getColor(cvaScore,100));
+  + scoreCard('🎯', 'Central Monitoreo CVA', cvaScore, 100, 'Score cuatrimestral', getColor(cvaScore,100))
+  + scoreCard('🖥️', 'Sistemas',              sisScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(sisScore,100));
 }
 
 /* Tab selector */
@@ -3132,10 +3140,11 @@ function genRenderAll() {
   var isAnual = genActiveQ === 'anual';
   var meses = isAnual ? MESES : (QUARTERS.find(function(x) { return x.q === genActiveQ; }) || QUARTERS[0]).meses;
 
-  genBuildTable('gen-table-sf',  'SFyF',   KPIS,     allData,    meses, isAnual);
-  genBuildTable('gen-table-vyp', 'VyP',    VYP_KPIS, vypAllData, meses, isAnual);
-  genBuildTable('gen-table-sis', 'Sistemas',SIS_KPIS, sisAllData, meses, isAnual);
+  genBuildTable('gen-table-sf',  'SFyF',          KPIS,     allData,    meses, isAnual);
+  genBuildTable('gen-table-nn',  'Nuevos Negocios',NN_KPIS,  nnAllData,  meses, isAnual);
+  genBuildTable('gen-table-vyp', 'VyP',            VYP_KPIS, vypAllData, meses, isAnual);
   genBuildCVATable(meses, isAnual);
+  genBuildTable('gen-table-sis', 'Sistemas',       SIS_KPIS, sisAllData, meses, isAnual);
   genRenderScoreCards(meses, isAnual);
 }
 
