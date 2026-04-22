@@ -603,17 +603,17 @@ footer {
     <a class="nav-item active" id="nav-mensual" onclick="navigate('mensual')" href="#">
       <span class="nav-icon">📊</span><span>KPIs: Servicios Financieros y Movilidad</span>
     </a>
+    <a class="nav-item" id="nav-nn" onclick="navigate('nn')" href="#">
+      <span class="nav-icon">🚀</span><span>KPIs: Nuevos Negocios</span>
+    </a>
     <a class="nav-item" id="nav-vyp" onclick="navigate('vyp')" href="#">
       <span class="nav-icon">🏷️</span><span>KPIs: Venta Postventa</span>
-    </a>
-    <a class="nav-item" id="nav-sis" onclick="navigate('sis')" href="#">
-      <span class="nav-icon">🖥️</span><span>KPIs: Sistemas</span>
     </a>
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
       <span class="nav-icon">🎯</span><span>KPIs: Central Monitoreo CVA</span>
     </a>
-    <a class="nav-item" id="nav-nn" onclick="navigate('nn')" href="#">
-      <span class="nav-icon">🚀</span><span>KPIs: Nuevos Negocios</span>
+    <a class="nav-item" id="nav-sis" onclick="navigate('sis')" href="#">
+      <span class="nav-icon">🖥️</span><span>KPIs: Sistemas</span>
     </a>
 
     <a class="nav-item" id="nav-general" onclick="navigate('general')" href="#">
@@ -694,6 +694,61 @@ footer {
     </div>
   </div>
 
+  <!-- PAGE: NUEVOS NEGOCIOS -->
+  <div class="page" id="page-nn">
+    <div id="nn-modal-overlay" onclick="nnCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
+        <button onclick="nnCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
+        <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
+        <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
+      </div>
+    </div>
+    <div class="page-header">
+    <div class="month-panel">
+      <div><div class="month-panel-title">Nuevos Negocios · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
+      <div class="month-btns" id="nn-monthBtns"></div>
+      <a href="https://dashboard-nn-flotillas-y-financieras.replit.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(106,170,240,.18);border:1px solid rgba(106,170,240,.35);border-radius:8px;color:#6aaaf0;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:background .15s;" onmouseover="this.style.background='rgba(106,170,240,.3)'" onmouseout="this.style.background='rgba(106,170,240,.18)'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Dashboard Comercial
+      </a>
+    </div>
+    <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
+    </div>
+    <div class="content">
+      <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
+      <div id="nn-mainContent" style="display:none;">
+        <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
+        <div class="grid">
+          <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
+          <div class="kpi-card" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
+          <div class="kpi-card" id="nn-card-Demos Activas"></div>
+        </div>
+        <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Conversión</div><div class="section-hdr-line"></div></div>
+        <div class="grid">
+          <div class="kpi-card" id="nn-card-Pipline / Salesstar = Calculadora"></div>
+          <div class="kpi-card" id="nn-card-Proceso Zoho"></div>
+          <div class="kpi-card" id="nn-card-Conversion Demo - Cierre"></div>
+        </div>
+
+        <div id="nn-li-section" style="display:none;">
+          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
+          <div class="table-wrap" style="margin-bottom:26px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr style="background:var(--navy);">
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
+                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
+              </tr></thead>
+              <tbody id="nn-li-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PAGE: VyP -->
   <div class="page" id="page-vyp">
     <div id="vyp-modal-overlay" onclick="vypCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
@@ -737,56 +792,6 @@ footer {
                 <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
               </tr></thead>
               <tbody id="vyp-li-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PAGE: SISTEMAS -->
-  <div class="page" id="page-sis">
-    <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
-        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
-        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;"></div>
-        <div id="sis-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
-      </div>
-    </div>
-    <div class="page-header">
-    <div class="month-panel">
-      <div><div class="month-panel-title">Sistemas · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
-      <div class="month-btns" id="sis-monthBtns"></div>
-    </div>
-    <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
-    </div>
-    <div class="content">
-      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
-      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
-      <div id="sis-mainContent" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
-        <div class="grid">
-          <div class="kpi-card" id="sis-card-Servidores Activos"></div>
-          <div class="kpi-card" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
-          <div class="kpi-card" id="sis-card-Costo por unidad mensual"></div>
-        </div>
-        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
-        <div class="grid">
-          <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
-          <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
-          <div class="kpi-card" id="sis-card-NPS (%)"></div>
-        </div>
-
-        <div id="sis-am-section" style="display:none;">
-          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
-          <div class="table-wrap" style="margin-bottom:26px;">
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="background:var(--navy);">
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
-              </tr></thead>
-              <tbody id="sis-am-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -847,54 +852,49 @@ footer {
     </div>
   </div>
 
-  <!-- PAGE: NUEVOS NEGOCIOS -->
-  <div class="page" id="page-nn">
-    <div id="nn-modal-overlay" onclick="nnCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(11,31,58,0.5);z-index:1000;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(11,31,58,0.18);position:relative;">
-        <button onclick="nnCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
+  <!-- PAGE: SISTEMAS -->
+  <div class="page" id="page-sis">
+    <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
+      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
+        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
-        <div id="nn-modal-kpi" style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase;"></div>
-        <div id="nn-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
+        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;"></div>
+        <div id="sis-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
       </div>
     </div>
     <div class="page-header">
     <div class="month-panel">
-      <div><div class="month-panel-title">Nuevos Negocios · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
-      <div class="month-btns" id="nn-monthBtns"></div>
-      <a href="https://dashboard-nn-flotillas-y-financieras.replit.app/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(106,170,240,.18);border:1px solid rgba(106,170,240,.35);border-radius:8px;color:#6aaaf0;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:background .15s;" onmouseover="this.style.background='rgba(106,170,240,.3)'" onmouseout="this.style.background='rgba(106,170,240,.18)'">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Dashboard Comercial
-      </a>
+      <div><div class="month-panel-title">Sistemas · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
+      <div class="month-btns" id="sis-monthBtns"></div>
     </div>
-    <div class="exec-score-strip" id="nn-score-strip" style="display:none;"></div>
+    <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
     </div>
     <div class="content">
-      <div id="nn-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
-      <div id="nn-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="nn-errorMsg">Error.</p></div>
-      <div id="nn-mainContent" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">💰 Ventas &amp; Captación</div><div class="section-hdr-line"></div></div>
+      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
+      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
+      <div id="sis-mainContent" style="display:none;">
+        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-card" id="nn-card-Ingresos Clientes Nuevos (% crecimiento objetivo)"></div>
-          <div class="kpi-card" id="nn-card-Clientes nuevos 5 estrellas (# objetivo)"></div>
-          <div class="kpi-card" id="nn-card-Demos Activas"></div>
+          <div class="kpi-card" id="sis-card-Servidores Activos"></div>
+          <div class="kpi-card" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
+          <div class="kpi-card" id="sis-card-Costo por unidad mensual"></div>
         </div>
-        <div class="section-hdr"><div class="section-hdr-txt">📊 Pipeline &amp; Conversión</div><div class="section-hdr-line"></div></div>
+        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
         <div class="grid">
-          <div class="kpi-card" id="nn-card-Pipline / Salesstar = Calculadora"></div>
-          <div class="kpi-card" id="nn-card-Proceso Zoho"></div>
-          <div class="kpi-card" id="nn-card-Conversion Demo - Cierre"></div>
+          <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
+          <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
+          <div class="kpi-card" id="sis-card-NPS (%)"></div>
         </div>
 
-        <div id="nn-li-section" style="display:none;">
+        <div id="sis-am-section" style="display:none;">
           <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
           <div class="table-wrap" style="margin-bottom:26px;">
             <table style="width:100%;border-collapse:collapse;font-size:13px;">
               <thead><tr style="background:var(--navy);">
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;width:160px;">KPI</th>
                 <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
                 <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
               </tr></thead>
-              <tbody id="nn-li-tbody"></tbody>
+              <tbody id="sis-am-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -2064,7 +2064,7 @@ var SIS_KPIS = {
   'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',  inverse:false, fixedObj:98,    objLabel:'≥ 98%',     suffix:null, cuatrimestral:false },
   'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                     icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
   'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                     icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
-  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual',              icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$',  inverse:true,  fixedObj:0.95,  objLabel:'≤ $0.95',   suffix:null, cuatrimestral:false }
+  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual (USD)',         icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$USD',inverse:true,  fixedObj:0.95,  objLabel:'≤ $0.95 USD',suffix:null, cuatrimestral:false }
 };
 
 var sisRawRows = [];
