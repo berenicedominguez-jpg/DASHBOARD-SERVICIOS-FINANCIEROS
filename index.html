@@ -1149,7 +1149,7 @@ function fmtVal(val, unit, suffix) {
   var n = val;
   if (unit==='txt')  return String(n);
   if (unit==='$')    return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
-  if (unit==='$USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (unit==='$USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USD';
   if (unit==='%')    return (typeof n === 'number' ? n.toFixed(2) : n)+'%';
   if (unit==='días') return n+' días';
   if (unit==='min' && typeof n === 'number') {
