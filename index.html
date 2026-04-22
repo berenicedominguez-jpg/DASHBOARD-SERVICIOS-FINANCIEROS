@@ -1318,28 +1318,34 @@ function sfCloseModal() {
 
 /* ── HELPER UNIVERSAL: calcula métricas de un KPI dado acum/real, obj, cfg, idxMes ── */
 function calcKpiMetrics(cfg, realNum, obj, acum, idxMes) {
-  // acum: null para mensuales, número para cuatrimestrales
   var ok = false, pw = 0, cumpl = null, barCls = 'bar-nd';
 
   if (realNum === null || obj === null) return { ok: false, pw: 0, cumpl: null, barCls: 'bar-nd' };
 
   if (acum !== null && cfg.cuatrimestral) {
     // ── CUATRIMESTRAL ──
-    // Barra: avance real sobre meta total (ej. 1/4 clientes = 25%)
-    pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-    // ok y cumpl: contra meta proporcional al mes (¿va al ritmo esperado?)
     var metaProp = obj * (idxMes + 1) / 4;
+
+    // cumpl: siempre vs meta proporcional (¿vas al ritmo esperado?)
     cumpl = cfg.inverse
-      ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
-      : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
+      ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
+      : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
     ok = cumpl !== null && cumpl >= 100;
+
+    // barra: # usa avance sobre meta total (1/4=25%), % usa mismo que cumpl
+    if (cfg.unit === '#') {
+      pw = Math.min(Math.round(cfg.inverse ? (obj / Math.max(acum, 0.01)) * 100 : (acum / obj) * 100), 100);
+    } else {
+      pw = Math.min(cumpl !== null ? Math.round(cumpl) : 0, 100);
+    }
+
   } else {
     // ── MENSUAL ──
-    pw    = Math.min(Math.round(cfg.inverse ? (obj/Math.max(realNum,0.01))*100 : (realNum/obj)*100), 100);
     cumpl = cfg.inverse
-      ? (realNum <= obj ? 100 : Math.round((obj/Math.max(realNum,0.01))*1000)/10)
-      : obj > 0 ? Math.round((realNum/obj)*1000)/10 : null;
+      ? (realNum <= obj ? 100 : Math.round((obj / Math.max(realNum, 0.01)) * 1000) / 10)
+      : obj > 0 ? Math.round((realNum / obj) * 1000) / 10 : null;
     ok    = cfg.inverse ? realNum <= obj : realNum >= obj;
+    pw    = Math.min(cumpl !== null ? Math.round(cumpl) : 0, 100);
   }
 
   barCls = ok ? 'bar-ok' : (pw >= 80 ? 'bar-near' : 'bar-off');
