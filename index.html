@@ -639,7 +639,7 @@ footer {
     <!-- MODAL COMENTARIOS SFyF -->
     <div id="sf-modal-overlay" onclick="sfCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
       <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
-        <button onclick="sfCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);">✕</button>
+        <button onclick="sfCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-main);margin-bottom:6px;">📝 Comentarios</div>
         <div id="sf-modal-kpi" style="font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:16px;"></div>
         <div id="sf-modal-body" style="font-size:13px;color:var(--gray-900);line-height:1.7;white-space:pre-wrap;"></div>
@@ -1348,7 +1348,7 @@ function renderCard(key) {
   // Bar uses cumplimiento % (acumulado vs meta cuatrimestral for cuatrimestral KPIs)
   var barPct = pct;
   var pw=Math.min(barPct,100);
-  var barCls='bar-ok';
+  var barCls = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
 
   // % cumplimiento: cuatrimestral = acumulado vs meta TOTAL del cuatrimestre
   var cumpl=null;
@@ -1381,21 +1381,21 @@ function renderCard(key) {
     cumpl=cfg.inverse?(realNum<=evalObj?100:Math.round((evalObj/Math.max(realNum,0.01))*1000)/10):evalObj>0?Math.round((realNum/evalObj)*1000)/10:null;
   }
 
-  var cumplColor = cumpl===null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
+  var cumplColor = cumpl===null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
   var noCumpl=(key==='MargenBruto'||key==='CxC'||key==='NPS');
-  var cumplHtml=noCumpl?'':(cumpl!==null?'<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>':'<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+  var cumplHtml=noCumpl?'':(cumpl!==null?'<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>':'<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
 
   var badgeHtml;
   if (isPendiente)                            badgeHtml='<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
   else if (realNum===null||evalObj===null)     badgeHtml='<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                                badgeHtml='<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
-  else if (pct>=80)                           badgeHtml='<span class="kpi-badge badge-near">&#9889; Cerca</span>';
-  else                                        badgeHtml='<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+  else if (ok)                                badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pw >= 80)                          badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                        badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var metaDisplay=cfg.objLabel?cfg.objLabel:(cfg.fixedObj!==null?fmtVal(cfg.fixedObj,cfg.unit,cfg.suffix):(obj!==null?fmtVal(obj,cfg.unit,cfg.suffix):'Del presupuesto'));
   var metaLabel=cfg.cuatrimestral?'Meta cuatrimestral: ':'Meta: ';
 
-  var realColor = realNum===null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
+  var realColor = realNum===null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
   var ext = (sfExtras[key] && sfExtras[key][selectedMes]) || {};
   el.innerHTML = buildKpiRow({
@@ -1569,9 +1569,9 @@ function selectQ(q, btn) {
 /* ── BUILD ESTATUS CELL (single source of truth) ── */
 function buildEstatusCell(key, meses) {
   var cfg=KPIS[key];
-  if (cfg.weight===0) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin peso</span></td>';
+  if (cfg.weight===0) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--slate2);">Sin peso</span></td>';
   var est=calcKpiEstatus(key, meses);
-  if (!est) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin datos</span></td>';
+  if (!est) return '<td style="text-align:center;"><span style="font-size:10px;color:var(--slate2);">Sin datos</span></td>';
   var barColor='var(--blue-main)';
   var sub = cfg.cuatrimestral
     ? 'Σ '+fmtVal(est.acum,cfg.unit,cfg.suffix)+' vs meta '+fmtVal(est.obj,cfg.unit,cfg.suffix)+' · '+est.barPct+'% avance'
@@ -1658,7 +1658,7 @@ function renderTable() {
           totalScore+=est.score/3; // normalize to weight
         });
         if (!anyData) {
-          estatusCell='<td style="text-align:center;"><span style="font-size:10px;color:var(--gray-400);">Sin datos</span></td>';
+          estatusCell='<td style="text-align:center;"><span style="font-size:10px;color:var(--slate2);">Sin datos</span></td>';
         } else {
           var barPct=Math.round((totalScore/cfg.weight)*100);
           var barColor='var(--blue-main)';
@@ -1945,8 +1945,8 @@ function renderVypLI() {
     var bg = i % 2 === 0 ? '#fff' : 'var(--gray-50)';
     return '<tr style="background:'+bg+';border-bottom:1px solid var(--gray-100);">'
       + '<td style="padding:12px 18px;font-weight:700;color:var(--blue-dark);font-size:12px;vertical-align:top;width:160px;">'+r.label+'</td>'
-      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.logros||'<span style="color:var(--gray-300);">—</span>')+'</td>'
-      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped||'<span style="color:var(--gray-300);">—</span>')+'</td>'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.logros||'<span style="color:var(--slate3);">—</span>')+'</td>'
+      + '<td style="padding:12px 18px;color:var(--gray-900);font-size:12px;vertical-align:top;white-space:pre-wrap;">'+(r.imped||'<span style="color:var(--slate3);">—</span>')+'</td>'
       + '</tr>';
   }).join('');
 }
@@ -2034,19 +2034,19 @@ function vypRenderCard(key) {
     cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
   }
 
-  var cumplColor = cumpl === null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
-  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+  var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
+  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
 
   var badgeHtml;
   if (isPendiente)                         badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
   else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                             badgeHtml = '<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
-  else if (pct >= 80)                      badgeHtml = '<span class="kpi-badge badge-near">&#9889; Cerca</span>';
-  else                                     badgeHtml = '<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+  else if (ok)                             badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pw >= 80)                       badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                     badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (cfg.fixedObj !== null ? fmtVal(cfg.fixedObj, cfg.unit, cfg.suffix) : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : 'Del presupuesto'));
   var metaLabel = cfg.cuatrimestral ? 'Meta cuatrimestral: ' : 'Meta: ';
-  var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
+  var realColor = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
   var ext2 = (vypExtras[key] && vypExtras[key][vypSelectedMes]) || {};
   el.innerHTML = buildKpiRow({
@@ -2271,18 +2271,18 @@ function sisRenderCard(key) {
     cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
   }
 
-  var cumplColor = cumpl === null ? 'var(--gray-400)' : ok ? 'var(--green)' : 'var(--red)';
-  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--gray-300);">— % cumplimiento</div>');
+  var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
+  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
 
   var badgeHtml;
   if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
   else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">&#10003; En objetivo</span>';
-  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">&#9889; Cerca</span>';
-  else                                          badgeHtml = '<span class="kpi-badge badge-off">&#8595; Fuera de objetivo</span>';
+  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : '—');
-  var realColor = realNum === null ? 'var(--gray-300)' : ok ? 'var(--green)' : 'var(--red)';
+  var realColor = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
   var metaHtml = '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
 
   var ext    = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
@@ -2379,12 +2379,8 @@ function getKpiIconColor(icon) {
 function buildCommentBtn(fnName, key, com) { return ''; }
 
 function buildKpiRow(opts) {
-  var barCls2 = opts.ok === null ? 'bar-nd'
-    : opts.ok ? 'bar-ok'
-    : opts.pw >= 80 ? 'bar-near' : 'bar-off';
-  var valCls = opts.ok === null ? 'nd'
-    : opts.ok ? 'ok'
-    : opts.pw >= 80 ? 'near' : 'off';
+  var barCls2 = opts.barCls || (opts.ok === null ? 'bar-nd' : opts.ok ? 'bar-ok' : opts.pw >= 80 ? 'bar-near' : 'bar-off');
+  var valCls  = opts.ok === null ? 'nd' : opts.ok ? 'ok' : opts.pw >= 80 ? 'near' : 'off';
   var cuatriTag = opts.cuatrimestral ? '<span class="badge-cuatri">4M</span>' : '';
   var icon = getKpiIcon(opts.key || opts.label);
   var iconColor = getKpiIconColor(icon);
@@ -2567,7 +2563,7 @@ function cvaRenderCard(key) {
   if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
   else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
   else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
-  else if (pct >= 80)                           badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
   else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var ext  = (cvaExtras2[key] && cvaExtras2[key][cvaSelectedMes2]) || {};
