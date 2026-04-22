@@ -1347,18 +1347,10 @@ function renderCard(key) {
 
   // Bar uses cumplimiento % (acumulado vs meta cuatrimestral for cuatrimestral KPIs)
   var barPct = pct;
-  if (cfg.cuatrimestral && !isPendiente && realNum !== null && obj !== null) {
-    var qMesesBar = getQMeses(selectedMes);
-    var idxBar = qMesesBar.indexOf(selectedMes);
-    var acumBar = getBlockAccum(key, qMesesBar.slice(0, idxBar+1));
-    if (acumBar !== null) {
-      barPct = Math.round((cfg.inverse ? (obj/Math.max(acumBar,0.01))*100 : (acumBar/obj)*100)*10)/10;
-    }
-  }
   var pw=Math.min(barPct,100);
   var barCls='bar-ok';
 
-  // % cumplimiento: cuatrimestral = acumulado vs meta PROPORCIONAL al mes en curso
+  // % cumplimiento: cuatrimestral = acumulado vs meta TOTAL del cuatrimestre
   var cumpl=null;
   var acumDisplay=null;
   if (cfg.cuatrimestral && !isPendiente && realNum!==null) {
@@ -1369,14 +1361,14 @@ function renderCard(key) {
     if (acum!==null) {
       acumDisplay=fmtVal(acum,cfg.unit,cfg.suffix)+' acumulado cuatrimestral';
       if (obj!==null) {
-        // Meta proporcional: obj × (meses transcurridos / 4)
+        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
+        pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
+        ok = cfg.inverse ? acum <= obj : acum >= obj;
+        // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes+1) / 4;
-        ok = cfg.inverse ? acum <= metaProp : acum >= metaProp;
         cumpl = cfg.inverse
           ?(acum<=metaProp?100:Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
           :metaProp>0?Math.round((acum/metaProp)*1000)/10:null;
-        // Barra también contra meta proporcional
-        pw = Math.min(Math.round(cfg.inverse?(metaProp/Math.max(acum,0.01))*100:(acum/metaProp)*100), 100);
         barCls = ok ? 'bar-ok' : pw>=80 ? 'bar-near' : 'bar-off';
       }
     }
@@ -1989,13 +1981,14 @@ function vypRenderCard(key) {
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
-        // Meta proporcional al mes en curso
+        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
+        pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
+        ok = cfg.inverse ? acum <= obj : acum >= obj;
+        // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes+1) / 4;
-        ok = cfg.inverse ? acum <= metaProp : acum >= metaProp;
         cumpl = cfg.inverse
           ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
           : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-        pw = Math.min(Math.round(cfg.inverse ? (metaProp/Math.max(acum,0.01))*100 : (acum/metaProp)*100), 100);
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
     }
@@ -2742,12 +2735,14 @@ function nnRenderCard(key) {
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
+        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
+        pw     = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
+        ok     = cfg.inverse ? acum <= obj : acum >= obj;
+        // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes + 1) / 4;
-        ok     = cfg.inverse ? acum <= metaProp : acum >= metaProp;
         cumpl  = cfg.inverse
-          ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
-          : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
-        pw     = Math.min(Math.round(cfg.inverse ? (metaProp/Math.max(acum,0.01))*100 : (acum/metaProp)*100), 100);
+          ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+          : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
     }
