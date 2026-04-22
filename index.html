@@ -624,7 +624,7 @@ footer {
 <div class="main">
   <div class="topbar">
     <div>
-      <div class="page-title" id="topbar-title">KPIs: Servicios Financieros y Movilidad</div>
+      <div class="page-title" id="topbar-title">💼 KPIs: Servicios Financieros y Movilidad</div>
       <div class="page-crumb" id="topbar-crumb">Reportes · KPIs Mensual: Servicios Financieros y Movilidad</div>
     </div>
     <div class="topbar-right">
@@ -1225,26 +1225,26 @@ function navigate(page) {
   document.getElementById('page-'+page).classList.add('active');
   document.getElementById('nav-'+page).classList.add('active');
   if (page==='mensual') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs Mensual: Servicios Financieros y Movilidad';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '💼 KPIs: Servicios Financieros y Movilidad';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs Mensual: Servicios Financieros y Movilidad';
   } else if (page==='vyp') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Venta Postventa';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🏷️ KPIs: Venta Postventa';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Venta Postventa';
     loadVypData();
   } else if (page==='sis') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Sistemas';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🖥️ KPIs: Sistemas';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Sistemas';
     loadSisData();
   } else if (page==='cva') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Central Monitoreo CVA';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🎯 KPIs: Central Monitoreo CVA';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Central Monitoreo CVA';
     loadCvaData();
   } else if (page==='nn') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'KPIs: Nuevos Negocios – Flotillas y Financieras';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🚀 KPIs: Nuevos Negocios – Flotillas y Financieras';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Nuevos Negocios';
     loadNnData();
   } else if (page==='general') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = 'Resumen General · Todas las Áreas';
+    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🗂️ Resumen General · Todas las Áreas';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · Resumen General';
     genLoaded = false;
     document.getElementById('gen-loadingBox').style.display = 'block';
