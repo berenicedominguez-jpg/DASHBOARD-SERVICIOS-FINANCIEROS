@@ -1981,9 +1981,7 @@ function vypRenderCard(key) {
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
-        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
         pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes+1) / 4;
         cumpl = cfg.inverse
           ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
@@ -2751,7 +2749,6 @@ function nnRenderCard(key) {
       ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
       : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
   }
-
   var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
   var realColor  = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
