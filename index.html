@@ -2703,14 +2703,17 @@ function nnCloseModal() {
 }
 
 function nnGetBlockAccum(key, meses) {
-  var total = 0, hasAny = false;
+  var total = 0, count = 0;
   meses.forEach(function(m) {
     if (!nnAllData[key] || !nnAllData[key][m]) return;
     var v = nnAllData[key][m].real;
     if (v === null || v === 'PENDIENTE') return;
-    total += v; hasAny = true;
+    total += v; count++;
   });
-  return hasAny ? total : null;
+  if (count === 0) return null;
+  // Para KPIs de % usar promedio; para # usar suma
+  var cfg = NN_KPIS[key];
+  return cfg && cfg.unit === '%' ? Math.round((total / count) * 100) / 100 : total;
 }
 
 function nnRenderCard(key) {
@@ -2740,22 +2743,31 @@ function nnRenderCard(key) {
     var mesesAc = qMeses.slice(0, idxMes + 1);
     var acum    = nnGetBlockAccum(key, mesesAc);
     if (acum !== null) {
-      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
+      var acumLeyenda = cfg.unit === '%' ? ' promedio cuatrimestral' : ' acumulado cuatrimestral';
+      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + acumLeyenda;
       if (obj !== null) {
-        // Per-month score: sum of min(real/meta,1) × (peso/4)
-        var kpiScore = 0;
-        mesesAc.forEach(function(m) {
-          if (!nnAllData[key] || !nnAllData[key][m]) return;
-          var r = nnAllData[key][m].real;
-          if (r === null || r === 'PENDIENTE') return;
-          var ratio = cfg.inverse
-            ? Math.min(obj / Math.max(r, 0.01), 1)
-            : Math.min(r / obj, 1);
-          kpiScore += ratio * (cfg.weight / 4);
-        });
-        var maxScore = (idxMes + 1) * (cfg.weight / 4);
-        cumpl  = maxScore > 0 ? Math.round((kpiScore / maxScore) * 1000) / 10 : null;
-        ok     = cfg.inverse ? realNum <= obj : realNum >= obj;
+        // Para % usar promedio vs meta; para # usar ratio acumulado
+        if (cfg.unit === '%') {
+          var avgRatio = cfg.inverse
+            ? Math.min(obj / Math.max(acum, 0.01), 1)
+            : Math.min(acum / obj, 1);
+          cumpl  = Math.round(avgRatio * 1000) / 10;
+          ok     = cfg.inverse ? acum <= obj : acum >= obj;
+        } else {
+          var kpiScore = 0;
+          mesesAc.forEach(function(m) {
+            if (!nnAllData[key] || !nnAllData[key][m]) return;
+            var r = nnAllData[key][m].real;
+            if (r === null || r === 'PENDIENTE') return;
+            var ratio = cfg.inverse
+              ? Math.min(obj / Math.max(r, 0.01), 1)
+              : Math.min(r / obj, 1);
+            kpiScore += ratio * (cfg.weight / 4);
+          });
+          var maxScore = (idxMes + 1) * (cfg.weight / 4);
+          cumpl  = maxScore > 0 ? Math.round((kpiScore / maxScore) * 1000) / 10 : null;
+          ok     = cfg.inverse ? realNum <= obj : realNum >= obj;
+        }
         pw     = Math.min(Math.round(cumpl !== null ? cumpl : 0), 100);
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
