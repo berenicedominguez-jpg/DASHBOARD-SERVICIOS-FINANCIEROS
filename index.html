@@ -1325,22 +1325,14 @@ function calcKpiMetrics(cfg, realNum, obj, acum, idxMes) {
 
   if (acum !== null && cfg.cuatrimestral) {
     // ── CUATRIMESTRAL ──
-    if (cfg.unit === '#') {
-      // Contra meta total: avance lineal (1/4, 2/4, 3/4, 4/4)
-      pw    = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-      cumpl = cfg.inverse
-        ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10)
-        : Math.round((acum/obj)*1000)/10;
-      ok    = cfg.inverse ? acum <= obj : acum >= obj;
-    } else {
-      // Contra meta proporcional: ¿va al ritmo esperado?
-      var metaProp = obj * (idxMes + 1) / 4;
-      pw    = Math.min(Math.round(cfg.inverse ? (metaProp/Math.max(acum,0.01))*100 : (acum/metaProp)*100), 100);
-      cumpl = cfg.inverse
-        ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
-        : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-      ok    = cumpl !== null && cumpl >= 100;
-    }
+    // Barra: avance real sobre meta total (ej. 1/4 clientes = 25%)
+    pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
+    // ok y cumpl: contra meta proporcional al mes (¿va al ritmo esperado?)
+    var metaProp = obj * (idxMes + 1) / 4;
+    cumpl = cfg.inverse
+      ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+      : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
+    ok = cumpl !== null && cumpl >= 100;
   } else {
     // ── MENSUAL ──
     pw    = Math.min(Math.round(cfg.inverse ? (obj/Math.max(realNum,0.01))*100 : (realNum/obj)*100), 100);
