@@ -1410,15 +1410,17 @@ function renderCard(key) {
 }
 
 function calcSummary() {
-  var score = 0, totalW = 0, ok = 0, total = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0, totalDefined = 0;
   var qMeses = getQMeses(selectedMes);
   var idxMes = qMeses.indexOf(selectedMes);
   var mesesAc = qMeses.slice(0, idxMes + 1);
 
   Object.keys(KPIS).forEach(function(key) {
     var cfg = KPIS[key];
-    if (cfg.weight === 0 || !allData[key] || !allData[key][selectedMes]) return;
+    if (cfg.weight === 0) return;
     if (key === 'NPS' && !npsAplica(selectedMes)) return;
+    totalDefined++;
+    if (!allData[key] || !allData[key][selectedMes]) return;
     var d = allData[key][selectedMes];
     if (d.real === null || d.real === 'PENDIENTE') return;
     var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
@@ -1430,7 +1432,7 @@ function calcSummary() {
     total++;
     if (m.ok) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalDefined };
 }
 
 function getQLabel(mes) {
@@ -2018,15 +2020,17 @@ function vypRenderCard(key) {
 }
 
 function vypCalcSummary() {
-  var score = 0, totalW = 0, ok = 0, total = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0, totalDefined = 0;
   var qMeses = vypGetQMeses(vypSelectedMes);
   var idxMes = qMeses.indexOf(vypSelectedMes);
   var mesesAc = qMeses.slice(0, idxMes + 1);
 
   Object.keys(VYP_KPIS).forEach(function(key) {
     var cfg = VYP_KPIS[key];
-    if (cfg.weight === 0 || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
+    if (cfg.weight === 0) return;
     if (key === 'NPS' && !npsAplica(vypSelectedMes)) return;
+    totalDefined++;
+    if (!vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
     var d = vypAllData[key][vypSelectedMes];
     if (d.real === null || d.real === 'PENDIENTE') return;
     var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
@@ -2038,7 +2042,7 @@ function vypCalcSummary() {
     total++;
     if (m.ok) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalDefined };
 }
 
 function loadVypData() {
@@ -2193,39 +2197,29 @@ function sisRenderCard(key) {
   }
 
   var d = sisAllData[key][sisSelectedMes];
-  var real = d.real, obj = d.objetivo;
+  var real = d.real, obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
   var isPendiente = real === 'PENDIENTE';
   var realNum = isPendiente ? null : real;
   var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
 
-  var evalObj = obj;
-  var ok = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
-  var pct = (realNum !== null && evalObj !== null && evalObj > 0) ? Math.round((cfg.inverse ? (evalObj/Math.max(realNum,0.01))*100 : (realNum/evalObj)*100)*10)/10 : 0;
-  var pw = Math.min(pct, 100);
-  var barCls = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
-
-  var cumpl = null;
-  if (!isPendiente && realNum !== null && evalObj !== null) {
-    cumpl = cfg.inverse ? (realNum <= evalObj ? 100 : Math.round((evalObj/Math.max(realNum,0.01))*1000)/10) : evalObj > 0 ? Math.round((realNum/evalObj)*1000)/10 : null;
-  }
+  var m = calcKpiMetrics(cfg, realNum, obj, null, 0);
+  var ok = m.ok, pw = m.pw, cumpl = m.cumpl, barCls = m.barCls;
 
   var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
-  var cumplHtml = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
+  var cumplHtml  = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
 
   var badgeHtml;
-  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
-  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
-  else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
-  else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
+  if (isPendiente)                           badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || obj === null)  badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                               badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pw >= 80)                         badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                       badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : '—');
-  var realColor = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
-  var metaHtml = '<div class="kpi-meta">Meta: '+metaDisplay+'</div>';
+  var realColor   = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
-  var ext    = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
-  var com    = ext.comentarios || '';
-  var comHtml = com ? buildCommentBtn('sisOpenModal', key, com) : '';
+  var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
+  var com = ext.comentarios || '';
 
   el.innerHTML = buildKpiRow({
     key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
@@ -2238,19 +2232,24 @@ function sisRenderCard(key) {
 }
 
 function sisCalcSummary() {
-  var score = 0, totalW = 0, ok = 0, total = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0, totalDefined = 0;
   Object.keys(SIS_KPIS).forEach(function(key) {
     var cfg = SIS_KPIS[key];
-    if (cfg.weight === 0 || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
+    if (cfg.weight === 0) return;
     if (key==='NPS (%)' && !npsAplica(sisSelectedMes)) return;
+    totalDefined++;
+    if (!sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
     var d = sisAllData[key][sisSelectedMes];
-    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
-    score += Math.min(cfg.inverse ? (d.objetivo/Math.max(d.real,0.01)) : (d.real/d.objetivo), 1) * cfg.weight;
+    if (d.real === null || d.real === 'PENDIENTE') return;
+    var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
+    if (obj === null) return;
+    var m = calcKpiMetrics(cfg, d.real, obj, null, 0);
+    score  += (m.pw / 100) * cfg.weight;
     totalW += cfg.weight;
     total++;
-    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+    if (m.ok) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok, total: total };
+  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok, total: totalDefined };
 }
 
 function loadSisData() {
@@ -2475,34 +2474,23 @@ function cvaRenderCard(key) {
   if (!el || !cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
 
   var d          = cvaAllData[key][cvaSelectedMes2];
-  var real       = d.real, obj = d.objetivo;
+  var real       = d.real, obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
   var isPendiente = real === 'PENDIENTE';
   var realNum    = isPendiente ? null : real;
   var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
 
-  var evalObj = obj;
-  var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
-  var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
-    ? Math.round((cfg.inverse ? (evalObj / Math.max(realNum, 0.01)) * 100 : (realNum / evalObj) * 100) * 10) / 10 : 0;
-  var pw      = Math.min(pct, 100);
-  var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
-
-  var cumpl = null;
-  if (!isPendiente && realNum !== null && evalObj !== null) {
-    cumpl = cfg.inverse
-      ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
-      : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
-  }
+  var m = calcKpiMetrics(cfg, realNum, obj, null, 0);
+  var ok = m.ok, pw = m.pw, cumpl = m.cumpl, barCls = m.barCls;
 
   var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
   var realColor  = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
 
   var badgeHtml;
-  if (isPendiente)                              badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
-  else if (realNum === null || evalObj === null) badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                                  badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
-  else if (pw >= 80)                            badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
-  else                                          badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
+  if (isPendiente)                           badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
+  else if (realNum === null || obj === null)  badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
+  else if (ok)                               badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
+  else if (pw >= 80)                         badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
+  else                                       badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
 
   var ext  = (cvaExtras2[key] && cvaExtras2[key][cvaSelectedMes2]) || {};
   var com  = ext.comentarios || '';
@@ -2531,18 +2519,23 @@ function cvaRenderLI() {
 }
 
 function cvaCalcSummary2() {
-  var score = 0, totalW = 0, ok = 0, total = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0, totalDefined = 0;
   Object.keys(CVA_KPIS).forEach(function(key) {
     var cfg = CVA_KPIS[key];
-    if (cfg.weight === 0 || !cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
+    if (cfg.weight === 0) return;
+    totalDefined++;
+    if (!cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
     var d = cvaAllData[key][cvaSelectedMes2];
-    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
-    score  += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * cfg.weight;
+    if (d.real === null || d.real === 'PENDIENTE') return;
+    var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
+    if (obj === null) return;
+    var m = calcKpiMetrics(cfg, d.real, obj, null, 0);
+    score  += (m.pw / 100) * cfg.weight;
     totalW += cfg.weight;
     total++;
-    if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
+    if (m.ok) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalDefined };
 }
 
 function cvaRenderPage() {
@@ -2783,7 +2776,7 @@ function nnRenderLI() {
 }
 
 function nnCalcSummary() {
-  var score = 0, totalW = 0, ok = 0, totalKpisConDatos = 0;
+  var score = 0, totalW = 0, ok = 0, totalKpisConDatos = 0, totalDefined = 0;
   var qMeses = getQMeses(nnSelectedMes);
   var idxMes = qMeses.indexOf(nnSelectedMes);
   var mesesAc = qMeses.slice(0, idxMes + 1);
@@ -2791,6 +2784,7 @@ function nnCalcSummary() {
   Object.keys(NN_KPIS).forEach(function(key) {
     var cfg = NN_KPIS[key];
     if (cfg.weight === 0) return;
+    totalDefined++;
     var obj = cfg.fixedObj !== null ? cfg.fixedObj
       : (nnAllData[key] && nnAllData[key][nnSelectedMes] ? nnAllData[key][nnSelectedMes].objetivo : null);
     if (obj === null || obj === undefined) return;
@@ -2803,7 +2797,7 @@ function nnCalcSummary() {
     totalKpisConDatos++;
     if (m.ok) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalKpisConDatos };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalDefined };
 }
 
 function loadNnData() {
