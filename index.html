@@ -1326,13 +1326,15 @@ function calcKpiMetrics(cfg, realNum, obj, acum, idxMes) {
     // ── CUATRIMESTRAL ──
     var metaProp = obj * (idxMes + 1) / 4;
 
-    // cumpl: siempre vs meta proporcional (¿vas al ritmo esperado?)
+    // cumpl: avance proporcional sobre meta total (1/3=33%, 2/3=67%, 3/3=100%)
     cumpl = cfg.inverse
-      ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
-      : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
-    ok = cumpl !== null && cumpl >= 100;
+      ? (acum <= obj ? 100 : Math.round((obj / Math.max(acum, 0.01)) * 1000) / 10)
+      : obj > 0 ? Math.round((acum / obj) * 1000) / 10 : null;
 
-    // barra: # usa avance sobre meta total (1/4=25%), % usa mismo que cumpl
+    // ok: ¿va al ritmo esperado del mes? (meta proporcional)
+    ok = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+
+    // barra: # usa avance sobre meta total, % usa cumpl
     if (cfg.unit === '#') {
       pw = Math.min(Math.round(cfg.inverse ? (obj / Math.max(acum, 0.01)) * 100 : (acum / obj) * 100), 100);
     } else {
