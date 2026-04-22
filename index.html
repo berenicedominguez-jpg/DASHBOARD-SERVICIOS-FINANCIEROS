@@ -2773,7 +2773,7 @@ function nnRenderCard(key) {
 
   el.innerHTML = buildKpiRow({
     key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
-    cuatrimestral: true, realDisplay: realDisplay,
+    cuatrimestral: cfg.cuatrimestral, realDisplay: realDisplay,
     realColor: realColor, acumDisplay: acumDisplay,
     metaLabel: metaLabel, metaDisplay: metaDisplay,
     cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
