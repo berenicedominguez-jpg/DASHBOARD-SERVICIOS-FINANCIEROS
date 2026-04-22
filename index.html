@@ -1363,13 +1363,13 @@ function renderCard(key) {
       if (obj!==null) {
         // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
         pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        ok = cfg.inverse ? acum <= obj : acum >= obj;
         // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes+1) / 4;
         cumpl = cfg.inverse
           ?(acum<=metaProp?100:Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
           :metaProp>0?Math.round((acum/metaProp)*1000)/10:null;
-        barCls = ok ? 'bar-ok' : pw>=80 ? 'bar-near' : 'bar-off';
+        ok = cumpl !== null && cumpl >= 100;
+        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum!==null && evalObj!==null) {
@@ -1983,13 +1983,13 @@ function vypRenderCard(key) {
       if (obj !== null) {
         // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
         pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        ok = cfg.inverse ? acum <= obj : acum >= obj;
         // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes+1) / 4;
         cumpl = cfg.inverse
           ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
           : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-        barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+        ok = cumpl !== null && cumpl >= 100;
+        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum !== null && evalObj !== null) {
@@ -2737,13 +2737,13 @@ function nnRenderCard(key) {
       if (obj !== null) {
         // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
         pw     = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        ok     = cfg.inverse ? acum <= obj : acum >= obj;
         // Cumplimiento: acumulado vs meta proporcional al mes en curso
         var metaProp = obj * (idxMes + 1) / 4;
         cumpl  = cfg.inverse
           ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
           : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-        barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
+        ok     = cumpl !== null && cumpl >= 100;
+        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum !== null && evalObj !== null) {
