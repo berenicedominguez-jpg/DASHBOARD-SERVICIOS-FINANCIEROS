@@ -2703,17 +2703,14 @@ function nnCloseModal() {
 }
 
 function nnGetBlockAccum(key, meses) {
-  var total = 0, count = 0;
+  var total = 0, hasAny = false;
   meses.forEach(function(m) {
     if (!nnAllData[key] || !nnAllData[key][m]) return;
     var v = nnAllData[key][m].real;
     if (v === null || v === 'PENDIENTE') return;
-    total += v; count++;
+    total += v; hasAny = true;
   });
-  if (count === 0) return null;
-  // Para KPIs de % usar promedio; para # usar suma
-  var cfg = NN_KPIS[key];
-  return cfg && cfg.unit === '%' ? Math.round((total / count) * 100) / 100 : total;
+  return hasAny ? total : null;
 }
 
 function nnRenderCard(key) {
@@ -2727,10 +2724,10 @@ function nnRenderCard(key) {
   var realNum     = isPendiente ? null : real;
   var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
 
-  // Badge: compara real vs meta mensual directa
-  var ok      = (realNum !== null && obj !== null) ? (cfg.inverse ? realNum <= obj : realNum >= obj) : false;
-  var pct     = (realNum !== null && obj !== null && obj > 0)
-    ? Math.round((cfg.inverse ? (obj / Math.max(realNum, 0.01)) * 100 : (realNum / obj) * 100) * 10) / 10 : 0;
+  var evalObj = (cfg.cuatrimestral && obj !== null) ? obj/4 : obj;
+  var ok      = (realNum !== null && evalObj !== null) ? (cfg.inverse ? realNum <= evalObj : realNum >= evalObj) : false;
+  var pct     = (realNum !== null && evalObj !== null && evalObj > 0)
+    ? Math.round((cfg.inverse ? (evalObj/Math.max(realNum,0.01))*100 : (realNum/evalObj)*100)*10)/10 : 0;
   var pw      = Math.min(pct, 100);
   var barCls  = ok ? 'bar-ok' : pct >= 80 ? 'bar-near' : 'bar-off';
 
@@ -2743,39 +2740,21 @@ function nnRenderCard(key) {
     var mesesAc = qMeses.slice(0, idxMes + 1);
     var acum    = nnGetBlockAccum(key, mesesAc);
     if (acum !== null) {
-      var acumLeyenda = cfg.unit === '%' ? ' promedio cuatrimestral' : ' acumulado cuatrimestral';
-      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + acumLeyenda;
+      acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
-        // Para % usar promedio vs meta; para # usar ratio acumulado
-        if (cfg.unit === '%') {
-          var avgRatio = cfg.inverse
-            ? Math.min(obj / Math.max(acum, 0.01), 1)
-            : Math.min(acum / obj, 1);
-          cumpl  = Math.round(avgRatio * 1000) / 10;
-          ok     = cfg.inverse ? acum <= obj : acum >= obj;
-        } else {
-          var kpiScore = 0;
-          mesesAc.forEach(function(m) {
-            if (!nnAllData[key] || !nnAllData[key][m]) return;
-            var r = nnAllData[key][m].real;
-            if (r === null || r === 'PENDIENTE') return;
-            var ratio = cfg.inverse
-              ? Math.min(obj / Math.max(r, 0.01), 1)
-              : Math.min(r / obj, 1);
-            kpiScore += ratio * (cfg.weight / 4);
-          });
-          var maxScore = (idxMes + 1) * (cfg.weight / 4);
-          cumpl  = maxScore > 0 ? Math.round((kpiScore / maxScore) * 1000) / 10 : null;
-          ok     = cfg.inverse ? realNum <= obj : realNum >= obj;
-        }
-        pw     = Math.min(Math.round(cumpl !== null ? cumpl : 0), 100);
+        var metaProp = obj * (idxMes + 1) / 4;
+        ok     = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+        cumpl  = cfg.inverse
+          ? (acum <= metaProp ? 100 : Math.round((metaProp / Math.max(acum, 0.01)) * 1000) / 10)
+          : metaProp > 0 ? Math.round((acum / metaProp) * 1000) / 10 : null;
+        pw     = Math.min(Math.round(cfg.inverse ? (metaProp/Math.max(acum,0.01))*100 : (acum/metaProp)*100), 100);
         barCls = ok ? 'bar-ok' : pw >= 80 ? 'bar-near' : 'bar-off';
       }
     }
-  } else if (!isPendiente && realNum !== null && obj !== null) {
+  } else if (!isPendiente && realNum !== null && evalObj !== null) {
     cumpl = cfg.inverse
-      ? (realNum <= obj ? 100 : Math.round((obj / Math.max(realNum, 0.01)) * 1000) / 10)
-      : obj > 0 ? Math.round((realNum / obj) * 1000) / 10 : null;
+      ? (realNum <= evalObj ? 100 : Math.round((evalObj / Math.max(realNum, 0.01)) * 1000) / 10)
+      : evalObj > 0 ? Math.round((realNum / evalObj) * 1000) / 10 : null;
   }
 
   var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
