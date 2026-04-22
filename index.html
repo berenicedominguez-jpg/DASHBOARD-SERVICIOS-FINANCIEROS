@@ -1361,15 +1361,20 @@ function renderCard(key) {
     if (acum!==null) {
       acumDisplay=fmtVal(acum,cfg.unit,cfg.suffix)+' acumulado cuatrimestral';
       if (obj!==null) {
-        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
         pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        // Cumplimiento: acumulado vs meta proporcional al mes en curso
-        var metaProp = obj * (idxMes+1) / 4;
-        cumpl = cfg.inverse
-          ?(acum<=metaProp?100:Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
-          :metaProp>0?Math.round((acum/metaProp)*1000)/10:null;
-        ok = cumpl !== null && cumpl >= 100;
-        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
+        if (cfg.unit === '#') {
+          cumpl = cfg.inverse
+            ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10)
+            : Math.round((acum/obj)*1000)/10;
+          ok = cfg.inverse ? acum <= obj : acum >= obj;
+        } else {
+          var metaProp = obj * (idxMes+1) / 4;
+          cumpl = cfg.inverse
+            ?(acum<=metaProp?100:Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+            :metaProp>0?Math.round((acum/metaProp)*1000)/10:null;
+          ok = cumpl !== null && cumpl >= 100;
+        }
+        barCls = ok ? 'bar-ok' : (cumpl !== null && cumpl >= 80) ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum!==null && evalObj!==null) {
@@ -1404,20 +1409,47 @@ function renderCard(key) {
 }
 
 function calcSummary() {
-  var score=0, totalW=0, ok=0;
-  Object.keys(KPIS).forEach(function(key){
-    var cfg=KPIS[key];
-    if (cfg.weight===0||!allData[key]||!allData[key][selectedMes]) return;
-    if (key==='NPS' && !npsAplica(selectedMes)) return;
-    var d=allData[key][selectedMes];
-    if (d.real===null||d.real==='PENDIENTE'||d.objetivo===null) return;
-    var evalObj=cfg.cuatrimestral?d.objetivo/4:d.objetivo;
-    var evalReal=d.real;
-    score+=Math.min(cfg.inverse?(evalObj/Math.max(evalReal,0.01)):(evalReal/evalObj),1)*cfg.weight;
-    totalW+=cfg.weight;
-    if (cfg.inverse?evalReal<=evalObj:evalReal>=evalObj) ok++;
+  var score = 0, totalW = 0, ok = 0, total = 0;
+  var qMeses = getQMeses(selectedMes);
+  var idxMes = qMeses.indexOf(selectedMes);
+  var mesesAc = qMeses.slice(0, idxMes + 1);
+
+  Object.keys(KPIS).forEach(function(key) {
+    var cfg = KPIS[key];
+    if (cfg.weight === 0 || !allData[key] || !allData[key][selectedMes]) return;
+    if (key === 'NPS' && !npsAplica(selectedMes)) return;
+    var d = allData[key][selectedMes];
+    if (d.real === null || d.real === 'PENDIENTE') return;
+
+    if (cfg.cuatrimestral) {
+      var acum = getBlockAccum(key, mesesAc);
+      if (acum === null) return;
+      var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
+      if (obj === null) return;
+      var ratio, isOk;
+      if (cfg.unit === '#') {
+        ratio = cfg.inverse ? Math.min(obj / Math.max(acum, 0.01), 1) : Math.min(acum / obj, 1);
+        isOk  = cfg.inverse ? acum <= obj : acum >= obj;
+      } else {
+        var metaProp = obj * (idxMes + 1) / 4;
+        ratio = cfg.inverse ? Math.min(metaProp / Math.max(acum, 0.01), 1) : Math.min(acum / metaProp, 1);
+        isOk  = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+      }
+      score  += ratio * cfg.weight;
+      totalW += cfg.weight;
+      total++;
+      if (isOk) ok++;
+    } else {
+      if (d.objetivo === null) return;
+      var evalObj = d.objetivo;
+      var ratio = cfg.inverse ? Math.min(evalObj / Math.max(d.real, 0.01), 1) : Math.min(d.real / evalObj, 1);
+      score  += ratio * cfg.weight;
+      totalW += cfg.weight;
+      total++;
+      if (cfg.inverse ? d.real <= evalObj : d.real >= evalObj) ok++;
+    }
   });
-  return { pct:totalW>0?Math.round((score/totalW)*100):null, ok:ok };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
 }
 
 function getQLabel(mes) {
@@ -1474,9 +1506,10 @@ function loadMensualData() {
   loadAllFromSYyF(qMeses).then(function() {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key){ renderCard(key); });
-    renderExecScoreStrip('sf-score-strip', calcSummary, npsAplica(selectedMes)?8:7, selectedMes, getQLabel(selectedMes));
+    var sfSum = calcSummary();
+    renderExecScoreStrip('sf-score-strip', function(){ return sfSum; }, sfSum.total || 7, selectedMes, getQLabel(selectedMes));
     renderSfLI(selectedMes);
-    var s = calcSummary();
+    var s = sfSum;
     var _gsum_ok=document.getElementById('sum-ok'); if(_gsum_ok) _gsum_ok.textContent = s.ok + ' / 7';
     var te = document.getElementById('sum-trend');
     if (te && s.pct !== null) {
@@ -1982,12 +2015,19 @@ function vypRenderCard(key) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
         pw = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        var metaProp = obj * (idxMes+1) / 4;
-        cumpl = cfg.inverse
-          ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
-          : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-        ok = cumpl !== null && cumpl >= 100;
-        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
+        if (cfg.unit === '#') {
+          cumpl = cfg.inverse
+            ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10)
+            : Math.round((acum/obj)*1000)/10;
+          ok = cfg.inverse ? acum <= obj : acum >= obj;
+        } else {
+          var metaProp = obj * (idxMes+1) / 4;
+          cumpl = cfg.inverse
+            ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+            : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
+          ok = cumpl !== null && cumpl >= 100;
+        }
+        barCls = ok ? 'bar-ok' : (cumpl !== null && cumpl >= 80) ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum !== null && evalObj !== null) {
@@ -2020,19 +2060,47 @@ function vypRenderCard(key) {
 }
 
 function vypCalcSummary() {
-  var score = 0, totalW = 0, ok = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0;
+  var qMeses = vypGetQMeses(vypSelectedMes);
+  var idxMes = qMeses.indexOf(vypSelectedMes);
+  var mesesAc = qMeses.slice(0, idxMes + 1);
+
   Object.keys(VYP_KPIS).forEach(function(key) {
     var cfg = VYP_KPIS[key];
     if (cfg.weight === 0 || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
-    if (key==='NPS' && !npsAplica(vypSelectedMes)) return;
+    if (key === 'NPS' && !npsAplica(vypSelectedMes)) return;
     var d = vypAllData[key][vypSelectedMes];
-    if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
-    var evalObj = cfg.cuatrimestral ? d.objetivo/4 : d.objetivo;
-    score += Math.min(cfg.inverse ? (evalObj/Math.max(d.real,0.01)) : (d.real/evalObj), 1) * cfg.weight;
-    totalW += cfg.weight;
-    if (cfg.inverse ? d.real <= evalObj : d.real >= evalObj) ok++;
+    if (d.real === null || d.real === 'PENDIENTE') return;
+
+    if (cfg.cuatrimestral) {
+      var acum = vypGetBlockAccum(key, mesesAc);
+      if (acum === null) return;
+      var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
+      if (obj === null) return;
+      var ratio, isOk;
+      if (cfg.unit === '#') {
+        ratio = cfg.inverse ? Math.min(obj / Math.max(acum, 0.01), 1) : Math.min(acum / obj, 1);
+        isOk  = cfg.inverse ? acum <= obj : acum >= obj;
+      } else {
+        var metaProp = obj * (idxMes + 1) / 4;
+        ratio = cfg.inverse ? Math.min(metaProp / Math.max(acum, 0.01), 1) : Math.min(acum / metaProp, 1);
+        isOk  = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+      }
+      score  += ratio * cfg.weight;
+      totalW += cfg.weight;
+      total++;
+      if (isOk) ok++;
+    } else {
+      if (d.objetivo === null) return;
+      var evalObj = d.objetivo;
+      var ratio = cfg.inverse ? Math.min(evalObj / Math.max(d.real, 0.01), 1) : Math.min(d.real / evalObj, 1);
+      score  += ratio * cfg.weight;
+      totalW += cfg.weight;
+      total++;
+      if (cfg.inverse ? d.real <= evalObj : d.real >= evalObj) ok++;
+    }
   });
-  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
 }
 
 function loadVypData() {
@@ -2047,9 +2115,10 @@ function loadVypData() {
   loadVypAllData(qMeses).then(function() {
     vypLoaded = true;
     Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
-    renderExecScoreStrip('vyp-score-strip', vypCalcSummary, npsAplica(vypSelectedMes)?5:4, vypSelectedMes, getQLabel(vypSelectedMes));
+    var vypSum = vypCalcSummary();
+    renderExecScoreStrip('vyp-score-strip', function(){ return vypSum; }, vypSum.total || 4, vypSelectedMes, getQLabel(vypSelectedMes));
     renderVypLI();
-    var s = vypCalcSummary();
+    var s = vypSum;
     var _gvyp_sum_ok=document.getElementById('vyp-sum-ok'); if(_gvyp_sum_ok) _gvyp_sum_ok.textContent = s.ok + ' / 4';
     var te = document.getElementById('vyp-sum-trend');
     if (te && s.pct !== null) {
@@ -2231,7 +2300,7 @@ function sisRenderCard(key) {
 }
 
 function sisCalcSummary() {
-  var score = 0, totalW = 0, ok = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0;
   Object.keys(SIS_KPIS).forEach(function(key) {
     var cfg = SIS_KPIS[key];
     if (cfg.weight === 0 || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
@@ -2240,9 +2309,10 @@ function sisCalcSummary() {
     if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
     score += Math.min(cfg.inverse ? (d.objetivo/Math.max(d.real,0.01)) : (d.real/d.objetivo), 1) * cfg.weight;
     totalW += cfg.weight;
+    total++;
     if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok };
+  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok, total: total };
 }
 
 function loadSisData() {
@@ -2255,9 +2325,10 @@ function loadSisData() {
   loadSisAllData([sisSelectedMes]).then(function() {
     sisLoaded = true;
     Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
-    renderExecScoreStrip('sis-score-strip', sisCalcSummary, npsAplica(sisSelectedMes)?6:5, sisSelectedMes, getQLabel(sisSelectedMes));
+    var sisSum = sisCalcSummary();
+    renderExecScoreStrip('sis-score-strip', function(){ return sisSum; }, sisSum.total || 5, sisSelectedMes, getQLabel(sisSelectedMes));
     renderSisAM();
-    var s = sisCalcSummary();
+    var s = sisSum;
     var _gsis_sum_ok=document.getElementById('sis-sum-ok'); if(_gsis_sum_ok) _gsis_sum_ok.textContent = s.ok + ' / 5';
     var te = document.getElementById('sis-sum-trend');
     if (te && s.pct !== null) {
@@ -2526,7 +2597,7 @@ function cvaRenderLI() {
 }
 
 function cvaCalcSummary2() {
-  var score = 0, totalW = 0, ok = 0;
+  var score = 0, totalW = 0, ok = 0, total = 0;
   Object.keys(CVA_KPIS).forEach(function(key) {
     var cfg = CVA_KPIS[key];
     if (cfg.weight === 0 || !cvaAllData[key] || !cvaAllData[key][cvaSelectedMes2]) return;
@@ -2534,17 +2605,19 @@ function cvaCalcSummary2() {
     if (d.real === null || d.real === 'PENDIENTE' || d.objetivo === null) return;
     score  += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * cfg.weight;
     totalW += cfg.weight;
+    total++;
     if (cfg.inverse ? d.real <= d.objetivo : d.real >= d.objetivo) ok++;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: total };
 }
 
 function cvaRenderPage() {
   if (!cvaSelectedMes2) return;
   Object.keys(CVA_KPIS).forEach(function(key) { cvaRenderCard(key); });
-    renderExecScoreStrip('cva-score-strip', cvaCalcSummary2, 6, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
+  var cvaSum = cvaCalcSummary2();
+  renderExecScoreStrip('cva-score-strip', function(){ return cvaSum; }, cvaSum.total || 6, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
   cvaRenderLI();
-  var s  = cvaCalcSummary2();
+  var s = cvaSum;
   var te = document.getElementById('cva-sum-trend2');
   var ok = document.getElementById('cva-sum-ok2');
   if (ok)  if(ok) ok.textContent = s.ok + ' / 6';
@@ -2733,15 +2806,22 @@ function nnRenderCard(key) {
     if (acum !== null) {
       acumDisplay = fmtVal(acum, cfg.unit, cfg.suffix) + ' acumulado cuatrimestral';
       if (obj !== null) {
-        // Barra: acumulado vs meta total (ej. 1/4 clientes = 25%)
+        // Barra: acumulado vs meta total
         pw     = Math.min(Math.round(cfg.inverse ? (obj/Math.max(acum,0.01))*100 : (acum/obj)*100), 100);
-        // Cumplimiento: acumulado vs meta proporcional al mes en curso
-        var metaProp = obj * (idxMes + 1) / 4;
-        cumpl  = cfg.inverse
-          ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
-          : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
-        ok     = cumpl !== null && cumpl >= 100;
-        barCls = ok ? 'bar-ok' : cumpl >= 80 ? 'bar-near' : 'bar-off';
+        // Cumplimiento: # usa meta total, % usa meta proporcional al mes
+        if (cfg.unit === '#') {
+          cumpl  = cfg.inverse
+            ? (acum <= obj ? 100 : Math.round((obj/Math.max(acum,0.01))*1000)/10)
+            : Math.round((acum/obj)*1000)/10;
+          ok     = cfg.inverse ? acum <= obj : acum >= obj;
+        } else {
+          var metaProp = obj * (idxMes + 1) / 4;
+          cumpl  = cfg.inverse
+            ? (acum <= metaProp ? 100 : Math.round((metaProp/Math.max(acum,0.01))*1000)/10)
+            : metaProp > 0 ? Math.round((acum/metaProp)*1000)/10 : null;
+          ok     = cumpl !== null && cumpl >= 100;
+        }
+        barCls = ok ? 'bar-ok' : (cumpl !== null && cumpl >= 80) ? 'bar-near' : 'bar-off';
       }
     }
   } else if (!isPendiente && realNum !== null && evalObj !== null) {
@@ -2818,16 +2898,20 @@ function nnCalcSummary() {
     totalKpisConDatos++;
 
     if (cfg.cuatrimestral) {
-      // Acumulado vs meta proporcional al mes en curso
       var acum = nnGetBlockAccum(key, mesesAc);
       if (acum !== null) {
-        var metaProp = obj * (idxMes + 1) / 4;
-        var ratio = cfg.inverse
-          ? Math.min(metaProp / Math.max(acum, 0.01), 1)
-          : Math.min(acum / metaProp, 1);
+        var ratio, isOk;
+        if (cfg.unit === '#') {
+          ratio = cfg.inverse ? Math.min(obj / Math.max(acum, 0.01), 1) : Math.min(acum / obj, 1);
+          isOk  = cfg.inverse ? acum <= obj : acum >= obj;
+        } else {
+          var metaProp = obj * (idxMes + 1) / 4;
+          ratio = cfg.inverse ? Math.min(metaProp / Math.max(acum, 0.01), 1) : Math.min(acum / metaProp, 1);
+          isOk  = cfg.inverse ? acum <= metaProp : acum >= metaProp;
+        }
         score  += ratio * cfg.weight;
         totalW += cfg.weight;
-        if (cfg.inverse ? acum <= metaProp : acum >= metaProp) ok++;
+        if (isOk) ok++;
       }
     } else {
       // Mensual directo
