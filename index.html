@@ -2799,47 +2799,49 @@ function nnRenderLI() {
 }
 
 function nnCalcSummary() {
-  var score = 0, totalW = 0, ok = 0;
+  var score = 0, totalW = 0, ok = 0, totalKpisConDatos = 0;
   var qMeses = getQMeses(nnSelectedMes);
   var idxMes = qMeses.indexOf(nnSelectedMes);
+  var mesesAc = qMeses.slice(0, idxMes + 1);
 
   Object.keys(NN_KPIS).forEach(function(key) {
     var cfg = NN_KPIS[key];
     if (cfg.weight === 0) return;
 
-    var obj = cfg.fixedObj;
-    if (obj === null && nnAllData[key] && nnAllData[key][nnSelectedMes]) {
-      obj = nnAllData[key][nnSelectedMes].objetivo;
-    }
+    var obj = cfg.fixedObj !== null ? cfg.fixedObj
+      : (nnAllData[key] && nnAllData[key][nnSelectedMes] ? nnAllData[key][nnSelectedMes].objetivo : null);
     if (obj === null || obj === undefined) return;
 
-    // Sum per-month points: min(real/meta, 1) × (peso/4) for each month
-    var kpiScore = 0, hasAny = false;
-    var mesesAc = qMeses.slice(0, idxMes + 1);
-    mesesAc.forEach(function(m) {
-      if (!nnAllData[key] || !nnAllData[key][m]) return;
-      var real = nnAllData[key][m].real;
-      if (real === null || real === 'PENDIENTE') return;
-      var ratio = cfg.inverse
-        ? Math.min(obj / Math.max(real, 0.01), 1)
-        : Math.min(real / obj, 1);
-      kpiScore += ratio * (cfg.weight / 4);
-      hasAny = true;
-    });
-    if (!hasAny) return;
+    var realNow = nnAllData[key] && nnAllData[key][nnSelectedMes] ? nnAllData[key][nnSelectedMes].real : null;
+    if (realNow === null || realNow === 'PENDIENTE') return;
 
-    // Check if current month meets goal
-    if (nnAllData[key] && nnAllData[key][nnSelectedMes]) {
-      var realNow = nnAllData[key][nnSelectedMes].real;
-      if (realNow !== null && realNow !== 'PENDIENTE') {
-        if (cfg.inverse ? realNow <= obj : realNow >= obj) ok++;
+    totalKpisConDatos++;
+
+    if (cfg.cuatrimestral) {
+      // Acumulado vs meta proporcional al mes en curso
+      var acum = nnGetBlockAccum(key, mesesAc);
+      if (acum !== null) {
+        var metaProp = obj * (idxMes + 1) / 4;
+        var ratio = cfg.inverse
+          ? Math.min(metaProp / Math.max(acum, 0.01), 1)
+          : Math.min(acum / metaProp, 1);
+        score  += ratio * cfg.weight;
+        totalW += cfg.weight;
+        if (cfg.inverse ? acum <= metaProp : acum >= metaProp) ok++;
       }
+    } else {
+      // Mensual directo
+      var evalObj = obj;
+      var ratio = cfg.inverse
+        ? Math.min(evalObj / Math.max(realNow, 0.01), 1)
+        : Math.min(realNow / evalObj, 1);
+      score  += ratio * cfg.weight;
+      totalW += cfg.weight;
+      if (cfg.inverse ? realNow <= evalObj : realNow >= evalObj) ok++;
     }
-
-    score  += kpiScore;
-    totalW += cfg.weight;
   });
-  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok };
+
+  return { pct: totalW > 0 ? Math.round((score / totalW) * 100) : null, ok: ok, total: totalKpisConDatos };
 }
 
 function loadNnData() {
@@ -2851,9 +2853,10 @@ function loadNnData() {
 
   loadNnAllData(getQMeses(nnSelectedMes)).then(function() {
     Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
-    renderExecScoreStrip('nn-score-strip', nnCalcSummary, 6, nnSelectedMes, getQLabel(nnSelectedMes));
+    var nnSum = nnCalcSummary();
+    renderExecScoreStrip('nn-score-strip', function(){ return nnSum; }, nnSum.total || 6, nnSelectedMes, getQLabel(nnSelectedMes));
     nnRenderLI();
-    var s  = nnCalcSummary();
+    var s  = nnSum;
     var te = document.getElementById('nn-sum-trend');
     if (te && s.pct !== null) {
       te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
