@@ -1287,16 +1287,37 @@ function refreshData() {
 /* ── MENSUAL PAGE ── */
 function buildMonthSelector() {
   var container=document.getElementById('monthBtns');
-  var currentMonth=new Date().getMonth();
-  var defaultIdx=Math.max(currentMonth-1,0);
+  var defaultIdx=0;
   MESES.forEach(function(mes,i){
     var btn=document.createElement('button');
     btn.className='mbtn'; btn.textContent=mes.substring(0,3).toUpperCase(); btn.title=mes;
-    if (i>=currentMonth){ btn.disabled=true; }
-    else { btn.onclick=(function(m,b){ return function(){ selectMonth(m,b); }; })(mes,btn); }
-    if (i===defaultIdx){ selectedMes=mes; btn.classList.add('active'); }
+    btn.disabled=true; // se habilitará después de cargar datos
+    btn.onclick=(function(m,b){ return function(){ selectMonth(m,b); }; })(mes,btn);
     container.appendChild(btn);
   });
+}
+
+function sfUpdateMonthBtnStates() {
+  var btns=document.querySelectorAll('#monthBtns .mbtn');
+  var firstEnabled=-1;
+  MESES.forEach(function(mes,i){
+    var btn=btns[i]; if(!btn) return;
+    var hasData=Object.keys(KPIS).some(function(key){
+      return allData[key]&&allData[key][mes]&&allData[key][mes].real!==null&&allData[key][mes].real!=='PENDIENTE';
+    });
+    if(hasData){ btn.disabled=false; if(firstEnabled===-1) firstEnabled=i; }
+    else { btn.disabled=true; }
+  });
+  // seleccionar el último mes con datos por defecto
+  var lastEnabled=-1;
+  MESES.forEach(function(mes,i){
+    var btn=btns[i]; if(!btn) return;
+    if(!btn.disabled) lastEnabled=i;
+  });
+  if(lastEnabled>=0 && !selectedMes){
+    selectedMes=MESES[lastEnabled];
+    btns[lastEnabled].classList.add('active');
+  }
 }
 
 function selectMonth(mes, activeBtn) {
@@ -1486,7 +1507,7 @@ function renderExecScoreStrip(stripId, summaryFn, totalKpis, mes, cuatrLabel) {
 }
 
 function loadMensualData() {
-  if (!selectedMes) return;
+  // selectedMes will be set after data loads
   document.getElementById('m-loadingBox').style.display='block';
   document.getElementById('m-errorBox').style.display='none';
   document.getElementById('m-mainContent').style.display='none';
@@ -1494,7 +1515,20 @@ function loadMensualData() {
 
   var qMeses = getQMeses(selectedMes);
 
-  loadAllFromSYyF(qMeses).then(function() {
+  // Load all 12 months to detect which have data
+  loadAllFromSYyF(MESES).then(function() {
+    sfUpdateMonthBtnStates();
+    // If selectedMes not yet set, pick last enabled month
+    var btns = document.querySelectorAll('#monthBtns .mbtn');
+    if (!selectedMes) {
+      var lastEnabled = -1;
+      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
+      if (lastEnabled >= 0) { selectedMes = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
+    }
+    // Reload only the quarter for the selected month
+    var qMeses2 = getQMeses(selectedMes);
+    return loadAllFromSYyF(qMeses2);
+  }).then(function() {
     var keys = Object.keys(KPIS);
     keys.forEach(function(key){ renderCard(key); });
     var sfSum = calcSummary();
@@ -1844,16 +1878,30 @@ var vypSelectedMes = '';
 
 function buildVypMonthSelector() {
   var container = document.getElementById('vyp-monthBtns');
-  var now = new Date(); var currentMonth = now.getMonth();
-  var defaultIdx = Math.max(currentMonth-1, 0);
   MESES.forEach(function(mes, i) {
     var btn = document.createElement('button');
     btn.className = 'mbtn'; btn.textContent = mes.substring(0,3).toUpperCase(); btn.title = mes;
-    if (i >= currentMonth) { btn.disabled = true; }
-    else { btn.onclick = (function(m,b){ return function(){ vypSelectMonth(m,b); }; })(mes,btn); }
-    if (i === defaultIdx) { vypSelectedMes = mes; btn.classList.add('active'); }
+    btn.disabled = true;
+    btn.onclick = (function(m,b){ return function(){ vypSelectMonth(m,b); }; })(mes,btn);
     container.appendChild(btn);
   });
+}
+
+function vypUpdateMonthBtnStates() {
+  var btns = document.querySelectorAll('#vyp-monthBtns .mbtn');
+  var lastEnabled = -1;
+  MESES.forEach(function(mes, i) {
+    var btn = btns[i]; if (!btn) return;
+    var hasData = Object.keys(VYP_KPIS).some(function(key) {
+      return vypAllData[key] && vypAllData[key][mes] && vypAllData[key][mes].real !== null && vypAllData[key][mes].real !== 'PENDIENTE';
+    });
+    if (hasData) { btn.disabled = false; lastEnabled = i; }
+    else { btn.disabled = true; }
+  });
+  if (lastEnabled >= 0 && !vypSelectedMes) {
+    vypSelectedMes = MESES[lastEnabled];
+    btns[lastEnabled].classList.add('active');
+  }
 }
 
 function vypSelectMonth(mes, activeBtn) {
@@ -2054,7 +2102,7 @@ function vypCalcSummary() {
 }
 
 function loadVypData() {
-  if (!vypSelectedMes) return;
+  // vypSelectedMes will be set after data loads
   document.getElementById('vyp-loadingBox').style.display = 'block';
   document.getElementById('vyp-errorBox').style.display = 'none';
   document.getElementById('vyp-mainContent').style.display = 'none';
@@ -2062,7 +2110,17 @@ function loadVypData() {
 
   var qMeses = vypGetQMeses(vypSelectedMes);
 
-  loadVypAllData(qMeses).then(function() {
+  loadVypAllData(MESES).then(function() {
+    vypUpdateMonthBtnStates();
+    var btns = document.querySelectorAll('#vyp-monthBtns .mbtn');
+    if (!vypSelectedMes) {
+      var lastEnabled = -1;
+      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
+      if (lastEnabled >= 0) { vypSelectedMes = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
+    }
+    var qMeses2 = vypGetQMeses(vypSelectedMes);
+    return loadVypAllData(qMeses2);
+  }).then(function() {
     vypLoaded = true;
     Object.keys(VYP_KPIS).forEach(function(key){ vypRenderCard(key); });
     var vypSum = vypCalcSummary();
@@ -2102,16 +2160,30 @@ var sisSelectedMes = '';
 
 function buildSisMonthSelector() {
   var container = document.getElementById('sis-monthBtns');
-  var now = new Date(); var currentMonth = now.getMonth();
-  var defaultIdx = Math.max(currentMonth-1, 0);
   MESES.forEach(function(mes, i) {
     var btn = document.createElement('button');
     btn.className = 'mbtn'; btn.textContent = mes.substring(0,3).toUpperCase(); btn.title = mes;
-    if (i >= currentMonth) { btn.disabled = true; }
-    else { btn.onclick = (function(m,b){ return function(){ sisSelectMonth(m,b); }; })(mes,btn); }
-    if (i === defaultIdx) { sisSelectedMes = mes; btn.classList.add('active'); }
+    btn.disabled = true;
+    btn.onclick = (function(m,b){ return function(){ sisSelectMonth(m,b); }; })(mes,btn);
     container.appendChild(btn);
   });
+}
+
+function sisUpdateMonthBtnStates() {
+  var btns = document.querySelectorAll('#sis-monthBtns .mbtn');
+  var lastEnabled = -1;
+  MESES.forEach(function(mes, i) {
+    var btn = btns[i]; if (!btn) return;
+    var hasData = Object.keys(SIS_KPIS).some(function(key) {
+      return sisAllData[key] && sisAllData[key][mes] && sisAllData[key][mes].real !== null && sisAllData[key][mes].real !== 'PENDIENTE';
+    });
+    if (hasData) { btn.disabled = false; lastEnabled = i; }
+    else { btn.disabled = true; }
+  });
+  if (lastEnabled >= 0 && !sisSelectedMes) {
+    sisSelectedMes = MESES[lastEnabled];
+    btns[lastEnabled].classList.add('active');
+  }
 }
 
 function sisSelectMonth(mes, activeBtn) {
@@ -2261,13 +2333,22 @@ function sisCalcSummary() {
 }
 
 function loadSisData() {
-  if (!sisSelectedMes) return;
+  // sisSelectedMes will be set after data loads
   document.getElementById('sis-loadingBox').style.display = 'block';
   document.getElementById('sis-errorBox').style.display = 'none';
   document.getElementById('sis-mainContent').style.display = 'none';
   var _ss=document.getElementById('sis-score-strip'); if(_ss) _ss.style.display='none';
 
-  loadSisAllData([sisSelectedMes]).then(function() {
+  loadSisAllData(MESES).then(function() {
+    sisUpdateMonthBtnStates();
+    var btns = document.querySelectorAll('#sis-monthBtns .mbtn');
+    if (!sisSelectedMes) {
+      var lastEnabled = -1;
+      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
+      if (lastEnabled >= 0) { sisSelectedMes = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
+    }
+    return loadSisAllData([sisSelectedMes]);
+  }).then(function() {
     sisLoaded = true;
     Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
     var sisSum = sisCalcSummary();
@@ -2379,18 +2460,32 @@ var cvaSelectedMes2 = '';
 function buildCvaMonthSelector() {
   var container = document.getElementById('cva-monthBtns2');
   if (!container) return;
-  var currentMonth = new Date().getMonth();
-  var defaultIdx   = Math.max(currentMonth - 1, 0);
   MESES.forEach(function(mes, i) {
     var btn = document.createElement('button');
     btn.className   = 'mbtn';
     btn.textContent = mes.substring(0, 3).toUpperCase();
     btn.title       = mes;
-    if (i >= currentMonth) { btn.disabled = true; }
-    else { btn.onclick = (function(m, b) { return function() { cvaSelectMonth2(m, b); }; })(mes, btn); }
-    if (i === defaultIdx) { cvaSelectedMes2 = mes; btn.classList.add('active'); }
+    btn.disabled    = true;
+    btn.onclick = (function(m, b) { return function() { cvaSelectMonth2(m, b); }; })(mes, btn);
     container.appendChild(btn);
   });
+}
+
+function cvaUpdateMonthBtnStates() {
+  var btns = document.querySelectorAll('#cva-monthBtns2 .mbtn');
+  var lastEnabled = -1;
+  MESES.forEach(function(mes, i) {
+    var btn = btns[i]; if (!btn) return;
+    var hasData = Object.keys(CVA_KPIS).some(function(key) {
+      return cvaAllData[key] && cvaAllData[key][mes] && cvaAllData[key][mes].real !== null && cvaAllData[key][mes].real !== 'PENDIENTE';
+    });
+    if (hasData) { btn.disabled = false; lastEnabled = i; }
+    else { btn.disabled = true; }
+  });
+  if (lastEnabled >= 0 && !cvaSelectedMes2) {
+    cvaSelectedMes2 = MESES[lastEnabled];
+    btns[lastEnabled].classList.add('active');
+  }
 }
 
 function cvaSelectMonth2(mes, activeBtn) {
@@ -2547,7 +2642,7 @@ function cvaCalcSummary2() {
 }
 
 function cvaRenderPage() {
-  if (!cvaSelectedMes2) return;
+  // selectedMes will be set after data loads
   Object.keys(CVA_KPIS).forEach(function(key) { cvaRenderCard(key); });
   var cvaSum = cvaCalcSummary2();
   renderExecScoreStrip('cva-score-strip', function(){ return cvaSum; }, cvaSum.total || 6, cvaSelectedMes2, getQLabel(cvaSelectedMes2));
@@ -2563,15 +2658,22 @@ function cvaRenderPage() {
 }
 
 function loadCvaData() {
-  if (!cvaSelectedMes2) return;
   document.getElementById('cva-loadingBox').style.display  = 'block';
   document.getElementById('cva-errorBox').style.display    = 'none';
   document.getElementById('cva-mainContent').style.display = 'none';
   var _ss=document.getElementById('cva-score-strip'); if(_ss) _ss.style.display='none';
 
-  var qMeses = getQMeses(cvaSelectedMes2);
-
-  loadCvaAllData(qMeses).then(function() {
+  loadCvaAllData(MESES).then(function() {
+    cvaUpdateMonthBtnStates();
+    var btns = document.querySelectorAll('#cva-monthBtns2 .mbtn');
+    if (!cvaSelectedMes2) {
+      var lastEnabled = -1;
+      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
+      if (lastEnabled >= 0) { cvaSelectedMes2 = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
+    }
+    var qMeses2 = getQMeses(cvaSelectedMes2);
+    return loadCvaAllData(qMeses2);
+  }).then(function() {
     cvaRenderPage();
     var _gfooter_ts=document.getElementById('footer-ts'); if(_gfooter_ts) _gfooter_ts.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
     document.getElementById('cva-loadingBox').style.display  = 'none';
@@ -2605,18 +2707,32 @@ var nnSelectedMes = '';
 function buildNnMonthSelector() {
   var container = document.getElementById('nn-monthBtns');
   if (!container) return;
-  var currentMonth = new Date().getMonth();
-  var defaultIdx   = Math.max(currentMonth - 1, 0);
   MESES.forEach(function(mes, i) {
     var btn = document.createElement('button');
     btn.className   = 'mbtn';
     btn.textContent = mes.substring(0, 3).toUpperCase();
     btn.title       = mes;
-    if (i >= currentMonth) { btn.disabled = true; }
-    else { btn.onclick = (function(m, b) { return function() { nnSelectMonth(m, b); }; })(mes, btn); }
-    if (i === defaultIdx) { nnSelectedMes = mes; btn.classList.add('active'); }
+    btn.disabled    = true;
+    btn.onclick = (function(m, b) { return function() { nnSelectMonth(m, b); }; })(mes, btn);
     container.appendChild(btn);
   });
+}
+
+function nnUpdateMonthBtnStates() {
+  var btns = document.querySelectorAll('#nn-monthBtns .mbtn');
+  var lastEnabled = -1;
+  MESES.forEach(function(mes, i) {
+    var btn = btns[i]; if (!btn) return;
+    var hasData = Object.keys(NN_KPIS).some(function(key) {
+      return nnAllData[key] && nnAllData[key][mes] && nnAllData[key][mes].real !== null && nnAllData[key][mes].real !== 'PENDIENTE';
+    });
+    if (hasData) { btn.disabled = false; lastEnabled = i; }
+    else { btn.disabled = true; }
+  });
+  if (lastEnabled >= 0 && !nnSelectedMes) {
+    nnSelectedMes = MESES[lastEnabled];
+    btns[lastEnabled].classList.add('active');
+  }
 }
 
 function nnSelectMonth(mes, activeBtn) {
@@ -2809,13 +2925,21 @@ function nnCalcSummary() {
 }
 
 function loadNnData() {
-  if (!nnSelectedMes) return;
   document.getElementById('nn-loadingBox').style.display  = 'block';
   document.getElementById('nn-errorBox').style.display    = 'none';
   document.getElementById('nn-mainContent').style.display = 'none';
   var _ss=document.getElementById('nn-score-strip'); if(_ss) _ss.style.display='none';
 
-  loadNnAllData(getQMeses(nnSelectedMes)).then(function() {
+  loadNnAllData(MESES).then(function() {
+    nnUpdateMonthBtnStates();
+    var btns = document.querySelectorAll('#nn-monthBtns .mbtn');
+    if (!nnSelectedMes) {
+      var lastEnabled = -1;
+      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
+      if (lastEnabled >= 0) { nnSelectedMes = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
+    }
+    return loadNnAllData(getQMeses(nnSelectedMes));
+  }).then(function() {
     Object.keys(NN_KPIS).forEach(function(key) { nnRenderCard(key); });
     var nnSum = nnCalcSummary();
     renderExecScoreStrip('nn-score-strip', function(){ return nnSum; }, nnSum.total || 6, nnSelectedMes, getQLabel(nnSelectedMes));
