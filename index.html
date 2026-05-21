@@ -990,7 +990,7 @@ var KPIS = {
 
 var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 /* Meses en que aplica NPS (2 veces al año) */
-var NPS_MESES = ['Mayo', 'Octubre'];
+var NPS_MESES = ['Abril', 'Mayo', 'Septiembre', 'Octubre'];
 function npsAplica(mes) { return NPS_MESES.indexOf(mes) !== -1; }
 
 var QUARTERS = [
@@ -1380,12 +1380,12 @@ function renderCard(key) {
   var el=document.getElementById('card-'+key);
   if (!el||!allData[key]||!allData[key][selectedMes]) return;
 
-  /* NPS solo aplica en Mayo y Octubre */
+  /* NPS solo aplica en Abril, Mayo, Septiembre y Octubre */
   if (key==='NPS' && !npsAplica(selectedMes)) {
     el.innerHTML = buildKpiRow({
       key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
       cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
-      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Abr, May, Sep y Oct',
       cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
       badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
       ok:null, com:''
@@ -2023,10 +2023,10 @@ function vypRenderCard(key) {
     el.innerHTML = buildKpiRow({
       key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
       cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
-      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Abr, May, Sep y Oct',
       cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
       badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
-      ok:null, com:''
+      ok:null, com:'⭐ Solo aplica para clientes 3-5 estrellas'
     });
     return;
   }
@@ -2071,7 +2071,7 @@ function vypRenderCard(key) {
     realColor: realColor, acumDisplay: acumDisplay,
     metaLabel: metaLabel, metaDisplay: metaDisplay,
     cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
-    badgeHtml: badgeHtml, ok: ok, com: ext2.comentarios || ''
+    badgeHtml: badgeHtml, ok: ok, com: (ext2.comentarios ? ext2.comentarios + '\n' : '') + (key === 'NPS' ? '⭐ Solo aplica para clientes 3-5 estrellas' : '')
   });
 }
 
@@ -2268,7 +2268,7 @@ function sisRenderCard(key) {
     el.innerHTML = buildKpiRow({
       key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
       cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
-      acumDisplay:null, metaLabel:'', metaDisplay:'Solo Mayo y Octubre',
+      acumDisplay:null, metaLabel:'', metaDisplay:'Abr, May, Sep y Oct',
       cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
       badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
       ok:null, com:''
