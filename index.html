@@ -883,7 +883,6 @@ footer {
         <div class="grid">
           <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
           <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
-          <div class="kpi-card" id="sis-card-NPS (%)"></div>
         </div>
 
         <div id="sis-am-section" style="display:none;">
@@ -2144,7 +2143,6 @@ function loadVypData() {
 
 /* ── SISTEMAS PAGE ── */
 var SIS_KPIS = {
-  'NPS (%)':                                    { label:'NPS (%)',                               icon:'😊', objective:'Satisfacción de clientes',                   weight:0,  unit:'%',  inverse:false, fixedObj:null,  objLabel:'NO APLICA', suffix:null, cuatrimestral:false },
   'Servidores Activos':                         { label:'Servidores Activos',                    icon:'🖥️', objective:'Mantener servidores activos bajo el umbral',  weight:15, unit:'%',  inverse:true,  fixedObj:70,    objLabel:'< 70%',     suffix:null, cuatrimestral:false },
   'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',  inverse:false, fixedObj:98,    objLabel:'≥ 98%',     suffix:null, cuatrimestral:false },
   'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                     icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
@@ -2264,17 +2262,6 @@ function sisRenderCard(key) {
   var el = document.getElementById(elId);
   if (!el || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
 
-  if (key==='NPS (%)' && !npsAplica(sisSelectedMes)) {
-    el.innerHTML = buildKpiRow({
-      key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
-      cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
-      acumDisplay:null, metaLabel:'', metaDisplay:'Abr, May, Sep y Oct',
-      cumpl:null, cumplColor:'', pw:0, barCls:'bar-nd',
-      badgeHtml:'<span class="kpi-badge badge-nd">No aplica</span>',
-      ok:null, com:''
-    });
-    return;
-  }
 
   var d = sisAllData[key][sisSelectedMes];
   var real = d.real, obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
@@ -2316,7 +2303,6 @@ function sisCalcSummary() {
   Object.keys(SIS_KPIS).forEach(function(key) {
     var cfg = SIS_KPIS[key];
     if (cfg.weight === 0) return;
-    if (key==='NPS (%)' && !npsAplica(sisSelectedMes)) return;
     totalDefined++;
     if (!sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
     var d = sisAllData[key][sisSelectedMes];
@@ -2379,7 +2365,7 @@ var KPI_ICONS = {
   'VENTAS':'💼','UNIDADES':'📦','CHURN':'🔄','CROSS-SELLING':'🔀',
   'Servidores Activos':'🖥️','Intermitencias Plataforma Tecnometrics':'📡',
   'Costo por unidad mensual':'💲',
-  'Ticketes Internos (Áreas Internas)':'🎫','Ticketes Externos (Clientes Activos / PV)':'📬','NPS (%)':'😊',
+  'Ticketes Internos (Áreas Internas)':'🎫','Ticketes Externos (Clientes Activos / PV)':'📬',
   'ROBOS':'🚨','ABUSOS DE CONFIANZA':'⚠️','CREDITOS':'💳',
   'TIEMPO DE PRIMERA RESPUESTA':'⏱️','SATISFACCIÓN DE CAPACITACIONES':'📚','CONECTIVIDAD':'📡',
   'Ingresos Clientes Nuevos (% crecimiento objetivo)':'💹',
