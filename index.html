@@ -612,10 +612,6 @@ footer {
     <a class="nav-item" id="nav-cva" onclick="navigate('cva')" href="#">
       <span class="nav-icon">🎯</span><span>KPIs: Central Monitoreo CVA</span>
     </a>
-    <a class="nav-item" id="nav-sis" onclick="navigate('sis')" href="#">
-      <span class="nav-icon">🖥️</span><span>KPIs: Sistemas</span>
-    </a>
-
     <a class="nav-item" id="nav-general" onclick="navigate('general')" href="#">
       <span class="nav-icon">🗂️</span><span>Resumen General</span>
     </a>
@@ -852,55 +848,6 @@ footer {
     </div>
   </div>
 
-  <!-- PAGE: SISTEMAS -->
-  <div class="page" id="page-sis">
-    <div id="sis-modal-overlay" onclick="sisCloseModal()" style="display:none;position:fixed;inset:0;background:rgba(13,46,94,0.45);z-index:1000;align-items:center;justify-content:center;">
-      <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(13,46,94,0.18);position:relative;">
-        <button onclick="sisCloseModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--slate2);">✕</button>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;">📝 Comentarios</div>
-        <div id="sis-modal-kpi" style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:16px;"></div>
-        <div id="sis-modal-body" style="font-size:13px;color:var(--navy);line-height:1.7;white-space:pre-wrap;"></div>
-      </div>
-    </div>
-    <div class="page-header">
-    <div class="month-panel">
-      <div><div class="month-panel-title">Sistemas · Período de análisis</div><div class="month-panel-sub">Selecciona el mes a visualizar</div></div>
-      <div class="month-btns" id="sis-monthBtns"></div>
-    </div>
-    <div class="exec-score-strip" id="sis-score-strip" style="display:none;"></div>
-    </div>
-    <div class="content">
-      <div id="sis-loadingBox" class="state-box"><div class="spinner"></div><p>Cargando datos…</p></div>
-      <div id="sis-errorBox" class="state-box" style="display:none;"><div style="font-size:36px;margin-bottom:12px;">⚠</div><p id="sis-errorMsg">Error.</p></div>
-      <div id="sis-mainContent" style="display:none;">
-        <div class="section-hdr"><div class="section-hdr-txt">Infraestructura</div><div class="section-hdr-line"></div></div>
-        <div class="grid">
-          <div class="kpi-card" id="sis-card-Servidores Activos"></div>
-          <div class="kpi-card" id="sis-card-Intermitencias Plataforma Tecnometrics"></div>
-          <div class="kpi-card" id="sis-card-Costo por unidad mensual"></div>
-        </div>
-        <div class="section-hdr"><div class="section-hdr-txt">Soporte &amp; Satisfacción</div><div class="section-hdr-line"></div></div>
-        <div class="grid">
-          <div class="kpi-card" id="sis-card-Ticketes Internos (Áreas Internas)"></div>
-          <div class="kpi-card" id="sis-card-Ticketes Externos (Clientes Activos / PV)"></div>
-        </div>
-
-        <div id="sis-am-section" style="display:none;">
-          <div class="section-hdr"><div class="section-hdr-txt">Logros &amp; Impedimentos</div><div class="section-hdr-line"></div></div>
-          <div class="table-wrap" style="margin-bottom:26px;">
-            <table style="width:100%;border-collapse:collapse;font-size:13px;">
-              <thead><tr style="background:var(--navy);">
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">🏆 Logros</th>
-                <th style="padding:12px 18px;color:#fff;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;">⚠️ Impedimentos</th>
-              </tr></thead>
-              <tbody id="sis-am-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- PAGE: RESUMEN GENERAL -->
   <div class="page" id="page-general">
     <div class="tab-bar" id="genTabBar">
@@ -926,7 +873,7 @@ footer {
       <div id="gen-mainContent" style="display:none;">
 
         <!-- Score cards -->
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;" id="gen-score-cards"></div>
 
         <!-- SFyF -->
         <div class="section-hdr"><div class="section-hdr-txt">💼 Servicios Financieros y Movilidad</div><div class="section-hdr-line"></div></div>
@@ -950,12 +897,6 @@ footer {
         <div class="section-hdr"><div class="section-hdr-txt">🎯 Central de Monitoreo CVA</div><div class="section-hdr-line"></div></div>
         <div class="table-wrap" style="margin-bottom:28px;">
           <div class="table-scroll"><table id="gen-table-cva"></table></div>
-        </div>
-
-        <!-- Sistemas -->
-        <div class="section-hdr"><div class="section-hdr-txt">🖥️ Sistemas</div><div class="section-hdr-line"></div></div>
-        <div class="table-wrap" style="margin-bottom:28px;">
-          <div class="table-scroll"><table id="gen-table-sis"></table></div>
         </div>
 
       </div>
@@ -997,6 +938,14 @@ var QUARTERS = [
   { q:2, label:'Q2 · May – Ago', meses:['Mayo','Junio','Julio','Agosto'] },
   { q:3, label:'Q3 · Sep – Dic', meses:['Septiembre','Octubre','Noviembre','Diciembre'] }
 ];
+
+/* Devuelve el número de cuatrimestre (1, 2 o 3) correspondiente al mes actual */
+function getCurrentQ() {
+  var m = new Date().getMonth(); // 0=Enero … 11=Diciembre
+  if (m <= 3) return 1;
+  if (m <= 7) return 2;
+  return 3;
+}
 
 var allData={}, selectedMes='', activeQ=1, resumenLoaded=false, currentPage='mensual';
 
@@ -1241,10 +1190,6 @@ function navigate(page) {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🏷️ KPIs: Venta Postventa';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Venta Postventa';
     loadVypData();
-  } else if (page==='sis') {
-    var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🖥️ KPIs: Sistemas';
-    var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Sistemas';
-    loadSisData();
   } else if (page==='cva') {
     var _gtopbar_title=document.getElementById('topbar-title'); if(_gtopbar_title) _gtopbar_title.textContent = '🎯 KPIs: Central Monitoreo CVA';
     var _gtopbar_crumb=document.getElementById('topbar-crumb'); if(_gtopbar_crumb) _gtopbar_crumb.textContent = 'Reportes · KPIs: Central Monitoreo CVA';
@@ -1271,12 +1216,10 @@ function refreshData() {
   genLoaded=false;
   allData={}; resumenLoaded=false; sfDataLoaded=false; sfRawRows=[]; sfLIData={}; sfExtras={};
   vypAllData={}; vypExtras={}; vypLoaded=false; vypDataLoaded=false; vypRawRows=[];
-  sisAllData={}; sisExtras={}; sisLoaded=false; sisDataLoaded=false; sisRawRows=[];
   cvaAllData={}; cvaExtras2={}; cvaPageLoaded=false; cvaRawRows2=[];
   nnAllData={}; nnExtras={}; nnLoaded=false; nnRawRows=[];
   if      (currentPage==='mensual')  loadMensualData();
   else if (currentPage==='vyp')      loadVypData();
-  else if (currentPage==='sis')      loadSisData();
   else if (currentPage==='cva')      loadCvaData();
   else if (currentPage==='nn')       loadNnData();
   else if (currentPage==='general')  loadGeneral();
@@ -2141,223 +2084,6 @@ function loadVypData() {
   });
 }
 
-/* ── SISTEMAS PAGE ── */
-var SIS_KPIS = {
-  'Servidores Activos':                         { label:'Servidores Activos',                    icon:'🖥️', objective:'Mantener servidores activos bajo el umbral',  weight:15, unit:'%',  inverse:true,  fixedObj:70,    objLabel:'< 70%',     suffix:null, cuatrimestral:false },
-  'Intermitencias Plataforma Tecnometrics':     { label:'Intermitencias Plataforma Tecnometrics',icon:'📡', objective:'Alta disponibilidad de plataforma',           weight:25, unit:'%',  inverse:false, fixedObj:98,    objLabel:'≥ 98%',     suffix:null, cuatrimestral:false },
-  'Ticketes Internos (Áreas Internas)':         { label:'Ticketes Internos',                     icon:'🎫', objective:'Respuesta oportuna a áreas internas',          weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
-  'Ticketes Externos (Clientes Activos / PV)':  { label:'Ticketes Externos',                     icon:'📬', objective:'Respuesta oportuna a clientes activos / PV',   weight:25, unit:'%',  inverse:false, fixedObj:90,    objLabel:'≥ 90%',     suffix:null, cuatrimestral:false },
-  'Costo por unidad mensual':                   { label:'Costo por Unidad Mensual (USD)',         icon:'💵', objective:'Mantener costo por unidad bajo el objetivo',   weight:10, unit:'$USD',inverse:true,  fixedObj:0.95,  objLabel:'≤ $0.95 USD',suffix:null, cuatrimestral:false }
-};
-
-var sisRawRows = [];
-var sisDataLoaded = false;
-var sisAllData = {};
-var sisExtras = {};
-var sisSelectedMes = '';
-
-function buildSisMonthSelector() {
-  var container = document.getElementById('sis-monthBtns');
-  MESES.forEach(function(mes, i) {
-    var btn = document.createElement('button');
-    btn.className = 'mbtn'; btn.textContent = mes.substring(0,3).toUpperCase(); btn.title = mes;
-    btn.disabled = true;
-    btn.onclick = (function(m,b){ return function(){ sisSelectMonth(m,b); }; })(mes,btn);
-    container.appendChild(btn);
-  });
-}
-
-function sisUpdateMonthBtnStates() {
-  var btns = document.querySelectorAll('#sis-monthBtns .mbtn');
-  var lastEnabled = -1;
-  MESES.forEach(function(mes, i) {
-    var btn = btns[i]; if (!btn) return;
-    var hasData = Object.keys(SIS_KPIS).some(function(key) {
-      return sisAllData[key] && sisAllData[key][mes] && sisAllData[key][mes].real !== null && sisAllData[key][mes].real !== 'PENDIENTE';
-    });
-    if (hasData) { btn.disabled = false; lastEnabled = i; }
-    else { btn.disabled = true; }
-  });
-  if (lastEnabled >= 0 && !sisSelectedMes) {
-    sisSelectedMes = MESES[lastEnabled];
-    btns[lastEnabled].classList.add('active');
-  }
-}
-
-function sisSelectMonth(mes, activeBtn) {
-  sisSelectedMes = mes;
-  document.querySelectorAll('#sis-monthBtns .mbtn').forEach(function(b){ b.classList.remove('active'); });
-  activeBtn.classList.add('active');
-  loadSisData();
-}
-
-function fetchSis() {
-  if (sisDataLoaded) return Promise.resolve(sisRawRows);
-  return fetch(APPS_SCRIPT_URL + '?sheet=SISTEMAS')
-    .then(function(r){ return r.json(); })
-    .then(function(d){ sisRawRows = d.rows || []; sisDataLoaded = true; return sisRawRows; });
-}
-
-function loadSisAllData(mesesFiltro) {
-  return fetchSis().then(function(rows) {
-    var keys = Object.keys(SIS_KPIS);
-    keys.forEach(function(key) {
-      if (!sisAllData[key]) sisAllData[key] = {};
-      if (!sisExtras[key])  sisExtras[key]  = {};
-      mesesFiltro.forEach(function(m) {
-        sisAllData[key][m] = { real: null, objetivo: null };
-        sisExtras[key][m]  = { comentarios: '' };
-      });
-    });
-    rows.forEach(function(row) {
-      var mes = String(row['MES'] !== undefined ? row['MES'] : '').trim();
-      var kpi = String(row['KPI'] !== undefined ? row['KPI'] : '').trim();
-      if (!mes || !kpi || !SIS_KPIS[kpi]) return;
-      mes = mes.charAt(0).toUpperCase() + mes.slice(1).toLowerCase();
-      if (mesesFiltro.indexOf(mes) === -1) return;
-      var rawReal = row.hasOwnProperty('REAL') ? row['REAL'] : null;
-      var rawObj  = row.hasOwnProperty('OBJETIVO') ? row['OBJETIVO'] : null;
-      var real = parseVal(rawReal, kpi);
-      var obj  = parseVal(rawObj,  kpi);
-      var cfg  = SIS_KPIS[kpi];
-      // Convertir decimales a porcentaje para unidad %
-      if (cfg.unit === '%') {
-        if (real !== null && real !== 'PENDIENTE' && real > 0 && real <= 1) real = Math.round(real * 10000) / 100;
-        if (obj  !== null && obj  !== 'PENDIENTE' && obj  > 0 && obj  <= 1) obj  = Math.round(obj  * 10000) / 100;
-      }
-      sisAllData[kpi][mes] = { real: real, objetivo: cfg.fixedObj !== null ? cfg.fixedObj : obj };
-      // Columnas COMENTARIOS, LOGROS e IMPEDIMENTOS
-      var rkeys = Object.keys(row);
-      var kCom = rkeys.find(function(k){ return k.toUpperCase().trim() === 'COMENTARIOS'; });
-      var kLog = rkeys.find(function(k){ return k.toUpperCase().trim() === 'LOGROS'; });
-      var kImp = rkeys.find(function(k){ return k.toUpperCase().trim() === 'IMPEDIMENTOS'; });
-      if (!sisExtras[kpi][mes]) sisExtras[kpi][mes] = { comentarios: '' };
-      if (kCom) sisExtras[kpi][mes].comentarios = String(row[kCom] || '').trim();
-      if (!sisExtras['_general']) sisExtras['_general'] = {};
-      if (!sisExtras['_general'][mes]) sisExtras['_general'][mes] = { logros:[], impedimentos:[] };
-      if (kLog && row[kLog]) sisExtras['_general'][mes].logros.push(String(row[kLog]||'').trim());
-      if (kImp && row[kImp]) sisExtras['_general'][mes].impedimentos.push(String(row[kImp]||'').trim());
-    });
-  });
-}
-
-function sisOpenModal(kpi, comentario) {
-  var cfg = SIS_KPIS[kpi];
-  var _gsis_modal_kpi=document.getElementById('sis-modal-kpi'); if(_gsis_modal_kpi) _gsis_modal_kpi.textContent = cfg ? cfg.label : kpi;
-  var _gsis_modal_body=document.getElementById('sis-modal-body'); if(_gsis_modal_body) _gsis_modal_body.textContent = comentario || 'Sin comentarios para este período.';
-  document.getElementById('sis-modal-overlay').style.display = 'flex';
-}
-function sisCloseModal() {
-  document.getElementById('sis-modal-overlay').style.display = 'none';
-}
-
-function renderSisAM() {
-  var data = sisExtras['_general'] && sisExtras['_general'][sisSelectedMes] ? sisExtras['_general'][sisSelectedMes] : {};
-  renderLITable('sis-am-section', 'sis-am-tbody', data.logros || [], data.impedimentos || []);
-}
-
-function sisRenderCard(key) {
-  var cfg = SIS_KPIS[key];
-  var elId = 'sis-card-' + key;
-  var el = document.getElementById(elId);
-  if (!el || !sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
-
-
-  var d = sisAllData[key][sisSelectedMes];
-  var real = d.real, obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
-  var isPendiente = real === 'PENDIENTE';
-  var realNum = isPendiente ? null : real;
-  var realDisplay = fmtVal(real, cfg.unit, cfg.suffix);
-
-  var m = calcKpiMetrics(cfg, realNum, obj, null, 0);
-  var ok = m.ok, pw = m.pw, cumpl = m.cumpl, barCls = m.barCls;
-
-  var cumplColor = cumpl === null ? 'var(--slate2)' : ok ? 'var(--green)' : 'var(--red)';
-  var cumplHtml  = cfg.weight === 0 ? '' : (cumpl !== null ? '<div class="kpi-cumpl" style="color:'+cumplColor+';">'+cumpl+'% cumplimiento</div>' : '<div class="kpi-cumpl" style="color:var(--slate3);">— % cumplimiento</div>');
-
-  var badgeHtml;
-  if (isPendiente)                           badgeHtml = '<span class="kpi-badge badge-nd">⏳ Pendiente</span>';
-  else if (realNum === null || obj === null)  badgeHtml = '<span class="kpi-badge badge-nd">Sin datos</span>';
-  else if (ok)                               badgeHtml = '<span class="kpi-badge badge-ok">✓ En objetivo</span>';
-  else if (pw >= 80)                         badgeHtml = '<span class="kpi-badge badge-near">⚡ Cerca</span>';
-  else                                       badgeHtml = '<span class="kpi-badge badge-off">↓ Fuera de objetivo</span>';
-
-  var metaDisplay = cfg.objLabel ? cfg.objLabel : (obj !== null ? fmtVal(obj, cfg.unit, cfg.suffix) : '—');
-  var realColor   = realNum === null ? 'var(--slate3)' : ok ? 'var(--green)' : 'var(--red)';
-
-  var ext = (sisExtras[key] && sisExtras[key][sisSelectedMes]) || {};
-  var com = ext.comentarios || '';
-
-  el.innerHTML = buildKpiRow({
-    key: key, icon: cfg.icon, label: cfg.label, objective: cfg.objective,
-    cuatrimestral: false, realDisplay: realDisplay,
-    realColor: realColor, acumDisplay: null,
-    metaLabel: 'Meta: ', metaDisplay: metaDisplay,
-    cumpl: cumpl, cumplColor: cumplColor, pw: pw, barCls: barCls,
-    badgeHtml: badgeHtml, ok: ok, com: com
-  });
-}
-
-function sisCalcSummary() {
-  var score = 0, totalW = 0, ok = 0, total = 0, totalDefined = 0;
-  Object.keys(SIS_KPIS).forEach(function(key) {
-    var cfg = SIS_KPIS[key];
-    if (cfg.weight === 0) return;
-    totalDefined++;
-    if (!sisAllData[key] || !sisAllData[key][sisSelectedMes]) return;
-    var d = sisAllData[key][sisSelectedMes];
-    if (d.real === null || d.real === 'PENDIENTE') return;
-    var obj = cfg.fixedObj !== null ? cfg.fixedObj : d.objetivo;
-    if (obj === null) return;
-    var m = calcKpiMetrics(cfg, d.real, obj, null, 0);
-    score  += (m.pw / 100) * cfg.weight;
-    totalW += cfg.weight;
-    total++;
-    if (m.ok) ok++;
-  });
-  return { pct: totalW > 0 ? Math.round((score/totalW)*100) : null, ok: ok, total: totalDefined };
-}
-
-function loadSisData() {
-  // sisSelectedMes will be set after data loads
-  document.getElementById('sis-loadingBox').style.display = 'block';
-  document.getElementById('sis-errorBox').style.display = 'none';
-  document.getElementById('sis-mainContent').style.display = 'none';
-  var _ss=document.getElementById('sis-score-strip'); if(_ss) _ss.style.display='none';
-
-  loadSisAllData(MESES).then(function() {
-    sisUpdateMonthBtnStates();
-    var btns = document.querySelectorAll('#sis-monthBtns .mbtn');
-    if (!sisSelectedMes) {
-      var lastEnabled = -1;
-      MESES.forEach(function(m, i){ if(btns[i] && !btns[i].disabled) lastEnabled=i; });
-      if (lastEnabled >= 0) { sisSelectedMes = MESES[lastEnabled]; btns[lastEnabled].classList.add('active'); }
-    }
-    return loadSisAllData([sisSelectedMes]);
-  }).then(function() {
-    sisLoaded = true;
-    Object.keys(SIS_KPIS).forEach(function(key){ sisRenderCard(key); });
-    var sisSum = sisCalcSummary();
-    renderExecScoreStrip('sis-score-strip', function(){ return sisSum; }, sisSum.total || 5, sisSelectedMes, getQLabel(sisSelectedMes));
-    renderSisAM();
-    var s = sisSum;
-    var _gsis_sum_ok=document.getElementById('sis-sum-ok'); if(_gsis_sum_ok) _gsis_sum_ok.textContent = s.ok + ' / 5';
-    var te = document.getElementById('sis-sum-trend');
-    if (te && s.pct !== null) {
-      te.textContent = s.pct >= 75 ? '↑ Positiva' : s.pct >= 50 ? '→ Estable' : '↓ Atención';
-      te.style.color = s.pct >= 75 ? 'var(--green)' : s.pct >= 60 ? 'var(--amber)' : 'var(--red)';
-    }
-    document.getElementById('sis-loadingBox').style.display = 'none';
-    document.getElementById('sis-mainContent').style.display = 'block';
-  }).catch(function(e) {
-    document.getElementById('sis-loadingBox').style.display = 'none';
-    document.getElementById('sis-errorBox').style.display = 'block';
-    var _gsis_errorMsg=document.getElementById('sis-errorMsg'); if(_gsis_errorMsg) _gsis_errorMsg.textContent = 'Error: ' + e.message;
-  });
-}
-
-
-
 var KPI_ICONS = {
   'Ingresos':'💹','icon-blue':true,
   'Churn':'🔄','CrossSelling':'🔀','ClientesNuevos':'⭐',
@@ -2963,7 +2689,7 @@ var CVA_GEN_KPIS = [
   { key:'con-general',  label:'Conectividad General',           icon:'📡', meta:85,  metaLabel:'≥ 85%',  inverse:false },
 ];
 
-/* Helpers de cálculo cuatrimestral reutilizando allData / vypAllData / sisAllData */
+/* Helpers de cálculo cuatrimestral reutilizando allData / vypAllData */
 function genGetBlockAccum(data, key, meses) {
   var total = 0, hasAny = false;
   meses.forEach(function(m) {
@@ -3169,7 +2895,6 @@ function genRenderScoreCards(meses, isAnual) {
   var sfScore  = genCalcTotal(allData,    KPIS,     meses, isAnual);
   var nnScore  = genCalcTotal(nnAllData,  NN_KPIS,  meses, isAnual);
   var vypScore = genCalcTotal(vypAllData, VYP_KPIS, meses, isAnual);
-  var sisScore = genCalcTotal(sisAllData, SIS_KPIS, meses, isAnual);
 
   /* CVA: usa cvaAllData + CVA_KPIS igual que las otras áreas */
   var cvaScore = genCalcTotal(cvaAllData, CVA_KPIS, meses, isAnual);
@@ -3178,8 +2903,7 @@ function genRenderScoreCards(meses, isAnual) {
     scoreCard('💼', 'Servicios Financieros', sfScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(sfScore,100))
   + scoreCard('🚀', 'Nuevos Negocios',       nnScore,  100, isAnual?'Score anual':'Score cuatrimestral', getColor(nnScore,100))
   + scoreCard('🏷️', 'Venta Postventa',       vypScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(vypScore,100))
-  + scoreCard('🎯', 'Central Monitoreo CVA', cvaScore, 100, 'Score cuatrimestral', getColor(cvaScore,100))
-  + scoreCard('🖥️', 'Sistemas',              sisScore, 100, isAnual?'Score anual':'Score cuatrimestral', getColor(sisScore,100));
+  + scoreCard('🎯', 'Central Monitoreo CVA', cvaScore, 100, 'Score cuatrimestral', getColor(cvaScore,100));
 }
 
 /* Tab selector */
@@ -3189,6 +2913,23 @@ function genSelectQ(q, btn) {
   document.querySelectorAll('#genTabBar .tab-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   genRenderAll();
+}
+
+/* Revisa si algún KPI de cualquier área tiene datos reales (no nulos/pendientes) en los meses del cuatrimestre q */
+function genHasDataForQ(q) {
+  var meses = QUARTERS.find(function(x){ return x.q === q; }).meses;
+  var sources = [allData, nnAllData, vypAllData, cvaAllData];
+  for (var s = 0; s < sources.length; s++) {
+    var src = sources[s] || {};
+    var keys = Object.keys(src);
+    for (var i = 0; i < meses.length; i++) {
+      for (var j = 0; j < keys.length; j++) {
+        var d = src[keys[j]] ? src[keys[j]][meses[i]] : null;
+        if (d && d.real !== undefined && d.real !== null && d.real !== 'PENDIENTE') return true;
+      }
+    }
+  }
+  return false;
 }
 
 function genUpdateTabStates() {
@@ -3202,8 +2943,29 @@ function genUpdateTabStates() {
   var anualBtn = document.getElementById('gen-tab-anual');
   if (anualBtn) { anualBtn.classList.add('enabled'); }
   if (!firstQ) firstQ = 'anual';
-  genActiveQ = firstQ;
-  var activeBtn = document.getElementById('gen-tab-' + firstQ);
+
+  var curQ = getCurrentQ();
+  var defaultQ = null;
+
+  if (genHasDataForQ(curQ)) {
+    defaultQ = curQ;
+  } else {
+    // Buscar hacia atrás el último cuatrimestre anterior con datos
+    for (var q = curQ - 1; q >= 1; q--) {
+      if (genHasDataForQ(q)) { defaultQ = q; break; }
+    }
+    // Si ninguno anterior tiene datos, buscar hacia adelante
+    if (!defaultQ) {
+      for (var q2 = curQ + 1; q2 <= 3; q2++) {
+        if (genHasDataForQ(q2)) { defaultQ = q2; break; }
+      }
+    }
+    // Último recurso: el primer cuatrimestre habilitado
+    if (!defaultQ) defaultQ = firstQ;
+  }
+
+  genActiveQ = defaultQ;
+  var activeBtn = document.getElementById('gen-tab-' + defaultQ);
   if (activeBtn) activeBtn.classList.add('active');
 }
 
@@ -3215,7 +2977,6 @@ function genRenderAll() {
   genBuildTable('gen-table-nn',  'Nuevos Negocios',NN_KPIS,  nnAllData,  meses, isAnual);
   genBuildTable('gen-table-vyp', 'VyP',            VYP_KPIS, vypAllData, meses, isAnual);
   genBuildCVATable(meses, isAnual);
-  genBuildTable('gen-table-sis', 'Sistemas',       SIS_KPIS, sisAllData, meses, isAnual);
   genRenderScoreCards(meses, isAnual);
 }
 
@@ -3227,11 +2988,10 @@ async function loadGeneral() {
 
   try {
     /* Force reload with all 12 months (monthly pages only load 4) */
-    sfDataLoaded = false; vypDataLoaded = false; sisDataLoaded = false; nnLoaded = false;
+    sfDataLoaded = false; vypDataLoaded = false; nnLoaded = false;
     await Promise.all([
       loadAllFromSYyF(MESES),
       loadVypAllData(MESES),
-      loadSisAllData(MESES),
       loadNnAllData(MESES)
     ]);
 
@@ -3314,7 +3074,6 @@ function genExportPDF() {
 buildMonthSelector();
 buildCvaMonthSelector();
 buildVypMonthSelector();
-buildSisMonthSelector();
 buildNnMonthSelector();
 loadMensualData();
 
