@@ -917,21 +917,41 @@ var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby59F7hn1Bqzff0Bd
    El ID de la columna KPI coincide exactamente con las claves de este objeto */
 var HOJA_DATOS = 'SFyF';
 
+/* tolerance = margen dentro del cual el KPI se considera cumplido en el Resumen General,
+   aunque no llegue exacto a la meta. tolType define cómo se interpreta 'tolerance':
+   - 'pct'  → % sobre la meta (para KPIs en %, $ o días)
+   - 'abs'  → número entero fijo (para KPIs de conteo, unit '#') */
 var KPIS = {
-  Ingresos:      { label:'Ingresos',           icon:'💹', objective:'Generar crecimiento comercial sostenible',               weight:60, unit:'$',    inverse:false, fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false },
-  Churn:         { label:'Churn',              icon:'🔄', objective:'Retener clientes 3, 4 y 5 estrellas',                    weight:10, unit:'#',    inverse:true,  fixedObj:3,    objLabel:'Máx. 3',       suffix:'bajas',      cuatrimestral:true  },
-  CrossSelling:  { label:'Cross-Selling',      icon:'🔀', objective:'Clientes 3,4 y 5★ con +2 soluciones implementadas',      weight:10, unit:'#',    inverse:false, fixedObj:8,    objLabel:'8 clientes',   suffix:'cliente(s)', cuatrimestral:true  },
-  ClientesNuevos:{ label:'Clientes Nuevos 5★', icon:'⭐', objective:'Crecer con clientes de alta calidad',                    weight: 5, unit:'#',    inverse:false, fixedObj:3,    objLabel:'3 clientes',   suffix:'cliente(s)', cuatrimestral:true  },
-  NPS:           { label:'NPS',                icon:'😊', objective:'Encuesta 2x año, lograr resultado positivo',             weight: 0, unit:'%',    inverse:false, fixedObj:52,   objLabel:'≥ 52%',        suffix:null,         cuatrimestral:false },
-  MargenBruto:   { label:'Margen Bruto',       icon:'💰', objective:'Incrementar rentabilidad mediante estrategia de precios', weight: 5, unit:'%',    inverse:false, fixedObj:83,   objLabel:'≥ 83%',        suffix:null,         cuatrimestral:false },
-  SGA:           { label:'SG&A vs PPTO',       icon:'📊', objective:'Mantener gastos alineados al presupuesto',               weight: 5, unit:'$',    inverse:true,  fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false },
-  CxC:           { label:'Cuentas x Cobrar',   icon:'📅', objective:'Mantener días de CxC por debajo del objetivo',           weight: 5, unit:'días', inverse:true,  fixedObj:38,   objLabel:'Máx. 38 días', suffix:null,         cuatrimestral:false }
+  Ingresos:      { label:'Ingresos',           icon:'💹', objective:'Generar crecimiento comercial sostenible',               weight:60, unit:'$',    inverse:false, fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false, tolerance:15, tolType:'pct' },
+  Churn:         { label:'Churn',              icon:'🔄', objective:'Retener clientes 3, 4 y 5 estrellas',                    weight:10, unit:'#',    inverse:true,  fixedObj:3,    objLabel:'Máx. 3',       suffix:'bajas',      cuatrimestral:true,  tolerance:1,  tolType:'abs' },
+  CrossSelling:  { label:'Cross-Selling',      icon:'🔀', objective:'Clientes 3,4 y 5★ con +2 soluciones implementadas',      weight:10, unit:'#',    inverse:false, fixedObj:8,    objLabel:'8 clientes',   suffix:'cliente(s)', cuatrimestral:true,  tolerance:2,  tolType:'abs' },
+  ClientesNuevos:{ label:'Clientes Nuevos 5★', icon:'⭐', objective:'Crecer con clientes de alta calidad',                    weight: 5, unit:'#',    inverse:false, fixedObj:3,    objLabel:'3 clientes',   suffix:'cliente(s)', cuatrimestral:true,  tolerance:1,  tolType:'abs' },
+  NPS:           { label:'NPS',                icon:'😊', objective:'Encuesta 2x año, lograr resultado positivo',             weight: 0, unit:'%',    inverse:false, fixedObj:52,   objLabel:'≥ 52%',        suffix:null,         cuatrimestral:false, tolerance:10, tolType:'pct' },
+  MargenBruto:   { label:'Margen Bruto',       icon:'💰', objective:'Incrementar rentabilidad mediante estrategia de precios', weight: 5, unit:'%',    inverse:false, fixedObj:83,   objLabel:'≥ 83%',        suffix:null,         cuatrimestral:false, tolerance:10, tolType:'pct' },
+  SGA:           { label:'SG&A vs PPTO',       icon:'📊', objective:'Mantener gastos alineados al presupuesto',               weight: 5, unit:'$',    inverse:true,  fixedObj:null, objLabel:null,           suffix:null,         cuatrimestral:false, tolerance:10, tolType:'pct' },
+  CxC:           { label:'Cuentas x Cobrar',   icon:'📅', objective:'Mantener días de CxC por debajo del objetivo',           weight: 5, unit:'días', inverse:true,  fixedObj:38,   objLabel:'Máx. 38 días', suffix:null,         cuatrimestral:false, tolerance:15, tolType:'pct' }
 };
 
 var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 /* Meses en que aplica NPS (2 veces al año) */
 var NPS_MESES = ['Abril', 'Mayo', 'Septiembre', 'Octubre'];
 function npsAplica(mes) { return NPS_MESES.indexOf(mes) !== -1; }
+
+/* NPS se levanta 2 veces al año (encuesta), pero el dato debe seguir mostrándose
+   en los meses intermedios hasta que se registre un nuevo valor.
+   Busca, a partir del mes seleccionado hacia atrás dentro del mismo año,
+   el mes más reciente que tenga un valor real capturado para NPS. */
+function getNpsCarry(dataObj, mes) {
+  var idx = MESES.indexOf(mes);
+  if (idx === -1 || !dataObj || !dataObj['NPS']) return null;
+  for (var i = idx; i >= 0; i--) {
+    var d = dataObj['NPS'][MESES[i]];
+    if (d && d.real !== null && d.real !== undefined && d.real !== 'PENDIENTE') {
+      return { real: d.real, objetivo: d.objetivo, mes: MESES[i] };
+    }
+  }
+  return null;
+}
 
 var QUARTERS = [
   { q:1, label:'Q1 · Ene – Abr', meses:['Enero','Febrero','Marzo','Abril'] },
@@ -1279,7 +1299,10 @@ function sfCloseModal() {
   document.getElementById('sf-modal-overlay').style.display = 'none';
 }
 
-/* ── HELPER UNIVERSAL: calcula métricas de un KPI dado acum/real, obj, cfg, idxMes ── */
+/* ── HELPER UNIVERSAL: calcula métricas de un KPI dado acum/real, obj, cfg, idxMes ──
+   NOTA: esta función NO aplica tolerancia (mantiene el cálculo estricto), ya que
+   alimenta las tarjetas mensuales. La tolerancia solo se refleja en el Resumen
+   General, dentro de genCalcEstatus/genCalcTotal. */
 function calcKpiMetrics(cfg, realNum, obj, acum, idxMes) {
   var ok = false, pw = 0, cumpl = null, barCls = 'bar-nd';
 
@@ -1322,8 +1345,29 @@ function renderCard(key) {
   var el=document.getElementById('card-'+key);
   if (!el||!allData[key]||!allData[key][selectedMes]) return;
 
-  /* NPS solo aplica en Abril, Mayo, Septiembre y Octubre */
-  if (key==='NPS' && !npsAplica(selectedMes)) {
+  /* NPS solo se levanta 2 veces al año (Abril y Septiembre aprox.), pero el último
+     valor registrado debe seguir mostrándose en los meses intermedios hasta que
+     se capture uno nuevo. Si el mes actual no tiene dato propio, se arrastra el
+     último disponible (ej. el de Abril se mantiene hasta que llegue el de Sep/Oct). */
+  var npsMesPropio = allData[key][selectedMes];
+  var npsTienePropio = npsMesPropio && npsMesPropio.real !== null && npsMesPropio.real !== undefined && npsMesPropio.real !== 'PENDIENTE';
+  if (key==='NPS' && !npsTienePropio) {
+    var npsCarry = getNpsCarry(allData, selectedMes);
+    if (npsCarry) {
+      var ncReal = npsCarry.real, ncObj = cfg.fixedObj !== null ? cfg.fixedObj : npsCarry.objetivo;
+      var ncM = calcKpiMetrics(cfg, ncReal, ncObj, null, 0);
+      var ncColor = ncM.ok ? 'var(--green)' : 'var(--red)';
+      el.innerHTML = buildKpiRow({
+        key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
+        cuatrimestral:false, realDisplay:fmtVal(ncReal,cfg.unit,cfg.suffix),
+        realColor:ncColor,
+        acumDisplay:null, metaLabel:'Meta: ', metaDisplay:cfg.objLabel||fmtVal(ncObj,cfg.unit,cfg.suffix),
+        cumpl:null, cumplColor:'', pw:ncM.pw, barCls:ncM.barCls,
+        badgeHtml:'<span class="kpi-badge badge-nd">📌 Dato de ' + npsCarry.mes + '</span>',
+        ok:ncM.ok, com:'Último dato registrado (' + npsCarry.mes + '); próxima encuesta en Ago/Sep/Oct.'
+      });
+      return;
+    }
     el.innerHTML = buildKpiRow({
       key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
       cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
@@ -1961,7 +2005,25 @@ function vypRenderCard(key) {
   var el = document.getElementById('vyp-card-' + key);
   if (!el || !vypAllData[key] || !vypAllData[key][vypSelectedMes]) return;
 
-  if (key==='NPS' && !npsAplica(vypSelectedMes)) {
+  var vypNpsMesPropio = vypAllData[key][vypSelectedMes];
+  var vypNpsTienePropio = vypNpsMesPropio && vypNpsMesPropio.real !== null && vypNpsMesPropio.real !== undefined && vypNpsMesPropio.real !== 'PENDIENTE';
+  if (key==='NPS' && !vypNpsTienePropio) {
+    var vypNpsCarry = getNpsCarry(vypAllData, vypSelectedMes);
+    if (vypNpsCarry) {
+      var vncReal = vypNpsCarry.real, vncObj = cfg.fixedObj !== null ? cfg.fixedObj : vypNpsCarry.objetivo;
+      var vncM = calcKpiMetrics(cfg, vncReal, vncObj, null, 0);
+      var vncColor = vncM.ok ? 'var(--green)' : 'var(--red)';
+      el.innerHTML = buildKpiRow({
+        key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
+        cuatrimestral:false, realDisplay:fmtVal(vncReal,cfg.unit,cfg.suffix),
+        realColor:vncColor,
+        acumDisplay:null, metaLabel:'Meta: ', metaDisplay:cfg.objLabel||fmtVal(vncObj,cfg.unit,cfg.suffix),
+        cumpl:null, cumplColor:'', pw:vncM.pw, barCls:vncM.barCls,
+        badgeHtml:'<span class="kpi-badge badge-nd">📌 Dato de ' + vypNpsCarry.mes + '</span>',
+        ok:vncM.ok, com:'Último dato registrado (' + vypNpsCarry.mes + '); próxima encuesta en Ago/Sep/Oct. ⭐ Solo aplica para clientes 3-5 estrellas'
+      });
+      return;
+    }
     el.innerHTML = buildKpiRow({
       key:key, icon:cfg.icon, label:cfg.label, objective:cfg.objective,
       cuatrimestral:false, realDisplay:'N/A', realColor:'var(--slate3)',
@@ -2701,15 +2763,110 @@ function genGetBlockAccum(data, key, meses) {
   return hasAny ? total : null;
 }
 
+/* Nota estándar: solo el valor, para comparar contra el modal de Replit. */
+function notaComparable(valorTexto, cfg, score) {
+  return '📌 Valor: ' + valorTexto;
+}
+
 function genCalcEstatus(data, kpis, key, meses) {
   var cfg = kpis[key];
-  if (!cfg || cfg.weight === 0) return null;
+  if (!cfg) return null;
+  var esSF = (kpis === KPIS); // las notas "qué capturar en Replit" solo aplican a Servicios Financieros
   var validMeses = meses.filter(function(m) {
     return data[key] && data[key][m] && data[key][m].real !== null && data[key][m].real !== 'PENDIENTE';
   });
   if (!validMeses.length) return null;
-  var score, barPct, acum = null, obj = null;
-  if (cfg.cuatrimestral) {
+  var score, barPct, acum = null, obj = null, nota = null, cumplFinal;
+
+  /* KPI con ponderación 0% (ej. NPS): no aporta al score, pero mostramos una
+     nota informativa con el último dato, por si se necesita de referencia. */
+  if (cfg.weight === 0) {
+    var lastMesW0 = validMeses[validMeses.length - 1];
+    nota = esSF ? ('📌 ' + lastMesW0 + ': ' + fmtVal(data[key][lastMesW0].real, cfg.unit, cfg.suffix) + ' (no aporta al score, ponderación 0%)') : null;
+    return { score:null, weight:cfg.weight, barPct:0, mesesConDatos:validMeses.length, totalMeses:meses.length, acum:null, obj:null, nota:nota };
+  }
+
+  /* ── CASO ESPECIAL: Cuentas x Cobrar (solo SF) ──
+     Se evalúa como PROMEDIO de días a lo largo del cuatrimestre. */
+  if (key === 'CxC') {
+    var sumDias = 0, nDias = 0;
+    validMeses.forEach(function(m) { sumDias += data[key][m].real; nDias++; });
+    var avgDias = sumDias / nDias;
+    obj = cfg.fixedObj;
+    if (obj === null || obj === 0) return null;
+    var ratioCxC = Math.min(obj / Math.max(avgDias, 0.01), 1);
+    cumplFinal = ratioCxC;
+    score  = cumplFinal * cfg.weight;
+    barPct = Math.round(cumplFinal * 100);
+    nota   = notaComparable((Math.round(avgDias * 10) / 10) + ' días', cfg, score);
+
+  /* ── CASO ESPECIAL: SG&A vs PPTO (solo SF) ──
+     Cada mes se topa en 100% de cumplimiento contra el presupuesto en $
+     (aquí "menor es mejor": un mes excelente no debe compensar uno malo
+     más allá del 100%), se suman los meses y por regla de 3 ese acumulado
+     se traduce a un % equivalente sobre la meta de 3%. */
+  } else if (key === 'SGA') {
+    var sumCumplPct = 0, nMesesSga = 0;
+    validMeses.forEach(function(m) {
+      var d = data[key][m];
+      if (d.objetivo === null) return;
+      sumCumplPct += Math.min(d.objetivo / Math.max(d.real, 0.01), 1) * 100; // topado en 100%
+      nMesesSga++;
+    });
+    if (nMesesSga === 0) return null;
+    var maxPosibleSga = nMesesSga * 100;
+    var avgRatioSga = sumCumplPct / maxPosibleSga;
+    var metaSga = 3;
+    obj = metaSga;
+    var displayPctSga = Math.round(avgRatioSga * metaSga * 1000) / 1000;
+    // Con el tope mensual, el valor proyectado nunca puede pasar de la meta
+    // (menor es mejor) → si cumple (<=meta), aporta el peso COMPLETO, no
+    // proporcional al promedio real.
+    var pasaSga = displayPctSga <= metaSga;
+    cumplFinal = pasaSga ? 1 : avgRatioSga;
+    score  = cumplFinal * cfg.weight;
+    barPct = Math.round(cumplFinal * 100);
+    nota   = notaComparable(displayPctSga + '%', cfg, score);
+
+  /* ── CASO ESPECIAL: Ingresos (solo SF) ──
+     Igual método que SG&A: se suma el % de cumplimiento de cada mes SIN
+     TOPE (si un mes excede la meta, ese excedente sí se acumula) y por
+     regla de 3 ese acumulado se traduce a un % equivalente sobre la meta
+     real de 23% de crecimiento (400% acumulado = 23%; más de 400% > 23%). */
+  } else if (key === 'Ingresos') {
+    var sumCumplIng = 0, nMesesIng = 0;
+    validMeses.forEach(function(m) {
+      var d = data[key][m];
+      if (d.objetivo === null) return;
+      sumCumplIng += (d.real / Math.max(d.objetivo, 0.01)) * 100; // sin tope
+      nMesesIng++;
+    });
+    if (nMesesIng === 0) return null;
+    var maxPosibleIng = nMesesIng * 100;
+    var avgRatioIng = sumCumplIng / maxPosibleIng;
+    var metaIng = 23; // 23% de crecimiento objetivo
+    obj = metaIng;
+    var displayPctIng = Math.round(avgRatioIng * metaIng * 1000) / 1000;
+    cumplFinal = avgRatioIng;
+    score  = Math.min(cumplFinal, 1) * cfg.weight;
+    barPct = Math.round(Math.min(cumplFinal, 1) * 100);
+    nota   = notaComparable(displayPctIng + '%', cfg, score);
+
+  /* ── CASO ESPECIAL: Margen Bruto (solo SF) ──
+     Se evalúa como PROMEDIO del % real a lo largo del cuatrimestre. */
+  } else if (key === 'MargenBruto') {
+    var sumMB = 0, nMB = 0;
+    validMeses.forEach(function(m) { sumMB += data[key][m].real; nMB++; });
+    var avgMB = sumMB / nMB;
+    obj = cfg.fixedObj;
+    if (obj === null || obj === 0) return null;
+    var ratioMB = Math.min(avgMB / obj, 1);
+    cumplFinal = ratioMB;
+    score  = cumplFinal * cfg.weight;
+    barPct = Math.round(cumplFinal * 100);
+    nota   = notaComparable((Math.round(avgMB * 100) / 100) + '%', cfg, score);
+
+  } else if (cfg.cuatrimestral) {
     acum = genGetBlockAccum(data, key, validMeses);
     if (acum === null) return null;
     obj = cfg.fixedObj;
@@ -2719,19 +2876,25 @@ function genCalcEstatus(data, kpis, key, meses) {
     }
     if (obj === null || obj === 0) return null;
     var cumpl = Math.min(cfg.inverse ? (obj / Math.max(acum, 0.01)) : (acum / obj), 1);
-    score  = cumpl * cfg.weight;
-    barPct = Math.round(cumpl * 100);
+    cumplFinal = cumpl;
+    score  = cumplFinal * cfg.weight;
+    barPct = Math.round(cumplFinal * 100);
+    nota   = esSF ? notaComparable(fmtVal(acum, cfg.unit, cfg.suffix), cfg, score) : null;
   } else {
-    var totalM = meses.length, acc = 0;
-    validMeses.forEach(function(m) {
-      var d = data[key][m];
-      if (d.objetivo === null) return;
-      acc += Math.min(cfg.inverse ? (d.objetivo / Math.max(d.real, 0.01)) : (d.real / d.objetivo), 1) * (cfg.weight / totalM);
-    });
-    score  = acc;
-    barPct = cfg.weight > 0 ? Math.round((score / cfg.weight) * 100) : 0;
+    // ── MENSUAL: usar solo el mes MÁS RECIENTE con dato real ──
+    var lastMes = null;
+    for (var vi = validMeses.length - 1; vi >= 0; vi--) {
+      if (data[key][validMeses[vi]].objetivo !== null) { lastMes = validMeses[vi]; break; }
+    }
+    if (!lastMes) return null;
+    var dLast = data[key][lastMes];
+    var cumpl2 = Math.min(cfg.inverse ? (dLast.objetivo / Math.max(dLast.real, 0.01)) : (dLast.real / dLast.objetivo), 1);
+    cumplFinal = cumpl2;
+    score  = cumplFinal * cfg.weight;
+    barPct = cfg.weight > 0 ? Math.round(cumplFinal * 100) : 0;
+    nota   = esSF ? notaComparable(fmtVal(dLast.real, cfg.unit, cfg.suffix), cfg, score) : null;
   }
-  return { score:score, weight:cfg.weight, barPct:barPct, mesesConDatos:validMeses.length, totalMeses:meses.length, acum:acum, obj:obj };
+  return { score:score, weight:cfg.weight, barPct:barPct, mesesConDatos:validMeses.length, totalMeses:meses.length, acum:acum, obj:obj, nota:nota };
 }
 
 function genCalcTotal(data, kpis, meses, isAnual) {
@@ -2753,8 +2916,13 @@ function genCalcTotal(data, kpis, meses, isAnual) {
 }
 
 /* Build a mini estatus cell for the table */
-function genEstatusCell(score, weight, barPct) {
-  if (score === null) return '<td style="text-align:center;"><span style="font-family:var(--font-cond,Barlow Condensed,sans-serif);font-size:10px;color:var(--slate2);">Sin datos</span></td>';
+function genEstatusCell(score, weight, barPct, nota) {
+  if (score === null) {
+    return '<td style="text-align:center;padding:10px 14px;">'
+      + '<span style="font-family:var(--font-cond,Barlow Condensed,sans-serif);font-size:10px;color:var(--slate2);">Sin datos</span>'
+      + (nota ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--blue);letter-spacing:.02em;margin-top:3px;max-width:170px;white-space:normal;">' + nota + '</div>' : '')
+      + '</td>';
+  }
   var color = 'var(--blue)';
   return '<td style="padding:10px 14px;">'
     + '<div><span style="font-family:Cormorant Garamond,serif;font-size:14px;font-weight:600;color:var(--navy);">' + score.toFixed(1) + '</span>'
@@ -2762,6 +2930,7 @@ function genEstatusCell(score, weight, barPct) {
     + '<div style="height:4px;background:var(--slate5);border-radius:2px;overflow:hidden;margin:4px 0;">'
     + '<div style="height:100%;border-radius:2px;background:' + color + ';width:' + Math.min(barPct, 100) + '%;"></div></div>'
     + '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--slate);letter-spacing:.04em;">' + barPct + '% avance</div>'
+    + (nota ? '<div style="font-family:Barlow Condensed,sans-serif;font-size:9px;color:var(--blue);letter-spacing:.02em;margin-top:3px;max-width:170px;white-space:normal;">' + nota + '</div>' : '')
     + '</div></td>';
 }
 
@@ -2824,18 +2993,18 @@ function genBuildTable(tableId, areaLabel, kpisObj, dataObj, meses, isAnual) {
     /* Estatus cell */
     var estatusCell;
     if (isAnual && cfg.cuatrimestral) {
-      var totalScore = 0, anyData = false;
+      var totalScore = 0, anyData = false, notaAnual = null;
       QUARTERS.forEach(function(qObj) {
         var est = genCalcEstatus(dataObj, kpisObj, key, qObj.meses);
-        if (est) { anyData = true; totalScore += est.score / 3; }
+        if (est) { anyData = true; totalScore += est.score / 3; if (est.nota) notaAnual = est.nota; }
       });
-      estatusCell = anyData ? genEstatusCell(totalScore, cfg.weight, Math.round((totalScore / cfg.weight) * 100)) : genEstatusCell(null, cfg.weight, 0);
+      estatusCell = anyData ? genEstatusCell(totalScore, cfg.weight, Math.round((totalScore / cfg.weight) * 100), notaAnual) : genEstatusCell(null, cfg.weight, 0);
     } else if (isAnual) {
       var est2 = genCalcEstatus(dataObj, kpisObj, key, MESES);
-      estatusCell = est2 ? genEstatusCell(est2.score, est2.weight, est2.barPct) : genEstatusCell(null, cfg.weight, 0);
+      estatusCell = est2 ? genEstatusCell(est2.score, est2.weight, est2.barPct, est2.nota) : genEstatusCell(null, cfg.weight, 0);
     } else {
       var est3 = genCalcEstatus(dataObj, kpisObj, key, meses);
-      estatusCell = est3 ? genEstatusCell(est3.score, est3.weight, est3.barPct) : genEstatusCell(null, cfg.weight, 0);
+      estatusCell = est3 ? genEstatusCell(est3.score, est3.weight, est3.barPct, est3.nota) : genEstatusCell(null, cfg.weight, 0);
     }
 
     html += '<tr>';
